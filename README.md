@@ -34,7 +34,7 @@ Works:
 Not yet:
 
 - **Motion controls.** A PC has no gyro, so the motion sensors always report at
-  rest. Catching beyond the tutorial throw hasn't been tested.
+  rest.
 - **Some graphics effects** are missing (effects that use compute shaders, such
   as automatic exposure).
 - **Anything online or wireless.** Trading, battling other players, Mystery
