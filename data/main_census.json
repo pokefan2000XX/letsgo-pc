@@ -1,0 +1,494 @@
+{
+ "module": "main",
+ "base": "0x7100000000",
+ "build_id": "c208db6a4ef4361f28b8402be0f7cd9a00000000000000000000000000000000",
+ "text_bytes": 13839272,
+ "instructions": 3356335,
+ "undecodable_words": 432,
+ "functions": {
+  "total": 60111,
+  "eh_frame": 59323,
+  "export_only": 0,
+  "plt": 787,
+  "bl_only": 1,
+  "with_lsda": 1,
+  "bl_into_middle_of_function": 0
+ },
+ "text_gaps": {
+  "count": 47269,
+  "bytes": 399612,
+  "non_padding": [
+   [
+    "0x7100000000",
+    48
+   ],
+   [
+    "0x7100d2fa58",
+    32
+   ]
+  ],
+  "non_padding_count": 2,
+  "non_padding_bytes": 80
+ },
+ "mnemonics_distinct": 190,
+ "mnemonics_top": [
+  [
+   "ldr",
+   671409
+  ],
+  [
+   "mov",
+   527248
+  ],
+  [
+   "add",
+   271103
+  ],
+  [
+   "str",
+   255601
+  ],
+  [
+   "bl",
+   178658
+  ],
+  [
+   "cbz",
+   152063
+  ],
+  [
+   "stp",
+   139860
+  ],
+  [
+   "ldp",
+   124403
+  ],
+  [
+   "blr",
+   109832
+  ],
+  [
+   "adrp",
+   108370
+  ],
+  [
+   "cmp",
+   102883
+  ],
+  [
+   "b",
+   81015
+  ],
+  [
+   "sub",
+   52771
+  ],
+  [
+   "ret",
+   52591
+  ],
+  [
+   "cbnz",
+   35911
+  ],
+  [
+   "ldrb",
+   35295
+  ],
+  [
+   "b.eq",
+   32297
+  ],
+  [
+   "b.ne",
+   32239
+  ],
+  [
+   "movk",
+   31466
+  ],
+  [
+   "strb",
+   27854
+  ],
+  [
+   "fmul",
+   19376
+  ],
+  [
+   "and",
+   19274
+  ],
+  [
+   "tbnz",
+   17232
+  ],
+  [
+   "stur",
+   16658
+  ],
+  [
+   "tbz",
+   13935
+  ],
+  [
+   "ldur",
+   12963
+  ],
+  [
+   "csel",
+   11374
+  ],
+  [
+   "ldrh",
+   10828
+  ],
+  [
+   "b.hs",
+   8490
+  ],
+  [
+   "b.lo",
+   8149
+  ],
+  [
+   "fadd",
+   8114
+  ],
+  [
+   "lsl",
+   7771
+  ],
+  [
+   "strh",
+   7728
+  ],
+  [
+   "ldarb",
+   7270
+  ],
+  [
+   "ldrsw",
+   6888
+  ],
+  [
+   "fmov",
+   6627
+  ],
+  [
+   "lsr",
+   6357
+  ],
+  [
+   "b.hi",
+   6240
+  ],
+  [
+   "fcmp",
+   6234
+  ],
+  [
+   "tbl",
+   6160
+  ],
+  [
+   "orr",
+   5697
+  ],
+  [
+   "b.lt",
+   5495
+  ],
+  [
+   "br",
+   5137
+  ],
+  [
+   "cset",
+   4801
+  ],
+  [
+   "madd",
+   4792
+  ],
+  [
+   "subs",
+   4789
+  ],
+  [
+   "tst",
+   4748
+  ],
+  [
+   "fsub",
+   4031
+  ],
+  [
+   "b.ls",
+   3639
+  ],
+  [
+   "asr",
+   3338
+  ],
+  [
+   "fmla",
+   3281
+  ],
+  [
+   "mul",
+   3258
+  ],
+  [
+   "fdiv",
+   3019
+  ],
+  [
+   "eor",
+   2702
+  ],
+  [
+   "ldar",
+   2513
+  ],
+  [
+   "ucvtf",
+   2285
+  ],
+  [
+   "b.le",
+   2129
+  ],
+  [
+   "b.ge",
+   2115
+  ],
+  [
+   "sxtw",
+   2099
+  ],
+  [
+   "clrex",
+   1968
+  ]
+ ],
+ "mnemonics_all": {
+  "add": 271103,
+  "adds": 1347,
+  "adrp": 108370,
+  "and": 19274,
+  "ands": 862,
+  "asr": 3338,
+  "b": 81015,
+  "b.eq": 32297,
+  "b.ge": 2115,
+  "b.gt": 1771,
+  "b.hi": 6240,
+  "b.hs": 8490,
+  "b.le": 2129,
+  "b.lo": 8149,
+  "b.ls": 3639,
+  "b.lt": 5495,
+  "b.mi": 638,
+  "b.ne": 32239,
+  "b.pl": 669,
+  "b.vc": 163,
+  "b.vs": 31,
+  "bfi": 1545,
+  "bfxil": 300,
+  "bic": 746,
+  "bics": 78,
+  "bit": 1,
+  "bl": 178658,
+  "blr": 109832,
+  "br": 5137,
+  "bsl": 407,
+  "cbnz": 35911,
+  "cbz": 152063,
+  "ccmp": 1268,
+  "cinc": 1288,
+  "cinv": 2,
+  "clrex": 1968,
+  "clz": 109,
+  "cmeq": 7,
+  "cmn": 1953,
+  "cmp": 102883,
+  "cneg": 212,
+  "csel": 11374,
+  "cset": 4801,
+  "csetm": 63,
+  "csinc": 1245,
+  "csinv": 299,
+  "csneg": 21,
+  "dmb": 9,
+  "dup": 908,
+  "eor": 2702,
+  "ext": 983,
+  "extr": 32,
+  "fabs": 265,
+  "fadd": 8114,
+  "faddp": 801,
+  "fccmp": 246,
+  "fcmeq": 539,
+  "fcmge": 122,
+  "fcmgt": 156,
+  "fcmlt": 4,
+  "fcmp": 6234,
+  "fcsel": 1841,
+  "fcvt": 469,
+  "fcvtas": 5,
+  "fcvtau": 1,
+  "fcvtms": 11,
+  "fcvtmu": 4,
+  "fcvtps": 48,
+  "fcvtpu": 125,
+  "fcvtzs": 1631,
+  "fcvtzu": 315,
+  "fdiv": 3019,
+  "fmadd": 963,
+  "fmax": 135,
+  "fmaxnm": 162,
+  "fmin": 279,
+  "fminnm": 91,
+  "fmla": 3281,
+  "fmls": 779,
+  "fmov": 6627,
+  "fmsub": 130,
+  "fmul": 19376,
+  "fneg": 966,
+  "fnmadd": 5,
+  "fnmsub": 180,
+  "fnmul": 267,
+  "frecpe": 153,
+  "frecps": 203,
+  "frinta": 8,
+  "frinti": 1,
+  "frintm": 33,
+  "frintp": 22,
+  "frintz": 2,
+  "frsqrte": 591,
+  "frsqrts": 1082,
+  "fsqrt": 295,
+  "fsub": 4031,
+  "ld1": 719,
+  "ld1r": 240,
+  "ldar": 2513,
+  "ldarb": 7270,
+  "ldaxr": 1611,
+  "ldp": 124403,
+  "ldpsw": 34,
+  "ldr": 671409,
+  "ldrb": 35295,
+  "ldrh": 10828,
+  "ldrsb": 619,
+  "ldrsh": 520,
+  "ldrsw": 6888,
+  "ldur": 12963,
+  "ldurb": 1016,
+  "ldurh": 298,
+  "ldursb": 5,
+  "ldursh": 7,
+  "ldursw": 177,
+  "ldxr": 891,
+  "lsl": 7771,
+  "lsr": 6357,
+  "madd": 4792,
+  "mneg": 3,
+  "mov": 527248,
+  "movi": 777,
+  "movk": 31466,
+  "movz": 10,
+  "mrs": 5,
+  "msub": 1421,
+  "mul": 3258,
+  "mvn": 618,
+  "neg": 1224,
+  "nop": 20,
+  "orn": 46,
+  "orr": 5697,
+  "rbit": 2,
+  "ret": 52591,
+  "rev": 413,
+  "rev16": 5,
+  "rev64": 19,
+  "ror": 277,
+  "sbfiz": 413,
+  "sbfx": 96,
+  "scvtf": 1509,
+  "sdiv": 323,
+  "shl": 4,
+  "smaddl": 529,
+  "smulh": 76,
+  "smull": 158,
+  "sqxtn": 3,
+  "srshr": 8,
+  "sshll": 22,
+  "sshr": 2,
+  "st1": 151,
+  "st2": 30,
+  "stlr": 208,
+  "stlrb": 6,
+  "stlxr": 1611,
+  "stp": 139860,
+  "str": 255601,
+  "strb": 27854,
+  "strh": 7728,
+  "stur": 16658,
+  "sturb": 655,
+  "sturh": 538,
+  "stxr": 891,
+  "sub": 52771,
+  "subs": 4789,
+  "sxtb": 189,
+  "sxth": 142,
+  "sxtw": 2099,
+  "tbl": 6160,
+  "tbnz": 17232,
+  "tbz": 13935,
+  "trn1": 7,
+  "trn2": 7,
+  "tst": 4748,
+  "ubfiz": 171,
+  "ubfx": 1749,
+  "ucvtf": 2285,
+  "udiv": 1286,
+  "umaddl": 725,
+  "umov": 224,
+  "umsubl": 2,
+  "umulh": 136,
+  "umull": 379,
+  "uzp1": 1,
+  "uzp2": 1,
+  "xtn": 224,
+  "yield": 2,
+  "zip1": 372,
+  "zip2": 248
+ },
+ "vector_simd_instructions": 50288,
+ "scalar_fp_instructions": 94072,
+ "system_registers": {
+  "mrs tpidr_el0": 5
+ },
+ "special": {
+  "atomic ldarb": 7270,
+  "atomic ldar": 2513,
+  "clrex": 1968,
+  "atomic ldaxr": 1611,
+  "atomic stlxr": 1611,
+  "atomic ldxr": 891,
+  "atomic stxr": 891,
+  "atomic stlr": 208,
+  "dmb": 9,
+  "atomic stlrb": 6,
+  "yield": 2
+ },
+ "indirect": {
+  "blr": 109832,
+  "br": {
+   "computed / tail call": 3207,
+   "jump table": 1930
+  },
+  "ret": 52591
+ }
+}

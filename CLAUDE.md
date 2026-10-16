@@ -1,0 +1,22 @@
+# Working rules for this repo
+
+- **Nothing from the dump leaves `orig/`.** Never commit, upload or paste code bytes, disassembly listings, decompiled C, assets, strings or keys. `orig/` holds them and is gitignored. `data/` may only hold addresses, sizes, symbol names and counts.
+- **Third-party headers stay in `toolchain/`.** nnsdk, nnware and nnheaders have no license, so never copy them into the repo.
+- **Python:** run tools with `python -P` from the repo root. The user-site packages (cryptography, lz4, capstone, unicorn) are needed, so don't use `-I`.
+- **Host toolchain:** `toolchain/llvm-mingw/bin` (clang 23, lld, llvm-objdump/readelf/cxxfilt); prepend it to PATH.
+  - Use clang, not MSVC: the Itanium C++ ABI is required.
+  - Build host exes with `-static`, otherwise llvm-mingw's libunwind/libc++ DLLs must be on PATH.
+  - CMake + Ninja come from VS Build Tools: `C:/Program Files (x86)/Microsoft Visual Studio/18/BuildTools/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe`. Pass the toolchain file as an absolute path (`cygpath -m`).
+- **Guest code** (decomp, compiled for ARM64): use `cmake/guest-aarch64.cmake`. It sets aarch64-linux-musl, Cortex-A57, inline atomics, unwind tables and `NN_SDK`/`NN_WARE` 5.4.151. Rebuild the sysroot with `tools/make_guest_sysroot.py`.
+- **Addresses:**
+  - main is at `0x7100000000` everywhere (CSV files, recompiled symbol names, runtime mapping, Ghidra).
+  - sdk is at `0x7180000000` (data/ and Ghidra).
+  - Import trampolines are at `0x7200000000`, and the decomp patch module at `0x7102000000`.
+- **Fixed-width types:** guest structs in host code use them. Windows `long` is 32-bit; the guest's is 64-bit.
+- **Allocator:** host code that allocates memory the game will free must use the game's exported allocator (`malloc` at `0x7100003b20` and its siblings).
+- **Target build:** v1.0.2 (main build ID `c208db6a4ef4361f…`). If `orig/manifest.json` shows a different build, stop.
+- **Ghidra:** project `orig/ghidra/letsgo` (main + sdk analyzed). Use `tools\ghidra\import.cmd <module>` to rebuild it and `tools\ghidra\decompile.cmd <outdir under orig> <addr...>` to export C. Its output stays in `orig/`.
+- **Testing oracle:** `tools/emu/guest_emu.py` (Unicorn) runs original functions. Recompiled and decompiled code is checked against it.
+- **Scripts:** `bash tools/prepare.sh` regenerates `orig/` and `data/` from the dump in about 2 minutes. `bash tests/run_smoke.sh` runs all smoke tests in about 15 s.
+- **Docs:** plan and decisions are in `docs/PLAN.md`; binary facts are in `docs/BINARY_NOTES.md`.
+- **Wording:** describe tool activity plainly. Ghidra "analyzing" is not "decompiling the game". The recompiler/decomp work starts only when the user says so.

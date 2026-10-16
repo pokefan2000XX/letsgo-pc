@@ -1,0 +1,843 @@
+Name,Demangled,Kind,PLT,GOT,CallSites
+_ZN2nn2fs10CreateFileEPKcl,"nn::fs::CreateFile(char const*, long)",func,0x7100d31e28,0x71015fa328,4
+_ZN2nn2fs10DeleteFileEPKc,nn::fs::DeleteFile(char const*),func,0x7100d31e58,0x71015fa340,1
+_ZN2nn2fs11GetFileSizeEPlNS0_10FileHandleE,"nn::fs::GetFileSize(long*, nn::fs::FileHandle)",func,0x7100d2ff48,0x71015f93b8,6
+_ZN2nn2fs11SetFileSizeENS0_10FileHandleEl,"nn::fs::SetFileSize(nn::fs::FileHandle, long)",func,0x7100d31e38,0x71015fa330,1
+_ZN2nn2fs12GetEntryTypeEPNS0_18DirectoryEntryTypeEPKc,"nn::fs::GetEntryType(nn::fs::DirectoryEntryType*, char const*)",func,0x7100d2fff8,0x71015f9410,3
+_ZN2nn2fs12SetAllocatorEPFPvmEPFvS1_mE,"nn::fs::SetAllocator(void* (*)(unsigned long), void (*)(void*, unsigned long))",func,0x7100d2ff88,0x71015f93d8,1
+_ZN2nn2fs13MountSaveDataEPKcRKNS_7account3UidE,"nn::fs::MountSaveData(char const*, nn::account::Uid const&)",func,0x7100d2ffe8,0x71015f9408,3
+_ZN2nn2fs14CommitSaveDataEPKc,nn::fs::CommitSaveData(char const*),func,0x7100d30018,0x71015f9420,1
+_ZN2nn2fs14EnsureSaveDataERKNS_7account3UidE,nn::fs::EnsureSaveData(nn::account::Uid const&),func,0x7100d30008,0x71015f9418,1
+_ZN2nn2fs18IsSaveDataExistingERKNS_7account3UidE,nn::fs::IsSaveDataExisting(nn::account::Uid const&),func,0x7100d2ffd8,0x71015f9400,1
+_ZN2nn2fs22QueryMountRomCacheSizeEPm,nn::fs::QueryMountRomCacheSize(unsigned long*),func,0x7100d2ff98,0x71015f93e0,1
+_ZN2nn2fs7UnmountEPKc,nn::fs::Unmount(char const*),func,0x7100d2ffc8,0x71015f93f8,12
+_ZN2nn2fs8MountRomEPKcPvm,"nn::fs::MountRom(char const*, void*, unsigned long)",func,0x7100d2ffa8,0x71015f93e8,1
+_ZN2nn2fs8OpenFileEPNS0_10FileHandleEPKci,"nn::fs::OpenFile(nn::fs::FileHandle*, char const*, int)",func,0x7100d2ff38,0x71015f93b0,9
+_ZN2nn2fs8ReadFileENS0_10FileHandleElPvm,"nn::fs::ReadFile(nn::fs::FileHandle, long, void*, unsigned long)",func,0x7100d2ff68,0x71015f93c8,3
+_ZN2nn2fs8ReadFileEPmNS0_10FileHandleElPvm,"nn::fs::ReadFile(unsigned long*, nn::fs::FileHandle, long, void*, unsigned long)",func,0x7100d320d8,0x71015fa480,1
+_ZN2nn2fs9CloseFileENS0_10FileHandleE,nn::fs::CloseFile(nn::fs::FileHandle),func,0x7100d2ff58,0x71015f93c0,6
+_ZN2nn2fs9FlushFileENS0_10FileHandleE,nn::fs::FlushFile(nn::fs::FileHandle),func,0x7100d31e48,0x71015fa338,5
+_ZN2nn2fs9WriteFileENS0_10FileHandleElPKvmRKNS0_11WriteOptionE,"nn::fs::WriteFile(nn::fs::FileHandle, long, void const*, unsigned long, nn::fs::WriteOption const&)",func,0x7100d31e68,0x71015fa348,4
+_ZN2nn2oe10InitializeEv,nn::oe::Initialize(),func,0x7100d31e08,0x71015fa318,1
+_ZN2nn2oe16GetOperationModeEv,nn::oe::GetOperationMode(),func,0x7100d30bf8,0x71015f9a10,4
+_ZN2nn2oe17FinishStartupLogoEv,nn::oe::FinishStartupLogo(),func,0x7100d2fcf8,0x71015f9290,1
+_ZN2nn2oe17GetPseudoDeviceIdEPNS_4util4UuidE,nn::oe::GetPseudoDeviceId(nn::util::Uuid*),func,0x7100d301d8,0x71015f9500,3
+_ZN2nn2oe18GetDesiredLanguageEv,nn::oe::GetDesiredLanguage(),func,0x7100d30d28,0x71015f9aa8,5
+_ZN2nn2oe18GetPerformanceModeEv,nn::oe::GetPerformanceMode(),func,0x7100d2fc08,0x71015f9218,3
+_ZN2nn2oe20GetCurrentFocusStateEv,nn::oe::GetCurrentFocusState(),func,0x7100d30c88,0x71015f9a58,1
+_ZN2nn2oe20SetFocusHandlingModeENS0_17FocusHandlingModeE,nn::oe::SetFocusHandlingMode(nn::oe::FocusHandlingMode),func,0x7100d30db8,0x71015f9af0,2
+_ZN2nn2oe21SetExpectedThemeColorENS0_14ThemeColorTypeE,nn::oe::SetExpectedThemeColor(nn::oe::ThemeColorType),func,0x7100d2fb88,0x71015f91d8,1
+_ZN2nn2oe24GetExpectedVolumeBalanceEPfS1_,"nn::oe::GetExpectedVolumeBalance(float*, float*)",func,0x7100d2fb98,0x71015f91e0,1
+_ZN2nn2oe24SetExpectedVolumeBalanceEff,"nn::oe::SetExpectedVolumeBalance(float, float)",func,0x7100d2fba8,0x71015f91e8,1
+_ZN2nn2oe25TryPopNotificationMessageEPj,nn::oe::TryPopNotificationMessage(unsigned int*),func,0x7100d31df8,0x71015fa310,1
+_ZN2nn2oe28SetResumeNotificationEnabledEb,nn::oe::SetResumeNotificationEnabled(bool),func,0x7100d30938,0x71015f98b0,1
+_ZN2nn2oe38SetUserInactivityDetectionTimeExtendedEb,nn::oe::SetUserInactivityDetectionTimeExtended(bool),func,0x7100d32558,0x71015fa6c0,2
+_ZN2nn2oe42SetOperationModeChangedNotificationEnabledEb,nn::oe::SetOperationModeChangedNotificationEnabled(bool),func,0x7100d30be8,0x71015f9a08,1
+_ZN2nn2oe44SetPerformanceModeChangedNotificationEnabledEb,nn::oe::SetPerformanceModeChangedNotificationEnabled(bool),func,0x7100d31e18,0x71015fa320,1
+_ZN2nn2os10ClearEventEPNS0_9EventTypeE,nn::os::ClearEvent(nn::os::EventType*),func,0x7100d2ff28,0x71015f93a8,17
+_ZN2nn2os10TryWaitAnyEPNS0_13MultiWaitTypeE,nn::os::TryWaitAny(nn::os::MultiWaitType*),func,0x7100d305a8,0x71015f96e8,1
+_ZN2nn2os10WaitThreadEPNS0_10ThreadTypeE,nn::os::WaitThread(nn::os::ThreadType*),func,0x7100d2fe88,0x71015f9358,15
+_ZN2nn2os11FreeTlsSlotENS0_7TlsSlotE,nn::os::FreeTlsSlot(nn::os::TlsSlot),func,0x7100d2fd58,0x71015f92c0,2
+_ZN2nn2os11GetHostArgcEv,nn::os::GetHostArgc(),func,0x7100d2fc18,0x71015f9220,3
+_ZN2nn2os11GetHostArgvEv,nn::os::GetHostArgv(),func,0x7100d2fc28,0x71015f9228,3
+_ZN2nn2os11GetThreadIdEPKNS0_10ThreadTypeE,nn::os::GetThreadId(nn::os::ThreadType const*),func,0x7100d2fd18,0x71015f92a0,3
+_ZN2nn2os11GetTlsValueENS0_7TlsSlotE,nn::os::GetTlsValue(nn::os::TlsSlot),func,0x7100d2fac8,0x71015f9178,4492
+_ZN2nn2os11SetTlsValueENS0_7TlsSlotEm,"nn::os::SetTlsValue(nn::os::TlsSlot, unsigned long)",func,0x7100d2fd68,0x71015f92c8,5
+_ZN2nn2os11SignalEventEPNS0_9EventTypeE,nn::os::SignalEvent(nn::os::EventType*),func,0x7100d2ff18,0x71015f93a0,45
+_ZN2nn2os11SleepThreadENS_8TimeSpanE,nn::os::SleepThread(nn::TimeSpan),func,0x7100d2fce8,0x71015f9288,42
+_ZN2nn2os11StartThreadEPNS0_10ThreadTypeE,nn::os::StartThread(nn::os::ThreadType*),func,0x7100d2fed8,0x71015f9380,13
+_ZN2nn2os11UnlockMutexEPNS0_9MutexTypeE,nn::os::UnlockMutex(nn::os::MutexType*),func,0x7100d2fae8,0x71015f9188,1080
+_ZN2nn2os11YieldThreadEv,nn::os::YieldThread(),func,0x7100d318e8,0x71015fa088,4
+_ZN2nn2os12CreateThreadEPNS0_10ThreadTypeEPFvPvES3_S3_mi,"nn::os::CreateThread(nn::os::ThreadType*, void (*)(void*), void*, void*, unsigned long, int)",func,0x7100d2feb8,0x71015f9370,8
+_ZN2nn2os12CreateThreadEPNS0_10ThreadTypeEPFvPvES3_S3_mii,"nn::os::CreateThread(nn::os::ThreadType*, void (*)(void*), void*, void*, unsigned long, int, int)",func,0x7100d2fea8,0x71015f9368,7
+_ZN2nn2os12TryLockMutexEPNS0_9MutexTypeE,nn::os::TryLockMutex(nn::os::MutexType*),func,0x7100d31948,0x71015fa0b8,2
+_ZN2nn2os12TryWaitEventEPNS0_9EventTypeE,nn::os::TryWaitEvent(nn::os::EventType*),func,0x7100d2ff08,0x71015f9398,1
+_ZN2nn2os13DestroyThreadEPNS0_10ThreadTypeE,nn::os::DestroyThread(nn::os::ThreadType*),func,0x7100d2fe98,0x71015f9360,15
+_ZN2nn2os13FinalizeEventEPNS0_9EventTypeE,nn::os::FinalizeEvent(nn::os::EventType*),func,0x7100d2fef8,0x71015f9390,26
+_ZN2nn2os13FinalizeMutexEPNS0_9MutexTypeE,nn::os::FinalizeMutex(nn::os::MutexType*),func,0x7100d2fc58,0x71015f9240,233
+_ZN2nn2os13GetSystemTickEv,nn::os::GetSystemTick(),func,0x7100d30048,0x71015f9438,78
+_ZN2nn2os13SetThreadNameEPNS0_10ThreadTypeEPKc,"nn::os::SetThreadName(nn::os::ThreadType*, char const*)",func,0x7100d2fec8,0x71015f9378,13
+_ZN2nn2os14StopTimerEventEPNS0_14TimerEventTypeE,nn::os::StopTimerEvent(nn::os::TimerEventType*),func,0x7100d31fb8,0x71015fa3f0,1
+_ZN2nn2os14TimedWaitEventEPNS0_9EventTypeENS_8TimeSpanE,"nn::os::TimedWaitEvent(nn::os::EventType*, nn::TimeSpan)",func,0x7100d30eb8,0x71015f9b70,3
+_ZN2nn2os14WaitLightEventEPNS0_14LightEventTypeE,nn::os::WaitLightEvent(nn::os::LightEventType*),func,0x7100d30cb8,0x71015f9a70,1
+_ZN2nn2os14WaitTimerEventEPNS0_14TimerEventTypeE,nn::os::WaitTimerEvent(nn::os::TimerEventType*),func,0x7100d31f98,0x71015fa3e0,1
+_ZN2nn2os15AllocateTlsSlotEPNS0_7TlsSlotEPFvmE,"nn::os::AllocateTlsSlot(nn::os::TlsSlot*, void (*)(unsigned long))",func,0x7100d2fd78,0x71015f92d0,1
+_ZN2nn2os15InitializeEventEPNS0_9EventTypeEbNS0_14EventClearModeE,"nn::os::InitializeEvent(nn::os::EventType*, bool, nn::os::EventClearMode)",func,0x7100d2fee8,0x71015f9388,26
+_ZN2nn2os15InitializeMutexEPNS0_9MutexTypeEbi,"nn::os::InitializeMutex(nn::os::MutexType*, bool, int)",func,0x7100d2fc48,0x71015f9238,118
+_ZN2nn2os15JamMessageQueueEPNS0_16MessageQueueTypeEm,"nn::os::JamMessageQueue(nn::os::MessageQueueType*, unsigned long)",func,0x7100d31b08,0x71015fa198,1
+_ZN2nn2os15QueryMemoryInfoEPNS0_10MemoryInfoE,nn::os::QueryMemoryInfo(nn::os::MemoryInfo*),func,0x7100d2fb58,0x71015f91c0,1
+_ZN2nn2os15WaitSystemEventEPNS0_15SystemEventTypeE,nn::os::WaitSystemEvent(nn::os::SystemEventType*),func,0x7100d32ad8,0x71015fa980,1
+_ZN2nn2os16ClearSystemEventEPNS0_15SystemEventTypeE,nn::os::ClearSystemEvent(nn::os::SystemEventType*),func,0x7100d305b8,0x71015f96f0,5
+_ZN2nn2os16GetCurrentThreadEv,nn::os::GetCurrentThread(),func,0x7100d2fd08,0x71015f9298,22
+_ZN2nn2os16SendMessageQueueEPNS0_16MessageQueueTypeEm,"nn::os::SendMessageQueue(nn::os::MessageQueueType*, unsigned long)",func,0x7100d31ac8,0x71015fa178,5
+_ZN2nn2os16SignalLightEventEPNS0_14LightEventTypeE,nn::os::SignalLightEvent(nn::os::LightEventType*),func,0x7100d30ca8,0x71015f9a68,3
+_ZN2nn2os17ConvertToTimeSpanENS0_4TickE,nn::os::ConvertToTimeSpan(nn::os::Tick),func,0x7100d30058,0x71015f9440,56
+_ZN2nn2os17FinalizeMultiWaitEPNS0_13MultiWaitTypeE,nn::os::FinalizeMultiWait(nn::os::MultiWaitType*),func,0x7100d2fe38,0x71015f9330,4
+_ZN2nn2os17GetThreadPriorityEPKNS0_10ThreadTypeE,nn::os::GetThreadPriority(nn::os::ThreadType const*),func,0x7100d31b28,0x71015fa1a8,1
+_ZN2nn2os17SetMemoryHeapSizeEm,nn::os::SetMemoryHeapSize(unsigned long),func,0x7100d2fb68,0x71015f91c8,1
+_ZN2nn2os17SetThreadCoreMaskEPNS0_10ThreadTypeEim,"nn::os::SetThreadCoreMask(nn::os::ThreadType*, int, unsigned long)",func,0x7100d2fd98,0x71015f92e0,8
+_ZN2nn2os17TryWaitLightEventEPNS0_14LightEventTypeE,nn::os::TryWaitLightEvent(nn::os::LightEventType*),func,0x7100d30c98,0x71015f9a60,1
+_ZN2nn2os18DestroySystemEventEPNS0_15SystemEventTypeE,nn::os::DestroySystemEvent(nn::os::SystemEventType*),func,0x7100d30498,0x71015f9660,19
+_ZN2nn2os18FinalizeLightEventEPNS0_14LightEventTypeE,nn::os::FinalizeLightEvent(nn::os::LightEventType*),func,0x7100d30cd8,0x71015f9a80,4
+_ZN2nn2os18FinalizeTimerEventEPNS0_14TimerEventTypeE,nn::os::FinalizeTimerEvent(nn::os::TimerEventType*),func,0x7100d31fc8,0x71015fa3f8,6
+_ZN2nn2os18SdkAllocateTlsSlotEPNS0_7TlsSlotEPFvmE,"nn::os::SdkAllocateTlsSlot(nn::os::TlsSlot*, void (*)(unsigned long))",func,0x7100d31a88,0x71015fa158,2
+_ZN2nn2os18TryJamMessageQueueEPNS0_16MessageQueueTypeEm,"nn::os::TryJamMessageQueue(nn::os::MessageQueueType*, unsigned long)",func,0x7100d31af8,0x71015fa190,1
+_ZN2nn2os18TryWaitSystemEventEPNS0_15SystemEventTypeE,nn::os::TryWaitSystemEvent(nn::os::SystemEventType*),func,0x7100d30808,0x71015f9818,6
+_ZN2nn2os19AllocateMemoryBlockEPmm,"nn::os::AllocateMemoryBlock(unsigned long*, unsigned long)",func,0x7100d2fb78,0x71015f91d0,2
+_ZN2nn2os19GenerateRandomBytesEPvm,"nn::os::GenerateRandomBytes(void*, unsigned long)",func,0x7100d31918,0x71015fa0a0,3
+_ZN2nn2os19GetCurrentStackInfoEPmS1_,"nn::os::GetCurrentStackInfo(unsigned long*, unsigned long*)",func,0x7100d31b38,0x71015fa1b0,1
+_ZN2nn2os19InitializeMultiWaitEPNS0_13MultiWaitTypeE,nn::os::InitializeMultiWait(nn::os::MultiWaitType*),func,0x7100d2fdf8,0x71015f9310,4
+_ZN2nn2os19LinkMultiWaitHolderEPNS0_13MultiWaitTypeEPNS0_19MultiWaitHolderTypeE,"nn::os::LinkMultiWaitHolder(nn::os::MultiWaitType*, nn::os::MultiWaitHolderType*)",func,0x7100d2fe58,0x71015f9340,13
+_ZN2nn2os19ReceiveMessageQueueEPmPNS0_16MessageQueueTypeE,"nn::os::ReceiveMessageQueue(unsigned long*, nn::os::MessageQueueType*)",func,0x7100d31ae8,0x71015fa188,1
+_ZN2nn2os19TrySendMessageQueueEPNS0_16MessageQueueTypeEm,"nn::os::TrySendMessageQueue(nn::os::MessageQueueType*, unsigned long)",func,0x7100d31ab8,0x71015fa170,1
+_ZN2nn2os20ChangeThreadPriorityEPNS0_10ThreadTypeEi,"nn::os::ChangeThreadPriority(nn::os::ThreadType*, int)",func,0x7100d31908,0x71015fa098,2
+_ZN2nn2os20FinalizeMessageQueueEPNS0_16MessageQueueTypeE,nn::os::FinalizeMessageQueue(nn::os::MessageQueueType*),func,0x7100d31aa8,0x71015fa168,3
+_ZN2nn2os20GetCurrentCoreNumberEv,nn::os::GetCurrentCoreNumber(),func,0x7100d30c28,0x7101600c78,8
+_ZN2nn2os20InitializeLightEventEPNS0_14LightEventTypeEbNS0_14EventClearModeE,"nn::os::InitializeLightEvent(nn::os::LightEventType*, bool, nn::os::EventClearMode)",func,0x7100d30cc8,0x71015f9a78,2
+_ZN2nn2os20InitializeTimerEventEPNS0_14TimerEventTypeENS0_14EventClearModeE,"nn::os::InitializeTimerEvent(nn::os::TimerEventType*, nn::os::EventClearMode)",func,0x7100d31fd8,0x71015fa400,1
+_ZN2nn2os20TimedWaitSystemEventEPNS0_15SystemEventTypeENS_8TimeSpanE,"nn::os::TimedWaitSystemEvent(nn::os::SystemEventType*, nn::TimeSpan)",func,0x7100d32ae8,0x71015fa988,1
+_ZN2nn2os21SetDyingMessageRegionEmm,"nn::os::SetDyingMessageRegion(unsigned long, unsigned long)",func,0x7100d2faa8,0x71015f9168,1
+_ZN2nn2os21UnlinkMultiWaitHolderEPNS0_19MultiWaitHolderTypeE,nn::os::UnlinkMultiWaitHolder(nn::os::MultiWaitHolderType*),func,0x7100d2fe78,0x71015f9350,16
+_ZN2nn2os21WaitConditionVariableEPNS0_21ConditionVariableTypeEPNS0_9MutexTypeE,"nn::os::WaitConditionVariable(nn::os::ConditionVariableType*, nn::os::MutexType*)",func,0x7100d2fdd8,0x71015f9300,9
+_ZN2nn2os22GetSystemTickFrequencyEv,nn::os::GetSystemTickFrequency(),func,0x7100d30e98,0x71015f9b60,9
+_ZN2nn2os22InitializeMessageQueueEPNS0_16MessageQueueTypeEPmm,"nn::os::InitializeMessageQueue(nn::os::MessageQueueType*, unsigned long*, unsigned long)",func,0x7100d31a98,0x71015fa160,3
+_ZN2nn2os22TryReceiveMessageQueueEPmPNS0_16MessageQueueTypeE,"nn::os::TryReceiveMessageQueue(unsigned long*, nn::os::MessageQueueType*)",func,0x7100d31ad8,0x71015fa180,1
+_ZN2nn2os23FinalizeMultiWaitHolderEPNS0_19MultiWaitHolderTypeE,nn::os::FinalizeMultiWaitHolder(nn::os::MultiWaitHolderType*),func,0x7100d2fe28,0x71015f9328,24
+_ZN2nn2os23SignalConditionVariableEPNS0_21ConditionVariableTypeE,nn::os::SignalConditionVariable(nn::os::ConditionVariableType*),func,0x7100d2fdc8,0x71015f92f8,15
+_ZN2nn2os23StartPeriodicTimerEventEPNS0_14TimerEventTypeENS_8TimeSpanES3_,"nn::os::StartPeriodicTimerEvent(nn::os::TimerEventType*, nn::TimeSpan, nn::TimeSpan)",func,0x7100d31fe8,0x71015fa408,1
+_ZN2nn2os24TimedReceiveMessageQueueEPmPNS0_16MessageQueueTypeENS_8TimeSpanE,"nn::os::TimedReceiveMessageQueue(unsigned long*, nn::os::MessageQueueType*, nn::TimeSpan)",func,0x7100d320f8,0x71015fa490,2
+_ZN2nn2os24UnlinkAllMultiWaitHolderEPNS0_13MultiWaitTypeE,nn::os::UnlinkAllMultiWaitHolder(nn::os::MultiWaitType*),func,0x7100d304c8,0x71015f9678,1
+_ZN2nn2os25FinalizeConditionVariableEPNS0_21ConditionVariableTypeE,nn::os::FinalizeConditionVariable(nn::os::ConditionVariableType*),func,0x7100d2fde8,0x71015f9308,17
+_ZN2nn2os25InitializeMultiWaitHolderEPNS0_19MultiWaitHolderTypeEPNS0_15SystemEventTypeE,"nn::os::InitializeMultiWaitHolder(nn::os::MultiWaitHolderType*, nn::os::SystemEventType*)",func,0x7100d304e8,0x71015f9688,5
+_ZN2nn2os25InitializeMultiWaitHolderEPNS0_19MultiWaitHolderTypeEPNS0_9EventTypeE,"nn::os::InitializeMultiWaitHolder(nn::os::MultiWaitHolderType*, nn::os::EventType*)",func,0x7100d2fe48,0x71015f9338,10
+_ZN2nn2os26BroadcastConditionVariableEPNS0_21ConditionVariableTypeE,nn::os::BroadcastConditionVariable(nn::os::ConditionVariableType*),func,0x7100d2ff78,0x71015f93d0,5
+_ZN2nn2os26GetMultiWaitHolderUserDataEPKNS0_19MultiWaitHolderTypeE,nn::os::GetMultiWaitHolderUserData(nn::os::MultiWaitHolderType const*),func,0x7100d2fe08,0x71015f9318,10
+_ZN2nn2os26GetThreadAvailableCoreMaskEv,nn::os::GetThreadAvailableCoreMask(),func,0x7100d31b18,0x71015fa1a0,1
+_ZN2nn2os26SetMultiWaitHolderUserDataEPNS0_19MultiWaitHolderTypeEm,"nn::os::SetMultiWaitHolderUserData(nn::os::MultiWaitHolderType*, unsigned long)",func,0x7100d2fe18,0x71015f9320,20
+_ZN2nn2os26TimedWaitConditionVariableEPNS0_21ConditionVariableTypeEPNS0_9MutexTypeENS_8TimeSpanE,"nn::os::TimedWaitConditionVariable(nn::os::ConditionVariableType*, nn::os::MutexType*, nn::TimeSpan)",func,0x7100d31928,0x71015fa0a8,1
+_ZN2nn2os27InitializeConditionVariableEPNS0_21ConditionVariableTypeE,nn::os::InitializeConditionVariable(nn::os::ConditionVariableType*),func,0x7100d2fdb8,0x71015f92f0,8
+_ZN2nn2os28IsMutexLockedByCurrentThreadEPKNS0_9MutexTypeE,nn::os::IsMutexLockedByCurrentThread(nn::os::MutexType const*),func,0x7100d2fda8,0x71015f92e8,5
+_ZN2nn2os7WaitAnyEPNS0_13MultiWaitTypeE,nn::os::WaitAny(nn::os::MultiWaitType*),func,0x7100d2fe68,0x71015f9348,4
+_ZN2nn2os9LockMutexEPNS0_9MutexTypeE,nn::os::LockMutex(nn::os::MutexType*),func,0x7100d2fad8,0x71015f9180,972
+_ZN2nn2os9WaitEventEPNS0_9EventTypeE,nn::os::WaitEvent(nn::os::EventType*),func,0x7100d30e88,0x71015f9b58,9
+_ZN2nn2pl17GetSharedFontSizeENS0_14SharedFontTypeE,nn::pl::GetSharedFontSize(nn::pl::SharedFontType),func,0x7100d30c68,0x71015f9a48,1
+_ZN2nn2pl20GetSharedFontAddressENS0_14SharedFontTypeE,nn::pl::GetSharedFontAddress(nn::pl::SharedFontType),func,0x7100d30c58,0x71015f9a40,1
+_ZN2nn2pl21RequestSharedFontLoadENS0_14SharedFontTypeE,nn::pl::RequestSharedFontLoad(nn::pl::SharedFontType),func,0x7100d30c38,0x71015f9a30,3
+_ZN2nn2pl22GetSharedFontLoadStateENS0_14SharedFontTypeE,nn::pl::GetSharedFontLoadState(nn::pl::SharedFontType),func,0x7100d30c48,0x71015f9a38,1
+_ZN2nn2vi10InitializeEv,nn::vi::Initialize(),func,0x7100d300b8,0x71015f9470,1
+_ZN2nn2vi11CreateLayerEPPNS0_5LayerEPNS0_7DisplayE,"nn::vi::CreateLayer(nn::vi::Layer**, nn::vi::Display*)",func,0x7100d300d8,0x71015f9480,1
+_ZN2nn2vi12CloseDisplayEPNS0_7DisplayE,nn::vi::CloseDisplay(nn::vi::Display*),func,0x7100d30118,0x71015f94a0,1
+_ZN2nn2vi12DestroyLayerEPNS0_5LayerE,nn::vi::DestroyLayer(nn::vi::Layer*),func,0x7100d30108,0x71015f9498,1
+_ZN2nn2vi15GetNativeWindowEPPvPNS0_5LayerE,"nn::vi::GetNativeWindow(void**, nn::vi::Layer*)",func,0x7100d300f8,0x71015f9490,2
+_ZN2nn2vi18OpenDefaultDisplayEPPNS0_7DisplayE,nn::vi::OpenDefaultDisplay(nn::vi::Display**),func,0x7100d300c8,0x71015f9478,1
+_ZN2nn2vi19SetLayerScalingModeEPNS0_5LayerENS0_11ScalingModeE,"nn::vi::SetLayerScalingMode(nn::vi::Layer*, nn::vi::ScalingMode)",func,0x7100d300e8,0x71015f9488,1
+_ZN2nn2vi8FinalizeEv,nn::vi::Finalize(),func,0x7100d30128,0x71015f94a8,1
+_ZN2nn3err19ApplicationErrorArg15SetLanguageCodeERKNS_8settings12LanguageCodeE,nn::err::ApplicationErrorArg::SetLanguageCode(nn::settings::LanguageCode const&),func,0x7100d31838,0x71015fa030,1
+_ZN2nn3err19ApplicationErrorArg16SetDialogMessageEPKc,nn::err::ApplicationErrorArg::SetDialogMessage(char const*),func,0x7100d31818,0x71015fa020,1
+_ZN2nn3err19ApplicationErrorArg20SetFullScreenMessageEPKc,nn::err::ApplicationErrorArg::SetFullScreenMessage(char const*),func,0x7100d31828,0x71015fa028,1
+_ZN2nn3err19ApplicationErrorArg29SetApplicationErrorCodeNumberEj,nn::err::ApplicationErrorArg::SetApplicationErrorCodeNumber(unsigned int),func,0x7100d31808,0x71015fa018,1
+_ZN2nn3err19ApplicationErrorArgC1Ev,nn::err::ApplicationErrorArg::ApplicationErrorArg(),func,0x7100d317f8,0x71015fa010,1
+_ZN2nn3err20ShowApplicationErrorERKNS0_19ApplicationErrorArgE,nn::err::ShowApplicationError(nn::err::ApplicationErrorArg const&),func,0x7100d31848,0x71015fa038,1
+_ZN2nn3err21IsNetworkServiceErrorENS0_9ErrorCodeE,nn::err::IsNetworkServiceError(nn::err::ErrorCode),func,0x7100d31888,0x71015fa058,1
+_ZN2nn3err21IsNetworkServiceErrorENS_6ResultE,nn::err::IsNetworkServiceError(nn::Result),func,0x7100d31858,0x71015fa040,1
+_ZN2nn3err23ShowNetworkServiceErrorENS0_9ErrorCodeE,nn::err::ShowNetworkServiceError(nn::err::ErrorCode),func,0x7100d31898,0x71015fa060,1
+_ZN2nn3err23ShowNetworkServiceErrorENS_6ResultE,nn::err::ShowNetworkServiceError(nn::Result),func,0x7100d31868,0x71015fa048,1
+_ZN2nn3err9ErrorCode19GetInvalidErrorCodeEv,nn::err::ErrorCode::GetInvalidErrorCode(),func,0x7100d318b8,0x71015fa070,4
+_ZN2nn3err9ShowErrorENS0_9ErrorCodeE,nn::err::ShowError(nn::err::ErrorCode),func,0x7100d318a8,0x71015fa068,1
+_ZN2nn3err9ShowErrorENS_6ResultE,nn::err::ShowError(nn::Result),func,0x7100d31878,0x71015fa050,1
+_ZN2nn3hid12GetNpadStateEPNS0_14NpadPalmaStateERKj,"nn::hid::GetNpadState(nn::hid::NpadPalmaState*, unsigned int const&)",func,0x7100d30838,0x71015f9830,1
+_ZN2nn3hid12GetNpadStateEPNS0_16NpadFullKeyStateERKj,"nn::hid::GetNpadState(nn::hid::NpadFullKeyState*, unsigned int const&)",func,0x7100d30958,0x71015f98c0,1
+_ZN2nn3hid12GetNpadStateEPNS0_16NpadJoyDualStateERKj,"nn::hid::GetNpadState(nn::hid::NpadJoyDualState*, unsigned int const&)",func,0x7100d30978,0x71015f98d0,1
+_ZN2nn3hid12GetNpadStateEPNS0_16NpadJoyLeftStateERKj,"nn::hid::GetNpadState(nn::hid::NpadJoyLeftState*, unsigned int const&)",func,0x7100d30988,0x71015f98d8,1
+_ZN2nn3hid12GetNpadStateEPNS0_17NpadHandheldStateERKj,"nn::hid::GetNpadState(nn::hid::NpadHandheldState*, unsigned int const&)",func,0x7100d30968,0x71015f98c8,1
+_ZN2nn3hid12GetNpadStateEPNS0_17NpadJoyRightStateERKj,"nn::hid::GetNpadState(nn::hid::NpadJoyRightState*, unsigned int const&)",func,0x7100d30998,0x71015f98e0,1
+_ZN2nn3hid13ReadPalmaStepERKNS0_21PalmaConnectionHandleE,nn::hid::ReadPalmaStep(nn::hid::PalmaConnectionHandle const&),func,0x7100d30a88,0x71015f9958,1
+_ZN2nn3hid13VibrationNode15SetModulationToEPKS1_RKNS0_19VibrationModulationE,"nn::hid::VibrationNode::SetModulationTo(nn::hid::VibrationNode const*, nn::hid::VibrationModulation const&)",func,0x7100d31ee8,0x71015fa388,1
+_ZN2nn3hid13VibrationNode30DefaultVibrationSampleIntervalE,nn::hid::VibrationNode::DefaultVibrationSampleInterval,data,,0x7101604c70,0
+_ZN2nn3hid13VibrationNode6UpdateEv,nn::hid::VibrationNode::Update(),func,0x7100d31fa8,0x71015fa3e8,1
+_ZN2nn3hid14DisconnectNpadERKj,nn::hid::DisconnectNpad(unsigned int const&),func,0x7100d307b8,0x71015f97f0,1
+_ZN2nn3hid14InitializeNpadEv,nn::hid::InitializeNpad(),func,0x7100d30138,0x71015f94b0,2
+_ZN2nn3hid14ResetPalmaStepERKNS0_21PalmaConnectionHandleE,nn::hid::ResetPalmaStep(nn::hid::PalmaConnectionHandle const&),func,0x7100d30aa8,0x71015f9968,1
+_ZN2nn3hid14VibrationMixerC1Ev,nn::hid::VibrationMixer::VibrationMixer(),func,0x7100d31f18,0x71015fa3a0,1
+_ZN2nn3hid15EnablePalmaStepERKNS0_21PalmaConnectionHandleEb,"nn::hid::EnablePalmaStep(nn::hid::PalmaConnectionHandle const&, bool)",func,0x7100d30a98,0x71015f9960,1
+_ZN2nn3hid15GetNpadStyleSetERKj,nn::hid::GetNpadStyleSet(unsigned int const&),func,0x7100d30818,0x71015f9820,8
+_ZN2nn3hid15InitializePalmaERKNS0_21PalmaConnectionHandleE,nn::hid::InitializePalma(nn::hid::PalmaConnectionHandle const&),func,0x7100d30ba8,0x71015f99e8,1
+_ZN2nn3hid15VibrationPlayer20OnNextSampleRequiredEPNS0_14VibrationValueEPNS_4util13IntrusiveListINS0_23VibrationNodeConnectionENS4_27IntrusiveListBaseNodeTraitsIS6_S6_EEEE,"nn::hid::VibrationPlayer::OnNextSampleRequired(nn::hid::VibrationValue*, nn::util::IntrusiveList<nn::hid::VibrationNodeConnection, nn::util::IntrusiveListBaseNodeTraits<nn::hid::VibrationNodeConnection, nn::hid::VibrationNodeConnection>>*)",func,0x7100d32008,0x71015fa418,1
+_ZN2nn3hid15VibrationPlayer4LoadEPKvm,"nn::hid::VibrationPlayer::Load(void const*, unsigned long)",func,0x7100d31eb8,0x71015fa370,1
+_ZN2nn3hid15VibrationPlayer4PlayEv,nn::hid::VibrationPlayer::Play(),func,0x7100d31ec8,0x71015fa378,1
+_ZN2nn3hid15VibrationPlayerC2Ev,nn::hid::VibrationPlayer::VibrationPlayer(),func,0x7100d31ff8,0x71015fa410,1
+_ZN2nn3hid15VibrationPlayerD2Ev,nn::hid::VibrationPlayer::~VibrationPlayer(),func,0x7100d31f08,0x71015fa398,8
+_ZN2nn3hid15VibrationTarget24SetVibrationDeviceHandleERKNS0_21VibrationDeviceHandleE,nn::hid::VibrationTarget::SetVibrationDeviceHandle(nn::hid::VibrationDeviceHandle const&),func,0x7100d31f88,0x71015fa3d8,1
+_ZN2nn3hid15VibrationTarget26UnsetVibrationDeviceHandleEv,nn::hid::VibrationTarget::UnsetVibrationDeviceHandle(),func,0x7100d31f58,0x71015fa3c0,2
+_ZN2nn3hid15VibrationTargetC1ERKNS0_21VibrationDeviceHandleE,nn::hid::VibrationTarget::VibrationTarget(nn::hid::VibrationDeviceHandle const&),func,0x7100d31f48,0x71015fa3b8,1
+_ZN2nn3hid16GetGestureStatesEPNS0_12GestureStateEi,"nn::hid::GetGestureStates(nn::hid::GestureState*, int)",func,0x7100d31e88,0x71015fa358,1
+_ZN2nn3hid16ReadPalmaPlayLogERKNS0_21PalmaConnectionHandleERKt,"nn::hid::ReadPalmaPlayLog(nn::hid::PalmaConnectionHandle const&, unsigned short const&)",func,0x7100d30b58,0x71015f99c0,1
+_ZN2nn3hid17InitializeGestureEv,nn::hid::InitializeGesture(),func,0x7100d31e78,0x71015fa350,1
+_ZN2nn3hid17PlayPalmaActivityERKNS0_21PalmaConnectionHandleERKt,"nn::hid::PlayPalmaActivity(nn::hid::PalmaConnectionHandle const&, unsigned short const&)",func,0x7100d30a68,0x71015f9948,1
+_ZN2nn3hid17ResetPalmaPlayLogERKNS0_21PalmaConnectionHandleERKt,"nn::hid::ResetPalmaPlayLog(nn::hid::PalmaConnectionHandle const&, unsigned short const&)",func,0x7100d30b68,0x71015f99c8,1
+_ZN2nn3hid17SetPalmaBoostModeEb,nn::hid::SetPalmaBoostMode(bool),func,0x7100d30a38,0x71015f9930,1
+_ZN2nn3hid17StopSixAxisSensorERKNS0_19SixAxisSensorHandleE,nn::hid::StopSixAxisSensor(nn::hid::SixAxisSensorHandle const&),func,0x7100d30868,0x71015f9848,4
+_ZN2nn3hid18InitializeDebugPadEv,nn::hid::InitializeDebugPad(),func,0x7100d30148,0x71015f94b8,1
+_ZN2nn3hid18SetNpadJoyHoldTypeENS0_15NpadJoyHoldTypeE,nn::hid::SetNpadJoyHoldType(nn::hid::NpadJoyHoldType),func,0x7100d307c8,0x71015f97f8,1
+_ZN2nn3hid18SetPalmaFrModeTypeERKNS0_21PalmaConnectionHandleERKNS0_15PalmaFrModeTypeE,"nn::hid::SetPalmaFrModeType(nn::hid::PalmaConnectionHandle const&, nn::hid::PalmaFrModeType const&)",func,0x7100d30a78,0x71015f9950,1
+_ZN2nn3hid18StartSixAxisSensorERKNS0_19SixAxisSensorHandleE,nn::hid::StartSixAxisSensor(nn::hid::SixAxisSensorHandle const&),func,0x7100d30858,0x71015f9840,4
+_ZN2nn3hid19ReadPalmaUniqueCodeERKNS0_21PalmaConnectionHandleE,nn::hid::ReadPalmaUniqueCode(nn::hid::PalmaConnectionHandle const&),func,0x7100d30ad8,0x71015f9980,1
+_ZN2nn3hid19SuspendPalmaFeatureERKNS0_21PalmaConnectionHandleERKNS_4util10BitFlagSetILi32ENS0_12PalmaFeatureEEE,"nn::hid::SuspendPalmaFeature(nn::hid::PalmaConnectionHandle const&, nn::util::BitFlagSet<32, nn::hid::PalmaFeature> const&)",func,0x7100d30b48,0x71015f99b8,1
+_ZN2nn3hid19WritePalmaWaveEntryERKNS0_21PalmaConnectionHandleERKNS0_12PalmaWaveSetERKtPKvmm,"nn::hid::WritePalmaWaveEntry(nn::hid::PalmaConnectionHandle const&, nn::hid::PalmaWaveSet const&, unsigned short const&, void const*, unsigned long, unsigned long)",func,0x7100d30b18,0x71015f99a0,1
+_ZN2nn3hid20GetTouchScreenStatesILm16EEEiPNS0_16TouchScreenStateIXT_EEEi,"int nn::hid::GetTouchScreenStates<16ul>(nn::hid::TouchScreenState<16ul>*, int)",func,0x7100d32528,0x71015fa6a8,1
+_ZN2nn3hid21GetPalmaOperationInfoEPNS0_18PalmaOperationInfoERKNS0_21PalmaConnectionHandleE,"nn::hid::GetPalmaOperationInfo(nn::hid::PalmaOperationInfo*, nn::hid::PalmaConnectionHandle const&)",func,0x7100d30b78,0x71015f99d0,1
+_ZN2nn3hid21GetSixAxisSensorStateEPNS0_18SixAxisSensorStateERKNS0_19SixAxisSensorHandleE,"nn::hid::GetSixAxisSensorState(nn::hid::SixAxisSensorState*, nn::hid::SixAxisSensorHandle const&)",func,0x7100d30878,0x71015f9850,2
+_ZN2nn3hid21InitializeTouchScreenEv,nn::hid::InitializeTouchScreen(),func,0x7100d307a8,0x71015f97e8,1
+_ZN2nn3hid21IsSixAxisSensorAtRestERKNS0_19SixAxisSensorHandleE,nn::hid::IsSixAxisSensorAtRest(nn::hid::SixAxisSensorHandle const&),func,0x7100d30898,0x71015f9860,2
+_ZN2nn3hid22GetSixAxisSensorStatesEPNS0_18SixAxisSensorStateEiRKNS0_19SixAxisSensorHandleE,"nn::hid::GetSixAxisSensorStates(nn::hid::SixAxisSensorState*, int, nn::hid::SixAxisSensorHandle const&)",func,0x7100d30888,0x71015f9858,1
+_ZN2nn3hid22SetSupportedNpadIdTypeEPKjm,"nn::hid::SetSupportedNpadIdType(unsigned int const*, unsigned long)",func,0x7100d30158,0x71015f94c0,2
+_ZN2nn3hid23GetSixAxisSensorHandlesEPNS0_19SixAxisSensorHandleEiRKjNS_4util10BitFlagSetILi32ENS0_12NpadStyleTagEEE,"nn::hid::GetSixAxisSensorHandles(nn::hid::SixAxisSensorHandle*, int, unsigned int const&, nn::util::BitFlagSet<32, nn::hid::NpadStyleTag>)",func,0x7100d30848,0x71015f9838,1
+_ZN2nn3hid23VibrationNodeConnection10DisconnectEv,nn::hid::VibrationNodeConnection::Disconnect(),func,0x7100d31f78,0x71015fa3d0,1
+_ZN2nn3hid23VibrationNodeConnection7ConnectEPNS0_13VibrationNodeES3_,"nn::hid::VibrationNodeConnection::Connect(nn::hid::VibrationNode*, nn::hid::VibrationNode*)",func,0x7100d31ea8,0x71015fa368,1
+_ZN2nn3hid23VibrationNodeConnectionC1EPNS0_13VibrationNodeES3_,"nn::hid::VibrationNodeConnection::VibrationNodeConnection(nn::hid::VibrationNode*, nn::hid::VibrationNode*)",func,0x7100d31f68,0x71015fa3c8,1
+_ZN2nn3hid23VibrationNodeConnectionC1Ev,nn::hid::VibrationNodeConnection::VibrationNodeConnection(),func,0x7100d31e98,0x71015fa360,1
+_ZN2nn3hid23VibrationNodeConnectionD1Ev,nn::hid::VibrationNodeConnection::~VibrationNodeConnection(),func,0x7100d31ef8,0x71015fa390,6
+_ZN2nn3hid23WritePalmaActivityEntryERKNS0_21PalmaConnectionHandleERKtPKNS0_18PalmaActivityEntryE,"nn::hid::WritePalmaActivityEntry(nn::hid::PalmaConnectionHandle const&, unsigned short const&, nn::hid::PalmaActivityEntry const*)",func,0x7100d30af8,0x71015f9990,1
+_ZN2nn3hid24EnableAnyPalmaConnectionEv,nn::hid::EnableAnyPalmaConnection(),func,0x7100d30a48,0x71015f9938,1
+_ZN2nn3hid24GetPalmaConnectionHandleEPNS0_21PalmaConnectionHandleERKj,"nn::hid::GetPalmaConnectionHandle(nn::hid::PalmaConnectionHandle*, unsigned int const&)",func,0x7100d30b98,0x71015f99e0,1
+_ZN2nn3hid24SetSupportedNpadStyleSetENS_4util10BitFlagSetILi32ENS0_12NpadStyleTagEEE,"nn::hid::SetSupportedNpadStyleSet(nn::util::BitFlagSet<32, nn::hid::NpadStyleTag>)",func,0x7100d30168,0x71015f94c8,2
+_ZN2nn3hid25DisableAnyPalmaConnectionEv,nn::hid::DisableAnyPalmaConnection(),func,0x7100d30a58,0x71015f9940,1
+_ZN2nn3hid25EnableSixAxisSensorFusionERKNS0_19SixAxisSensorHandleEb,"nn::hid::EnableSixAxisSensorFusion(nn::hid::SixAxisSensorHandle const&, bool)",func,0x7100d308b8,0x71015f9870,2
+_ZN2nn3hid25GetGyroscopeZeroDriftModeERKNS0_19SixAxisSensorHandleE,nn::hid::GetGyroscopeZeroDriftMode(nn::hid::SixAxisSensorHandle const&),func,0x7100d308f8,0x71015f9890,2
+_ZN2nn3hid25GetVibrationDeviceHandlesEPNS0_21VibrationDeviceHandleEiRKjNS_4util10BitFlagSetILi32ENS0_12NpadStyleTagEEE,"nn::hid::GetVibrationDeviceHandles(nn::hid::VibrationDeviceHandle*, int, unsigned int const&, nn::util::BitFlagSet<32, nn::hid::NpadStyleTag>)",func,0x7100d31f28,0x71015fa3a8,1
+_ZN2nn3hid25InitializeVibrationDeviceERKNS0_21VibrationDeviceHandleE,nn::hid::InitializeVibrationDevice(nn::hid::VibrationDeviceHandle const&),func,0x7100d31f38,0x71015fa3b0,1
+_ZN2nn3hid25SetGyroscopeZeroDriftModeERKNS0_19SixAxisSensorHandleERKNS0_22GyroscopeZeroDriftModeE,"nn::hid::SetGyroscopeZeroDriftMode(nn::hid::SixAxisSensorHandle const&, nn::hid::GyroscopeZeroDriftMode const&)",func,0x7100d308e8,0x71015f9888,2
+_ZN2nn3hid25SetPalmaUniqueCodeInvalidERKNS0_21PalmaConnectionHandleE,nn::hid::SetPalmaUniqueCodeInvalid(nn::hid::PalmaConnectionHandle const&),func,0x7100d30ae8,0x71015f9988,1
+_ZN2nn3hid27BindNpadStyleSetUpdateEventERKjPNS_2os15SystemEventTypeENS3_14EventClearModeE,"nn::hid::BindNpadStyleSetUpdateEvent(unsigned int const&, nn::os::SystemEventType*, nn::os::EventClearMode)",func,0x7100d307f8,0x71015f9810,3
+_ZN2nn3hid27ReadPalmaApplicationSectionERKNS0_21PalmaConnectionHandleEim,"nn::hid::ReadPalmaApplicationSection(nn::hid::PalmaConnectionHandle const&, int, unsigned long)",func,0x7100d30ab8,0x71015f9970,1
+_ZN2nn3hid28IsSixAxisSensorFusionEnabledERKNS0_19SixAxisSensorHandleE,nn::hid::IsSixAxisSensorFusionEnabled(nn::hid::SixAxisSensorHandle const&),func,0x7100d308a8,0x71015f9868,2
+_ZN2nn3hid28WritePalmaApplicationSectionERKNS0_21PalmaConnectionHandleEimRKNS0_35PalmaApplicationSectionAccessBufferE,"nn::hid::WritePalmaApplicationSection(nn::hid::PalmaConnectionHandle const&, int, unsigned long, nn::hid::PalmaApplicationSectionAccessBuffer const&)",func,0x7100d30ac8,0x71015f9978,1
+_ZN2nn3hid28WritePalmaRgbLedPatternEntryERKNS0_21PalmaConnectionHandleERKtPKvm,"nn::hid::WritePalmaRgbLedPatternEntry(nn::hid::PalmaConnectionHandle const&, unsigned short const&, void const*, unsigned long)",func,0x7100d30b08,0x71015f9998,1
+_ZN2nn3hid29SetNpadHandheldActivationModeENS0_26NpadHandheldActivationModeE,nn::hid::SetNpadHandheldActivationMode(nn::hid::NpadHandheldActivationMode),func,0x7100d307d8,0x71015f9800,1
+_ZN2nn3hid30SetNpadJoyAssignmentModeSingleERKj,nn::hid::SetNpadJoyAssignmentModeSingle(unsigned int const&),func,0x7100d307e8,0x71015f9808,3
+_ZN2nn3hid30SetNpadJoyAssignmentModeSingleERKjNS0_17NpadJoyDeviceTypeE,"nn::hid::SetNpadJoyAssignmentModeSingle(unsigned int const&, nn::hid::NpadJoyDeviceType)",func,0x7100d30828,0x71015f9828,1
+_ZN2nn3hid31BindPalmaOperationCompleteEventERKNS0_21PalmaConnectionHandleEPNS_2os15SystemEventTypeENS4_14EventClearModeE,"nn::hid::BindPalmaOperationCompleteEvent(nn::hid::PalmaConnectionHandle const&, nn::os::SystemEventType*, nn::os::EventClearMode)",func,0x7100d30bb8,0x71015f99f0,1
+_ZN2nn3hid32GetSixAxisSensorFusionParametersEPfS1_RKNS0_19SixAxisSensorHandleE,"nn::hid::GetSixAxisSensorFusionParameters(float*, float*, nn::hid::SixAxisSensorHandle const&)",func,0x7100d308d8,0x71015f9880,1
+_ZN2nn3hid32SetSixAxisSensorFusionParametersERKNS0_19SixAxisSensorHandleEff,"nn::hid::SetSixAxisSensorFusionParameters(nn::hid::SixAxisSensorHandle const&, float, float)",func,0x7100d308c8,0x71015f9878,2
+_ZN2nn3hid37GetPalmaDataBaseIdentificationVersionERKNS0_21PalmaConnectionHandleE,nn::hid::GetPalmaDataBaseIdentificationVersion(nn::hid::PalmaConnectionHandle const&),func,0x7100d30b28,0x71015f99a8,1
+_ZN2nn3hid37SetPalmaDataBaseIdentificationVersionERKNS0_21PalmaConnectionHandleEi,"nn::hid::SetPalmaDataBaseIdentificationVersion(nn::hid::PalmaConnectionHandle const&, int)",func,0x7100d30b38,0x71015f99b0,1
+_ZN2nn3hid6NpadId3No1E,nn::hid::NpadId::No1,data,,0x71015fcd88,0
+_ZN2nn3hid6NpadId3No2E,nn::hid::NpadId::No2,data,,0x71015fcd98,0
+_ZN2nn3hid6NpadId8HandheldE,nn::hid::NpadId::Handheld,data,,0x71015fcee8,0
+_ZN2nn3hid9PairPalmaERKNS0_21PalmaConnectionHandleE,nn::hid::PairPalma(nn::hid::PalmaConnectionHandle const&),func,0x7100d30b88,0x71015f99d8,1
+_ZN2nn3ldn10DisconnectEv,nn::ldn::Disconnect(),func,0x7100d31cc8,0x71015fa278,1
+_ZN2nn3ldn10InitializeEv,nn::ldn::Initialize(),func,0x7100d31d18,0x71015fa2a0,1
+_ZN2nn3ldn11OpenStationEv,nn::ldn::OpenStation(),func,0x7100d31bf8,0x71015fa210,1
+_ZN2nn3ldn11ScanPrivateEPNS0_11NetworkInfoEPiiRKNS0_10ScanFilterEi,"nn::ldn::ScanPrivate(nn::ldn::NetworkInfo*, int*, int, nn::ldn::ScanFilter const&, int)",func,0x7100d31ce8,0x71015fa288,1
+_ZN2nn3ldn12CloseStationEv,nn::ldn::CloseStation(),func,0x7100d31c08,0x71015fa218,1
+_ZN2nn3ldn13CreateNetworkERKNS0_13NetworkConfigERKNS0_14SecurityConfigERKNS0_10UserConfigE,"nn::ldn::CreateNetwork(nn::ldn::NetworkConfig const&, nn::ldn::SecurityConfig const&, nn::ldn::UserConfig const&)",func,0x7100d31c78,0x71015fa250,1
+_ZN2nn3ldn14ConnectPrivateERKNS0_13NetworkConfigERKNS0_14SecurityConfigERKNS0_17SecurityParameterERKNS0_10UserConfigEiNS0_13ConnectOptionE,"nn::ldn::ConnectPrivate(nn::ldn::NetworkConfig const&, nn::ldn::SecurityConfig const&, nn::ldn::SecurityParameter const&, nn::ldn::UserConfig const&, int, nn::ldn::ConnectOption)",func,0x7100d31cf8,0x71015fa290,2
+_ZN2nn3ldn14DestroyNetworkEv,nn::ldn::DestroyNetwork(),func,0x7100d31c88,0x71015fa258,1
+_ZN2nn3ldn14GetIpv4AddressEPNS0_11Ipv4AddressEPNS0_10SubnetMaskE,"nn::ldn::GetIpv4Address(nn::ldn::Ipv4Address*, nn::ldn::SubnetMask*)",func,0x7100d31ba8,0x71015fa1e8,3
+_ZN2nn3ldn14GetNetworkInfoEPNS0_11NetworkInfoE,nn::ldn::GetNetworkInfo(nn::ldn::NetworkInfo*),func,0x7100d31bc8,0x71015fa1f8,2
+_ZN2nn3ldn15MakeIpv4AddressEhhhh,"nn::ldn::MakeIpv4Address(unsigned char, unsigned char, unsigned char, unsigned char)",func,0x7100d2fab8,0x71015f9170,642
+_ZN2nn3ldn15OpenAccessPointEv,nn::ldn::OpenAccessPoint(),func,0x7100d31bd8,0x71015fa200,1
+_ZN2nn3ldn16CloseAccessPointEv,nn::ldn::CloseAccessPoint(),func,0x7100d31be8,0x71015fa208,1
+_ZN2nn3ldn16GetNetworkConfigEPNS0_13NetworkConfigE,nn::ldn::GetNetworkConfig(nn::ldn::NetworkConfig*),func,0x7100d31cb8,0x71015fa270,1
+_ZN2nn3ldn16SetAdvertiseDataEPKvm,"nn::ldn::SetAdvertiseData(void const*, unsigned long)",func,0x7100d31c38,0x71015fa230,1
+_ZN2nn3ldn19GetDisconnectReasonEv,nn::ldn::GetDisconnectReason(),func,0x7100d31d08,0x71015fa298,1
+_ZN2nn3ldn20CreateNetworkPrivateERKNS0_13NetworkConfigERKNS0_14SecurityConfigERKNS0_17SecurityParameterERKNS0_10UserConfigEiPKNS0_12AddressEntryE,"nn::ldn::CreateNetworkPrivate(nn::ldn::NetworkConfig const&, nn::ldn::SecurityConfig const&, nn::ldn::SecurityParameter const&, nn::ldn::UserConfig const&, int, nn::ldn::AddressEntry const*)",func,0x7100d31cd8,0x71015fa280,1
+_ZN2nn3ldn20GetSecurityParameterEPNS0_17SecurityParameterE,nn::ldn::GetSecurityParameter(nn::ldn::SecurityParameter*),func,0x7100d31c58,0x71015fa240,1
+_ZN2nn3ldn20MakeBroadcastAddressENS0_11Ipv4AddressENS0_10SubnetMaskE,"nn::ldn::MakeBroadcastAddress(nn::ldn::Ipv4Address, nn::ldn::SubnetMask)",func,0x7100d31c48,0x71015fa238,1
+_ZN2nn3ldn22AttachStateChangeEventEPNS_2os15SystemEventTypeE,nn::ldn::AttachStateChangeEvent(nn::os::SystemEventType*),func,0x7100d31bb8,0x71015fa1f0,1
+_ZN2nn3ldn22SetStationAcceptPolicyENS0_12AcceptPolicyE,nn::ldn::SetStationAcceptPolicy(nn::ldn::AcceptPolicy),func,0x7100d31c18,0x71015fa220,2
+_ZN2nn3ldn4ScanEPNS0_11NetworkInfoEPiiRKNS0_10ScanFilterEi,"nn::ldn::Scan(nn::ldn::NetworkInfo*, int*, int, nn::ldn::ScanFilter const&, int)",func,0x7100d31c98,0x71015fa260,1
+_ZN2nn3ldn6RejectENS0_11Ipv4AddressE,nn::ldn::Reject(nn::ldn::Ipv4Address),func,0x7100d31c28,0x71015fa228,1
+_ZN2nn3ldn7ConnectERKNS0_11NetworkInfoERKNS0_14SecurityConfigERKNS0_10UserConfigEiNS0_13ConnectOptionE,"nn::ldn::Connect(nn::ldn::NetworkInfo const&, nn::ldn::SecurityConfig const&, nn::ldn::UserConfig const&, int, nn::ldn::ConnectOption)",func,0x7100d31ca8,0x71015fa268,2
+_ZN2nn3ldn8FinalizeEv,nn::ldn::Finalize(),func,0x7100d31d28,0x71015fa2a8,1
+_ZN2nn3ldn8GetStateEv,nn::ldn::GetState(),func,0x7100d31b98,0x71015fa1e0,7
+_ZN2nn3mem17StandardAllocator10InitializeEPvm,"nn::mem::StandardAllocator::Initialize(void*, unsigned long)",func,0x7100d30f08,0x71015f9b98,3
+_ZN2nn3mem17StandardAllocator4FreeEPv,nn::mem::StandardAllocator::Free(void*),func,0x7100d30fb8,0x71015f9bf0,5
+_ZN2nn3mem17StandardAllocator8AllocateEm,nn::mem::StandardAllocator::Allocate(unsigned long),func,0x7100d318f8,0x71015fa090,3
+_ZN2nn3mem17StandardAllocator8AllocateEmm,"nn::mem::StandardAllocator::Allocate(unsigned long, unsigned long)",func,0x7100d30f58,0x71015f9bc0,1
+_ZN2nn3mem17StandardAllocator8FinalizeEv,nn::mem::StandardAllocator::Finalize(),func,0x7100d30f18,0x71015f9ba0,6
+_ZN2nn3mem17StandardAllocatorC1Ev,nn::mem::StandardAllocator::StandardAllocator(),func,0x7100d30ef8,0x71015f9b90,4
+_ZN2nn3mem19NumberLineAllocator10InitializeEPFPvmS2_ES2_PFvS2_S2_ES2_b,"nn::mem::NumberLineAllocator::Initialize(void* (*)(unsigned long, void*), void*, void (*)(void*, void*), void*, bool)",func,0x7100d31768,0x71015f9fc8,1
+_ZN2nn3mem19NumberLineAllocator16GetTotalFreeSizeEv,nn::mem::NumberLineAllocator::GetTotalFreeSize(),func,0x7100d317c8,0x71015f9ff8,1
+_ZN2nn3mem19NumberLineAllocator18GetAllocatableSizeEv,nn::mem::NumberLineAllocator::GetAllocatableSize(),func,0x7100d317d8,0x71015fa000,1
+_ZN2nn3mem19NumberLineAllocator4DumpEmi,"nn::mem::NumberLineAllocator::Dump(unsigned long, int)",func,0x7100d317e8,0x71015fa008,1
+_ZN2nn3mem19NumberLineAllocator4FreeEi,nn::mem::NumberLineAllocator::Free(int),func,0x7100d317b8,0x71015f9ff0,1
+_ZN2nn3mem19NumberLineAllocator8AddRangeEii,"nn::mem::NumberLineAllocator::AddRange(int, int)",func,0x7100d31778,0x71015f9fd0,1
+_ZN2nn3mem19NumberLineAllocator8AllocateEPii,"nn::mem::NumberLineAllocator::Allocate(int*, int)",func,0x7100d317a8,0x71015f9fe8,1
+_ZN2nn3mem19NumberLineAllocator8AllocateEPiii,"nn::mem::NumberLineAllocator::Allocate(int*, int, int)",func,0x7100d31798,0x71015f9fe0,1
+_ZN2nn3mem19NumberLineAllocator8FinalizeEv,nn::mem::NumberLineAllocator::Finalize(),func,0x7100d31788,0x71015f9fd8,1
+_ZN2nn3ngc15ProfanityFilter10InitializeEPvm,"nn::ngc::ProfanityFilter::Initialize(void*, unsigned long)",func,0x7100d30cf8,0x71015f9a90,1
+_ZN2nn3ngc15ProfanityFilter8FinalizeEv,nn::ngc::ProfanityFilter::Finalize(),func,0x7100d30d18,0x71015f9aa0,1
+_ZN2nn3ngc15ProfanityFilterC1Ev,nn::ngc::ProfanityFilter::ProfanityFilter(),func,0x7100d30ce8,0x71015f9a88,1
+_ZN2nn3nsd9ResolveExEPNS0_4FqdnERKS1_,"nn::nsd::ResolveEx(nn::nsd::Fqdn*, nn::nsd::Fqdn const&)",func,0x7100d312b8,0x71015f9d70,2
+_ZN2nn3ssl21GetSslResultFromValueEPNS_6ResultEPKcj,"nn::ssl::GetSslResultFromValue(nn::Result*, char const*, unsigned int)",func,0x7100d32618,0x71015fa720,1
+_ZN2nn3ssl7Context15ImportServerPkiEPmPKcjNS0_17CertificateFormatE,"nn::ssl::Context::ImportServerPki(unsigned long*, char const*, unsigned int, nn::ssl::CertificateFormat)",func,0x7100d32ab8,0x71015fa970,1
+_ZN2nn3ssl7Context6CreateENS1_10SslVersionE,nn::ssl::Context::Create(nn::ssl::Context::SslVersion),func,0x7100d325f8,0x71015fa710,2
+_ZN2nn3ssl7Context7DestroyEv,nn::ssl::Context::Destroy(),func,0x7100d32608,0x71015fa718,2
+_ZN2nn3ssl7ContextC1Ev,nn::ssl::Context::Context(),func,0x7100d325e8,0x71015fa708,1
+_ZN2nn3ssl7ContextD1Ev,nn::ssl::Context::~Context(),func,0x7100d325c8,0x71015fa6f8,4
+_ZN2nn4bcat10InitializeEv,nn::bcat::Initialize(),func,0x7100d303d8,0x71015f9600,1
+_ZN2nn4bcat17DeliveryCacheFile4OpenEPKc,nn::bcat::DeliveryCacheFile::Open(char const*),func,0x7100d30668,0x71015f9748,1
+_ZN2nn4bcat17DeliveryCacheFile4ReadEPmlPvm,"nn::bcat::DeliveryCacheFile::Read(unsigned long*, long, void*, unsigned long)",func,0x7100d30688,0x71015f9758,1
+_ZN2nn4bcat17DeliveryCacheFile5CloseEv,nn::bcat::DeliveryCacheFile::Close(),func,0x7100d30698,0x71015f9760,1
+_ZN2nn4bcat17DeliveryCacheFile7GetSizeEv,nn::bcat::DeliveryCacheFile::GetSize(),func,0x7100d30678,0x71015f9750,1
+_ZN2nn4bcat17DeliveryCacheFileC1Ev,nn::bcat::DeliveryCacheFile::DeliveryCacheFile(),func,0x7100d305f8,0x71015f9710,2
+_ZN2nn4bcat17DeliveryCacheFileD1Ev,nn::bcat::DeliveryCacheFile::~DeliveryCacheFile(),func,0x7100d30648,0x71015f9738,2
+_ZN2nn4bcat21DeliveryCacheProgress6UpdateEv,nn::bcat::DeliveryCacheProgress::Update(),func,0x7100d30418,0x71015f9620,1
+_ZN2nn4bcat21DeliveryCacheProgressC1Ev,nn::bcat::DeliveryCacheProgress::DeliveryCacheProgress(),func,0x7100d303e8,0x71015f9608,1
+_ZN2nn4bcat21DeliveryCacheProgressD1Ev,nn::bcat::DeliveryCacheProgress::~DeliveryCacheProgress(),func,0x7100d303f8,0x71015f9610,2
+_ZN2nn4bcat22DeliveryCacheDirectory4OpenEPKc,nn::bcat::DeliveryCacheDirectory::Open(char const*),func,0x7100d306a8,0x71015f9768,1
+_ZN2nn4bcat22DeliveryCacheDirectory4OpenERKNS0_13DirectoryNameE,nn::bcat::DeliveryCacheDirectory::Open(nn::bcat::DirectoryName const&),func,0x7100d30618,0x71015f9720,1
+_ZN2nn4bcat22DeliveryCacheDirectory4ReadEPiPNS0_27DeliveryCacheDirectoryEntryEi,"nn::bcat::DeliveryCacheDirectory::Read(int*, nn::bcat::DeliveryCacheDirectoryEntry*, int)",func,0x7100d30628,0x71015f9728,2
+_ZN2nn4bcat22DeliveryCacheDirectory5CloseEv,nn::bcat::DeliveryCacheDirectory::Close(),func,0x7100d30638,0x71015f9730,3
+_ZN2nn4bcat22DeliveryCacheDirectoryC1Ev,nn::bcat::DeliveryCacheDirectory::DeliveryCacheDirectory(),func,0x7100d305e8,0x71015f9708,2
+_ZN2nn4bcat22DeliveryCacheDirectoryD1Ev,nn::bcat::DeliveryCacheDirectory::~DeliveryCacheDirectory(),func,0x7100d30658,0x71015f9740,2
+_ZN2nn4bcat24RequestSyncDeliveryCacheEPNS0_21DeliveryCacheProgressE,nn::bcat::RequestSyncDeliveryCache(nn::bcat::DeliveryCacheProgress*),func,0x7100d30408,0x71015f9618,1
+_ZN2nn4bcat25MountDeliveryCacheStorageEv,nn::bcat::MountDeliveryCacheStorage(),func,0x7100d306b8,0x71015f9770,2
+_ZN2nn4bcat27UnmountDeliveryCacheStorageEv,nn::bcat::UnmountDeliveryCacheStorage(),func,0x7100d306c8,0x71015f9778,1
+_ZN2nn4bcat31EnumerateDeliveryCacheDirectoryEPiPNS0_13DirectoryNameEi,"nn::bcat::EnumerateDeliveryCacheDirectory(int*, nn::bcat::DirectoryName*, int)",func,0x7100d30608,0x71015f9718,2
+_ZN2nn4diag6detail18OnAssertionFailureENS0_13AssertionTypeEPKcS4_S4_i,"nn::diag::detail::OnAssertionFailure(nn::diag::AssertionType, char const*, char const*, char const*, int)",func,0x7100d2fb38,0x71015f91b0,13
+_ZN2nn4diag6detail7LogImplERKNS0_11LogMetaDataEPKcz,"nn::diag::detail::LogImpl(nn::diag::LogMetaData const&, char const*, ...)",func,0x7100d2fd28,0x71015f92a8,9
+_ZN2nn4diag6detail9AbortImplEPKcS3_S3_i,"nn::diag::detail::AbortImpl(char const*, char const*, char const*, int)",func,0x7100d30178,0x71015f94d0,32
+_ZN2nn4diag6detail9AbortImplEPKcS3_S3_iPKNS_6ResultES3_z,"nn::diag::detail::AbortImpl(char const*, char const*, char const*, int, nn::Result const*, char const*, ...)",func,0x7100d2fd88,0x71015f92d8,2
+_ZN2nn4lmem15CreateFrameHeapEPvmi,"nn::lmem::CreateFrameHeap(void*, unsigned long, int)",func,0x7100d316d8,0x71015f9f80,1
+_ZN2nn4lmem16DestroyFrameHeapEPNS0_6detail8HeapHeadE,nn::lmem::DestroyFrameHeap(nn::lmem::detail::HeapHead*),func,0x7100d316f8,0x71015f9f90,1
+_ZN2nn4lmem21AllocateFromFrameHeapEPNS0_6detail8HeapHeadEmi,"nn::lmem::AllocateFromFrameHeap(nn::lmem::detail::HeapHead*, unsigned long, int)",func,0x7100d316e8,0x71015f9f88,9
+_ZN2nn4nifm10InitializeEv,nn::nifm::Initialize(),func,0x7100d326f8,0x71015fa790,2
+_ZN2nn4nifm18IsNetworkAvailableEv,nn::nifm::IsNetworkAvailable(),func,0x7100d32738,0x71015fa7b0,2
+_ZN2nn4nifm19SetLocalNetworkModeEb,nn::nifm::SetLocalNetworkMode(bool),func,0x7100d32af8,0x71015fa990,2
+_ZN2nn4nifm20CancelNetworkRequestEv,nn::nifm::CancelNetworkRequest(),func,0x7100d32758,0x71015fa7c0,2
+_ZN2nn4nifm20SubmitNetworkRequestEv,nn::nifm::SubmitNetworkRequest(),func,0x7100d32708,0x71015fa798,2
+_ZN2nn4nifm22GetCurrentIpConfigInfoEP7in_addrS2_S2_S2_S2_,"nn::nifm::GetCurrentIpConfigInfo(in_addr*, in_addr*, in_addr*, in_addr*, in_addr*)",func,0x7100d32b18,0x71015fa9a0,1
+_ZN2nn4nifm22GetCurrentProxySettingEPNS0_12ProxySettingE,nn::nifm::GetCurrentProxySetting(nn::nifm::ProxySetting*),func,0x7100d312c8,0x71015f9d78,1
+_ZN2nn4nifm22IsNetworkRequestOnHoldEv,nn::nifm::IsNetworkRequestOnHold(),func,0x7100d32718,0x71015fa7a0,3
+_ZN2nn4nifm26GetCurrentPrimaryIpAddressEP7in_addr,nn::nifm::GetCurrentPrimaryIpAddress(in_addr*),func,0x7100d32a98,0x71015fa960,1
+_ZN2nn4nifm26HandleNetworkRequestResultEv,nn::nifm::HandleNetworkRequestResult(),func,0x7100d32728,0x71015fa7a8,2
+_ZN2nn4time10InitializeEv,nn::time::Initialize(),func,0x7100d2fbb8,0x71015f91f0,7
+_ZN2nn4time11ToPosixTimeEPiPNS0_9PosixTimeEiRKNS0_12CalendarTimeERKNS0_12TimeZoneRuleE,"nn::time::ToPosixTime(int*, nn::time::PosixTime*, int, nn::time::CalendarTime const&, nn::time::TimeZoneRule const&)",func,0x7100d31de8,0x71015fa308,1
+_ZN2nn4time13ClockSnapshot29CreateWithStandardSystemClockEPS1_,nn::time::ClockSnapshot::CreateWithStandardSystemClock(nn::time::ClockSnapshot*),func,0x7100d31d78,0x71015fa2d0,1
+_ZN2nn4time13ClockSnapshotC1Ev,nn::time::ClockSnapshot::ClockSnapshot(),func,0x7100d30c78,0x71015f9a50,2
+_ZN2nn4time13IsInitializedEv,nn::time::IsInitialized(),func,0x7100d30928,0x71015f98a8,4
+_ZN2nn4time14GetSpanBetweenEPlRKNS0_20SteadyClockTimePointES4_,"nn::time::GetSpanBetween(long*, nn::time::SteadyClockTimePoint const&, nn::time::SteadyClockTimePoint const&)",func,0x7100d31d98,0x71015fa2e0,1
+_ZN2nn4time14ToCalendarTimeEPNS0_12CalendarTimeEPNS0_22CalendarAdditionalInfoERKNS0_9PosixTimeE,"nn::time::ToCalendarTime(nn::time::CalendarTime*, nn::time::CalendarAdditionalInfo*, nn::time::PosixTime const&)",func,0x7100d31dc8,0x71015fa2f8,2
+_ZN2nn4time16LoadTimeZoneRuleEPNS0_12TimeZoneRuleERKNS0_12LocationNameE,"nn::time::LoadTimeZoneRule(nn::time::TimeZoneRule*, nn::time::LocationName const&)",func,0x7100d31dd8,0x71015fa300,1
+_ZN2nn4time18ToPosixTimeFromUtcERKNS0_12CalendarTimeE,nn::time::ToPosixTimeFromUtc(nn::time::CalendarTime const&),func,0x7100d326a8,0x71015fa768,2
+_ZN2nn4time19StandardSteadyClock19GetCurrentTimePointEPNS0_20SteadyClockTimePointE,nn::time::StandardSteadyClock::GetCurrentTimePoint(nn::time::SteadyClockTimePoint*),func,0x7100d303b8,0x71015f95f0,4
+_ZN2nn4time19ToCalendarTimeInUtcERKNS0_9PosixTimeE,nn::time::ToCalendarTimeInUtc(nn::time::PosixTime const&),func,0x7100d325b8,0x71015fa6f0,1
+_ZN2nn4time23StandardUserSystemClock14GetCurrentTimeEPNS0_9PosixTimeE,nn::time::StandardUserSystemClock::GetCurrentTime(nn::time::PosixTime*),func,0x7100d318d8,0x71015fa080,4
+_ZN2nn4time26StandardNetworkSystemClock14GetCurrentTimeEPNS0_9PosixTimeE,nn::time::StandardNetworkSystemClock::GetCurrentTime(nn::time::PosixTime*),func,0x7100d32598,0x71015fa6e0,1
+_ZN2nn4time48CalculateStandardUserSystemClockDifferenceByUserERKNS0_13ClockSnapshotES3_,"nn::time::CalculateStandardUserSystemClockDifferenceByUser(nn::time::ClockSnapshot const&, nn::time::ClockSnapshot const&)",func,0x7100d31da8,0x71015fa2e8,1
+_ZN2nn4time8FinalizeEv,nn::time::Finalize(),func,0x7100d2fbf8,0x71015f9210,6
+_ZN2nn4util11ReferSymbolEPKv,nn::util::ReferSymbol(void const*),func,0x7100d30dd8,0x71015f9b00,24
+_ZN2nn4util14DecompressZlibEPvmPKvmS1_m,"nn::util::DecompressZlib(void*, unsigned long, void const*, unsigned long, void*, unsigned long)",func,0x7100d30028,0x71015f9428,1
+_ZN2nn4util15RelocationTable8RelocateEv,nn::util::RelocationTable::Relocate(),func,0x7100d31748,0x71015f9fb8,3
+_ZN2nn4util16BinaryFileHeader13GetFirstBlockEv,nn::util::BinaryFileHeader::GetFirstBlock(),func,0x7100d30088,0x71015f9458,33
+_ZN2nn4util16BinaryFileHeader18GetRelocationTableEv,nn::util::BinaryFileHeader::GetRelocationTable(),func,0x7100d31738,0x71015f9fb0,3
+_ZN2nn4util27ConvertCharacterUtf8ToUtf32EPjPKc,"nn::util::ConvertCharacterUtf8ToUtf32(unsigned int*, char const*)",func,0x7100d31198,0x71015f9ce0,4
+_ZN2nn4util30ConvertStringUtf16NativeToUtf8EPciPKt,"nn::util::ConvertStringUtf16NativeToUtf8(char*, int, unsigned short const*)",func,0x7100d30da8,0x71015f9ae8,3
+_ZN2nn4util30ConvertStringUtf8ToUtf16NativeEPtiPKci,"nn::util::ConvertStringUtf8ToUtf16Native(unsigned short*, int, char const*, int)",func,0x7100d32588,0x71015fa6d8,1
+_ZN2nn4util30PickOutCharacterFromUtf8StringEPcPPKc,"nn::util::PickOutCharacterFromUtf8String(char*, char const**)",func,0x7100d31008,0x71015f9c18,6
+_ZN2nn4util6detail14FloatDegree180E,nn::util::detail::FloatDegree180,data,,0x71015fbc18,0
+_ZN2nn4util6detail15AtanSampleTableE,nn::util::detail::AtanSampleTable,data,,0x71015fd578,0
+_ZN2nn4util6detail15CosCoefficientsE,nn::util::detail::CosCoefficients,data,,0x71015fb6b0,0
+_ZN2nn4util6detail15FloatPiDivided2E,nn::util::detail::FloatPiDivided2,data,,0x71015fb6a8,0
+_ZN2nn4util6detail15SinCoefficientsE,nn::util::detail::SinCoefficients,data,,0x71015fb6a0,0
+_ZN2nn4util6detail16AtanCoefficientsE,nn::util::detail::AtanCoefficients,data,,0x71015fd558,0
+_ZN2nn4util6detail16Float1Divided2PiE,nn::util::detail::Float1Divided2Pi,data,,0x71015fb688,0
+_ZN2nn4util6detail17SinCosSampleTableE,nn::util::detail::SinCosSampleTable,data,,0x71015fddd0,0
+_ZN2nn4util6detail19AngleIndexHalfRoundE,nn::util::detail::AngleIndexHalfRound,data,,0x71015fd570,0
+_ZN2nn4util6detail22AngleIndexQuarterRoundE,nn::util::detail::AngleIndexQuarterRound,data,,0x71015fd560,0
+_ZN2nn4util6detail22FloatQuaternionEpsilonE,nn::util::detail::FloatQuaternionEpsilon,data,,0x71015fe5e0,0
+_ZN2nn4util6detail27AngleIndexThreeQuarterRoundE,nn::util::detail::AngleIndexThreeQuarterRound,data,,0x71015fd568,0
+_ZN2nn4util6detail7FloatPiE,nn::util::detail::FloatPi,data,,0x71015fb690,0
+_ZN2nn4util6detail8Float2PiE,nn::util::detail::Float2Pi,data,,0x71015fb698,0
+_ZN2nn4util6detail8FloatUlpE,nn::util::detail::FloatUlp,data,,0x71015fe9c8,0
+_ZN2nn4util7FloatPiE,nn::util::FloatPi,data,,0x71015fd550,0
+_ZN2nn4util8SNPrintfEPcmPKcz,"nn::util::SNPrintf(char*, unsigned long, char const*, ...)",func,0x7100d316a8,0x71015f9f68,51
+_ZN2nn4util9TSNPrintfEPcmPKcz,"nn::util::TSNPrintf(char*, unsigned long, char const*, ...)",func,0x7100d301e8,0x71015f9508,3
+_ZN2nn4util9VSNPrintfEPcmPKcSt9__va_list,"nn::util::VSNPrintf(char*, unsigned long, char const*, std::__va_list)",func,0x7100d319c8,0x71015fa0f8,3
+_ZN2nn5audio12StopAudioOutEPNS0_8AudioOutE,nn::audio::StopAudioOut(nn::audio::AudioOut*),func,0x7100d30f88,0x71015f9bd8,2
+_ZN2nn5audio13CloseAudioOutEPNS0_8AudioOutE,nn::audio::CloseAudioOut(nn::audio::AudioOut*),func,0x7100d30f98,0x71015f9be0,2
+_ZN2nn5audio13StartAudioOutEPNS0_8AudioOutE,nn::audio::StartAudioOut(nn::audio::AudioOut*),func,0x7100d30fe8,0x71015f9c08,2
+_ZN2nn5audio16GetAudioOutStateEPKNS0_8AudioOutE,nn::audio::GetAudioOutState(nn::audio::AudioOut const*),func,0x7100d30f78,0x71015f9bd0,1
+_ZN2nn5audio17GetSampleByteSizeENS0_12SampleFormatE,nn::audio::GetSampleByteSize(nn::audio::SampleFormat),func,0x7100d32238,0x71015fa530,6
+_ZN2nn5audio19InitializeResamplerEPNS0_13ResamplerTypeEPvmiii,"nn::audio::InitializeResampler(nn::audio::ResamplerType*, void*, unsigned long, int, int, int)",func,0x7100d32268,0x71015fa548,1
+_ZN2nn5audio19ListAudioDeviceNameEPNS0_15AudioDeviceNameEi,"nn::audio::ListAudioDeviceName(nn::audio::AudioDeviceName*, int)",func,0x7100d30188,0x71015f94d8,2
+_ZN2nn5audio19OpenDefaultAudioOutEPNS0_8AudioOutEPNS_2os11SystemEventERKNS0_17AudioOutParameterE,"nn::audio::OpenDefaultAudioOut(nn::audio::AudioOut*, nn::os::SystemEvent*, nn::audio::AudioOutParameter const&)",func,0x7100d30f38,0x71015f9bb0,1
+_ZN2nn5audio19OpenDefaultAudioOutEPNS0_8AudioOutERKNS0_17AudioOutParameterE,"nn::audio::OpenDefaultAudioOut(nn::audio::AudioOut*, nn::audio::AudioOutParameter const&)",func,0x7100d32218,0x71015fa520,1
+_ZN2nn5audio20AppendAudioOutBufferEPNS0_8AudioOutEPNS0_14AudioOutBufferE,"nn::audio::AppendAudioOutBuffer(nn::audio::AudioOut*, nn::audio::AudioOutBuffer*)",func,0x7100d30fc8,0x71015f9bf8,7
+_ZN2nn5audio21GetAudioOutSampleRateEPKNS0_8AudioOutE,nn::audio::GetAudioOutSampleRate(nn::audio::AudioOut const*),func,0x7100d32248,0x71015fa538,1
+_ZN2nn5audio21SetAudioOutBufferInfoEPNS0_14AudioOutBufferEPvmm,"nn::audio::SetAudioOutBufferInfo(nn::audio::AudioOutBuffer*, void*, unsigned long, unsigned long)",func,0x7100d30f68,0x71015f9bc8,6
+_ZN2nn5audio22ProcessResamplerBufferEPNS0_13ResamplerTypeEPiPsmPKsi,"nn::audio::ProcessResamplerBuffer(nn::audio::ResamplerType*, int*, short*, unsigned long, short const*, int)",func,0x7100d32288,0x71015fa558,5
+_ZN2nn5audio23GetAudioOutChannelCountEPKNS0_8AudioOutE,nn::audio::GetAudioOutChannelCount(nn::audio::AudioOut const*),func,0x7100d30f48,0x71015f9bb8,2
+_ZN2nn5audio23GetAudioOutSampleFormatEPKNS0_8AudioOutE,nn::audio::GetAudioOutSampleFormat(nn::audio::AudioOut const*),func,0x7100d32228,0x71015fa528,1
+_ZN2nn5audio25GetAudioOutBufferDataSizeEPKNS0_14AudioOutBufferE,nn::audio::GetAudioOutBufferDataSize(nn::audio::AudioOutBuffer const*),func,0x7100d32298,0x71015fa560,1
+_ZN2nn5audio25GetReleasedAudioOutBufferEPNS0_8AudioOutE,nn::audio::GetReleasedAudioOutBuffer(nn::audio::AudioOut*),func,0x7100d30fd8,0x71015f9c00,3
+_ZN2nn5audio25GetResampledOutBufferSizeEPKNS0_13ResamplerTypeEm,"nn::audio::GetResampledOutBufferSize(nn::audio::ResamplerType const*, unsigned long)",func,0x7100d32278,0x71015fa550,3
+_ZN2nn5audio26SetAudioDeviceOutputVolumeEPKNS0_15AudioDeviceNameEf,"nn::audio::SetAudioDeviceOutputVolume(nn::audio::AudioDeviceName const*, float)",func,0x7100d30198,0x71015f94e0,2
+_ZN2nn5audio27InitializeAudioOutParameterEPNS0_17AudioOutParameterE,nn::audio::InitializeAudioOutParameter(nn::audio::AudioOutParameter*),func,0x7100d30f28,0x71015f9ba8,2
+_ZN2nn5audio28GetAudioOutBufferDataPointerEPKNS0_14AudioOutBufferE,nn::audio::GetAudioOutBufferDataPointer(nn::audio::AudioOutBuffer const*),func,0x7100d30fa8,0x71015f9be8,4
+_ZN2nn5audio33GetRequiredBufferSizeForResamplerEi,nn::audio::GetRequiredBufferSizeForResampler(int),func,0x7100d32258,0x71015fa540,1
+_ZN2nn5codec19HardwareOpusDecoderC1Ei,nn::codec::HardwareOpusDecoder::HardwareOpusDecoder(int),func,0x7100d30e78,0x71015f9b50,2
+_ZN2nn5prepo10PlayReport3AddEPKcS3_,"nn::prepo::PlayReport::Add(char const*, char const*)",func,0x7100d309e8,0x71015f9908,3
+_ZN2nn5prepo10PlayReport3AddEPKcl,"nn::prepo::PlayReport::Add(char const*, long)",func,0x7100d309d8,0x71015f9900,31
+_ZN2nn5prepo10PlayReport4SaveERKNS_7account3UidE,nn::prepo::PlayReport::Save(nn::account::Uid const&),func,0x7100d30a08,0x71015f9918,5
+_ZN2nn5prepo10PlayReport4SaveEv,nn::prepo::PlayReport::Save(),func,0x7100d30a28,0x71015f9928,5
+_ZN2nn5prepo10PlayReport5ClearEv,nn::prepo::PlayReport::Clear(),func,0x7100d30a18,0x71015f9920,5
+_ZN2nn5prepo10PlayReport9SetBufferEPvm,"nn::prepo::PlayReport::SetBuffer(void*, unsigned long)",func,0x7100d309c8,0x71015f98f8,5
+_ZN2nn5prepo10PlayReportC1EPKc,nn::prepo::PlayReport::PlayReport(char const*),func,0x7100d309b8,0x71015f98f0,5
+_ZN2nn5prepo28RequestImmediateTransmissionEv,nn::prepo::RequestImmediateTransmission(),func,0x7100d309a8,0x71015f98e8,1
+_ZN2nn5swkbd10MakePresetEPNS0_14KeyboardConfigENS0_6PresetE,"nn::swkbd::MakePreset(nn::swkbd::KeyboardConfig*, nn::swkbd::Preset)",func,0x7100d30708,0x71015f9798,1
+_ZN2nn5swkbd12ShowKeyboardEPNS0_6StringERKNS0_15ShowKeyboardArgE,"nn::swkbd::ShowKeyboard(nn::swkbd::String*, nn::swkbd::ShowKeyboardArg const&)",func,0x7100d30788,0x71015f97d8,1
+_ZN2nn5swkbd13SetHeaderTextEPNS0_14KeyboardConfigEPKDs,"nn::swkbd::SetHeaderText(nn::swkbd::KeyboardConfig*, char16_t const*)",func,0x7100d30758,0x71015f97c0,1
+_ZN2nn5swkbd14SetInitialTextEPNS0_15ShowKeyboardArgEPKDs,"nn::swkbd::SetInitialText(nn::swkbd::ShowKeyboardArg*, char16_t const*)",func,0x7100d30778,0x71015f97d0,1
+_ZN2nn5swkbd15SetUserWordListEPNS0_15ShowKeyboardArgEPKNS0_8UserWordEi,"nn::swkbd::SetUserWordList(nn::swkbd::ShowKeyboardArg*, nn::swkbd::UserWord const*, int)",func,0x7100d30738,0x71015f97b0,1
+_ZN2nn5swkbd20SetTextCheckCallbackEPNS0_15ShowKeyboardArgEPFNS0_15TextCheckResultEPvPmPNS0_6StringEE,"nn::swkbd::SetTextCheckCallback(nn::swkbd::ShowKeyboardArg*, nn::swkbd::TextCheckResult (*)(void*, unsigned long*, nn::swkbd::String*))",func,0x7100d30768,0x71015f97c8,1
+_ZN2nn5swkbd25GetRequiredWorkBufferSizeEb,nn::swkbd::GetRequiredWorkBufferSize(bool),func,0x7100d30728,0x71015f97a8,1
+_ZN2nn5swkbd25GetRequiredWorkBufferSizeEi,nn::swkbd::GetRequiredWorkBufferSize(int),func,0x7100d30718,0x71015f97a0,1
+_ZN2nn5swkbd27GetRequiredStringBufferSizeEv,nn::swkbd::GetRequiredStringBufferSize(),func,0x7100d306f8,0x71015f9790,1
+_ZN2nn5swkbd34GetRequiredTextCheckWorkBufferSizeEv,nn::swkbd::GetRequiredTextCheckWorkBufferSize(),func,0x7100d30748,0x71015f97b8,1
+_ZN2nn6crypto15Sha256Generator20Asn1ObjectIdentifierE,nn::crypto::Sha256Generator::Asn1ObjectIdentifier,data,,0x71015fbd40,0
+_ZN2nn6crypto16GenerateSha1HashEPvmPKvm,"nn::crypto::GenerateSha1Hash(void*, unsigned long, void const*, unsigned long)",func,0x7100d31998,0x71015fa0e0,1
+_ZN2nn6crypto36GenerateCryptographicallyRandomBytesEPvm,"nn::crypto::GenerateCryptographicallyRandomBytes(void*, unsigned long)",func,0x7100d30798,0x71015f97e0,10
+_ZN2nn6crypto6detail10Sha256Impl10InitializeEv,nn::crypto::detail::Sha256Impl::Initialize(),func,0x7100d30308,0x71015f9598,3
+_ZN2nn6crypto6detail10Sha256Impl6UpdateEPKvm,"nn::crypto::detail::Sha256Impl::Update(void const*, unsigned long)",func,0x7100d30328,0x71015f95a8,3
+_ZN2nn6crypto6detail10Sha256Impl7GetHashEPvm,"nn::crypto::detail::Sha256Impl::GetHash(void*, unsigned long)",func,0x7100d30378,0x71015f95d0,3
+_ZN2nn6crypto6detail10Sha256ImplD1Ev,nn::crypto::detail::Sha256Impl::~Sha256Impl(),func,0x7100d30338,0x71015f95b0,3
+_ZN2nn6crypto6detail6BigNum13ReserveStaticEPji,"nn::crypto::detail::BigNum::ReserveStatic(unsigned int*, int)",func,0x7100d302f8,0x71015f9590,4
+_ZN2nn6crypto6detail6BigNum3SetEPKvm,"nn::crypto::detail::BigNum::Set(void const*, unsigned long)",func,0x7100d30318,0x71015f95a0,4
+_ZN2nn6crypto6detail6BigNum7CleanseEv,nn::crypto::detail::BigNum::Cleanse(),func,0x7100d30348,0x71015f95b8,2
+_ZN2nn6crypto6detail6BigNumC2Ev,nn::crypto::detail::BigNum::BigNum(),func,0x7100d302e8,0x71015f9588,4
+_ZN2nn6crypto6detail6BigNumD2Ev,nn::crypto::detail::BigNum::~BigNum(),func,0x7100d30358,0x71015f95c0,4
+_ZN2nn6crypto6detail7Md5Impl10InitializeEv,nn::crypto::detail::Md5Impl::Initialize(),func,0x7100d31958,0x71015fa0c0,13
+_ZN2nn6crypto6detail7Md5Impl6UpdateEPKvm,"nn::crypto::detail::Md5Impl::Update(void const*, unsigned long)",func,0x7100d31968,0x71015fa0c8,16
+_ZN2nn6crypto6detail7Md5Impl7GetHashEPvm,"nn::crypto::detail::Md5Impl::GetHash(void*, unsigned long)",func,0x7100d31978,0x71015fa0d0,11
+_ZN2nn6crypto6detail7Md5ImplD1Ev,nn::crypto::detail::Md5Impl::~Md5Impl(),func,0x7100d31988,0x71015fa0d8,16
+_ZN2nn6detail21UnexpectedDefaultImplEPKcS2_i,"nn::detail::UnexpectedDefaultImpl(char const*, char const*, int)",func,0x7100d316c8,0x71015f9f78,12
+_ZN2nn6fontll18ScalableFontEngine10GetAdvanceEPsS2_PiS3_jt,"nn::fontll::ScalableFontEngine::GetAdvance(short*, short*, int*, int*, unsigned int, unsigned short)",func,0x7100d31148,0x71015f9cb8,2
+_ZN2nn6fontll18ScalableFontEngine10GetKerningEPiS2_jj,"nn::fontll::ScalableFontEngine::GetKerning(int*, int*, unsigned int, unsigned int)",func,0x7100d31188,0x71015f9cd8,1
+_ZN2nn6fontll18ScalableFontEngine10InitializeEPvj,"nn::fontll::ScalableFontEngine::Initialize(void*, unsigned int)",func,0x7100d31028,0x71015f9c28,2
+_ZN2nn6fontll18ScalableFontEngine11SetAutoHintEb,nn::fontll::ScalableFontEngine::SetAutoHint(bool),func,0x7100d31088,0x71015f9c58,1
+_ZN2nn6fontll18ScalableFontEngine13ReleasesGlyphEPv,nn::fontll::ScalableFontEngine::ReleasesGlyph(void*),func,0x7100d31138,0x71015f9cb0,4
+_ZN2nn6fontll18ScalableFontEngine13SetBoldWeightEi,nn::fontll::ScalableFontEngine::SetBoldWeight(int),func,0x7100d310a8,0x71015f9c68,2
+_ZN2nn6fontll18ScalableFontEngine14GetFontMetricsEPNS0_7MetricsE,nn::fontll::ScalableFontEngine::GetFontMetrics(nn::fontll::Metrics*),func,0x7100d31068,0x71015f9c48,1
+_ZN2nn6fontll18ScalableFontEngine15AcquireGlyphmapEjt,"nn::fontll::ScalableFontEngine::AcquireGlyphmap(unsigned int, unsigned short)",func,0x7100d31128,0x71015f9ca8,2
+_ZN2nn6fontll18ScalableFontEngine15CheckGlyphExistEj,nn::fontll::ScalableFontEngine::CheckGlyphExist(unsigned int),func,0x7100d31108,0x71015f9c98,9
+_ZN2nn6fontll18ScalableFontEngine15SetOutlineWidthEt,nn::fontll::ScalableFontEngine::SetOutlineWidth(unsigned short),func,0x7100d310b8,0x71015f9c70,2
+_ZN2nn6fontll18ScalableFontEngine17AcquireOtfKerningEPKNS0_15OtfKerningTableEjjj,"nn::fontll::ScalableFontEngine::AcquireOtfKerning(nn::fontll::OtfKerningTable const*, unsigned int, unsigned int, unsigned int)",func,0x7100d31178,0x71015f9cd0,1
+_ZN2nn6fontll18ScalableFontEngine21AcquireOtfKerningLastEPKNS0_15OtfKerningTableEjj,"nn::fontll::ScalableFontEngine::AcquireOtfKerningLast(nn::fontll::OtfKerningTable const*, unsigned int, unsigned int)",func,0x7100d31168,0x71015f9cc8,1
+_ZN2nn6fontll18ScalableFontEngine22AcquireOtfKerningFirstEPKNS0_15OtfKerningTableEjj,"nn::fontll::ScalableFontEngine::AcquireOtfKerningFirst(nn::fontll::OtfKerningTable const*, unsigned int, unsigned int)",func,0x7100d31158,0x71015f9cc0,1
+_ZN2nn6fontll18ScalableFontEngine22GetPointerToWorkBufferEv,nn::fontll::ScalableFontEngine::GetPointerToWorkBuffer(),func,0x7100d310d8,0x71015f9c80,2
+_ZN2nn6fontll18ScalableFontEngine23FinalizeOtfKerningTableEPNS0_15OtfKerningTableEPFvPvS4_ES4_,"nn::fontll::ScalableFontEngine::FinalizeOtfKerningTable(nn::fontll::OtfKerningTable*, void (*)(void*, void*), void*)",func,0x7100d310e8,0x71015f9c88,1
+_ZN2nn6fontll18ScalableFontEngine25InitializeOtfKerningTableEPFPvmmS2_ES2_b,"nn::fontll::ScalableFontEngine::InitializeOtfKerningTable(void* (*)(unsigned long, unsigned long, void*), void*, bool)",func,0x7100d31078,0x71015f9c50,1
+_ZN2nn6fontll18ScalableFontEngine7SetFontEPc,nn::fontll::ScalableFontEngine::SetFont(char*),func,0x7100d31098,0x71015f9c60,2
+_ZN2nn6fontll18ScalableFontEngine8FinalizeEv,nn::fontll::ScalableFontEngine::Finalize(),func,0x7100d310f8,0x71015f9c90,2
+_ZN2nn6fontll18ScalableFontEngine8GetErrorEv,nn::fontll::ScalableFontEngine::GetError(),func,0x7100d31038,0x71015f9c30,23
+_ZN2nn6fontll18ScalableFontEngine8LoadFontEPcPKvjj,"nn::fontll::ScalableFontEngine::LoadFont(char*, void const*, unsigned int, unsigned int)",func,0x7100d31058,0x71015f9c40,2
+_ZN2nn6fontll18ScalableFontEngine8SetFlagsENS1_5FlagsE,nn::fontll::ScalableFontEngine::SetFlags(nn::fontll::ScalableFontEngine::Flags),func,0x7100d310c8,0x71015f9c78,4
+_ZN2nn6fontll18ScalableFontEngine8SetScaleEiiii,"nn::fontll::ScalableFontEngine::SetScale(int, int, int, int)",func,0x7100d31118,0x71015f9ca0,5
+_ZN2nn6fontll18ScalableFontEngineC1Ev,nn::fontll::ScalableFontEngine::ScalableFontEngine(),func,0x7100d31018,0x71015f9c20,2
+_ZN2nn6fontll24ScalableFontEngineHelper6DecodeEPKvj,"nn::fontll::ScalableFontEngineHelper::Decode(void const*, unsigned int)",func,0x7100d31048,0x71015f9c38,1
+_ZN2nn6result6detail17OnUnhandledResultENS_6ResultE,nn::result::detail::OnUnhandledResult(nn::Result),func,0x7100d30d08,0x71015f9a98,1
+_ZN2nn6socket10GetSockOptEiiiPvPj,"nn::socket::GetSockOpt(int, int, int, void*, unsigned int*)",func,0x7100d32a48,0x71015fa938,1
+_ZN2nn6socket10InitializeEPvmmi,"nn::socket::Initialize(void*, unsigned long, unsigned long, int)",func,0x7100d32748,0x71015fa7b8,1
+_ZN2nn6socket10InitializeERKNS0_6ConfigE,nn::socket::Initialize(nn::socket::Config const&),func,0x7100d32b08,0x71015fa998,1
+_ZN2nn6socket10SetSockOptEiNS0_5LevelENS0_6OptionEPKvj,"nn::socket::SetSockOpt(int, nn::socket::Level, nn::socket::Option, void const*, unsigned int)",func,0x7100d32b38,0x71015fa9b0,3
+_ZN2nn6socket10SetSockOptEiiiPKvj,"nn::socket::SetSockOpt(int, int, int, void const*, unsigned int)",func,0x7100d327e8,0x71015fa808,2
+_ZN2nn6socket11GAIStrErrorENS0_7AiErrnoE,nn::socket::GAIStrError(nn::socket::AiErrno),func,0x7100d32b88,0x71015fa9d8,1
+_ZN2nn6socket11GetAddrInfoEPKcS2_PK8addrinfoPPS3_,"nn::socket::GetAddrInfo(char const*, char const*, addrinfo const*, addrinfo**)",func,0x7100d32868,0x71015fa848,2
+_ZN2nn6socket11GetAddrInfoEPKcS2_PKNS0_8AddrInfoEPPS3_,"nn::socket::GetAddrInfo(char const*, char const*, nn::socket::AddrInfo const*, nn::socket::AddrInfo**)",func,0x7100d32b78,0x71015fa9d0,1
+_ZN2nn6socket11GetSockNameEiP8sockaddrPj,"nn::socket::GetSockName(int, sockaddr*, unsigned int*)",func,0x7100d32a18,0x71015fa920,1
+_ZN2nn6socket12FreeAddrInfoEP8addrinfo,nn::socket::FreeAddrInfo(addrinfo*),func,0x7100d32878,0x71015fa850,2
+_ZN2nn6socket12FreeAddrInfoEPNS0_8AddrInfoE,nn::socket::FreeAddrInfo(nn::socket::AddrInfo*),func,0x7100d32b98,0x71015fa9e0,1
+_ZN2nn6socket12GetLastErrnoEv,nn::socket::GetLastErrno(),func,0x7100d32848,0x71015fa838,20
+_ZN2nn6socket4BindEiPK8sockaddrj,"nn::socket::Bind(int, sockaddr const*, unsigned int)",func,0x7100d32818,0x71015fa820,2
+_ZN2nn6socket4BindEiPKNS0_8SockAddrEj,"nn::socket::Bind(int, nn::socket::SockAddr const*, unsigned int)",func,0x7100d32b48,0x71015fa9b8,1
+_ZN2nn6socket4PollEP6pollfdmi,"nn::socket::Poll(pollfd*, unsigned long, int)",func,0x7100d32a28,0x71015fa928,1
+_ZN2nn6socket4RecvEiPvmi,"nn::socket::Recv(int, void*, unsigned long, int)",func,0x7100d32858,0x71015fa840,2
+_ZN2nn6socket4SendEiPKvmi,"nn::socket::Send(int, void const*, unsigned long, int)",func,0x7100d32838,0x71015fa830,2
+_ZN2nn6socket5CloseEi,nn::socket::Close(int),func,0x7100d32788,0x71015fa7d8,10
+_ZN2nn6socket5FcntlEiiz,"nn::socket::Fcntl(int, int, ...)",func,0x7100d327d8,0x71015fa800,4
+_ZN2nn6socket6AcceptEiP8sockaddrPj,"nn::socket::Accept(int, sockaddr*, unsigned int*)",func,0x7100d32808,0x71015fa818,2
+_ZN2nn6socket6ListenEii,"nn::socket::Listen(int, int)",func,0x7100d32828,0x71015fa828,2
+_ZN2nn6socket6SelectEiP6fd_setS2_S2_P7timeval,"nn::socket::Select(int, fd_set*, fd_set*, fd_set*, timeval*)",func,0x7100d327f8,0x71015fa810,2
+_ZN2nn6socket6SendToEiPKvmNS0_7MsgFlagEPKNS0_8SockAddrEj,"nn::socket::SendTo(int, void const*, unsigned long, nn::socket::MsgFlag, nn::socket::SockAddr const*, unsigned int)",func,0x7100d32b68,0x71015fa9c8,2
+_ZN2nn6socket6SendToEiPKvmiPK8sockaddrj,"nn::socket::SendTo(int, void const*, unsigned long, int, sockaddr const*, unsigned int)",func,0x7100d32a58,0x71015fa940,1
+_ZN2nn6socket6SocketENS0_6FamilyENS0_4TypeENS0_8ProtocolE,"nn::socket::Socket(nn::socket::Family, nn::socket::Type, nn::socket::Protocol)",func,0x7100d32b28,0x71015fa9a8,1
+_ZN2nn6socket6SocketEiii,"nn::socket::Socket(int, int, int)",func,0x7100d327b8,0x71015fa7f0,3
+_ZN2nn6socket7ConnectEiPK8sockaddrj,"nn::socket::Connect(int, sockaddr const*, unsigned int)",func,0x7100d327c8,0x71015fa7f8,3
+_ZN2nn6socket8FinalizeEv,nn::socket::Finalize(),func,0x7100d32768,0x71015fa7c8,2
+_ZN2nn6socket8InetAtonEPKcP7in_addr,"nn::socket::InetAton(char const*, in_addr*)",func,0x7100d32798,0x71015fa7e0,1
+_ZN2nn6socket8InetAtonEPKcPNS0_6InAddrE,"nn::socket::InetAton(char const*, nn::socket::InAddr*)",func,0x7100d31a78,0x71015fa150,1
+_ZN2nn6socket8InetNtoaE7in_addr,nn::socket::InetNtoa(in_addr),func,0x7100d32a68,0x71015fa948,1
+_ZN2nn6socket8InetNtopEiPKvPcj,"nn::socket::InetNtop(int, void const*, char*, unsigned int)",func,0x7100d32a88,0x71015fa958,5
+_ZN2nn6socket8InetPtonEiPKcPv,"nn::socket::InetPton(int, char const*, void*)",func,0x7100d32a78,0x71015fa950,1
+_ZN2nn6socket8RecvFromEiPvmNS0_7MsgFlagEPNS0_8SockAddrEPj,"nn::socket::RecvFrom(int, void*, unsigned long, nn::socket::MsgFlag, nn::socket::SockAddr*, unsigned int*)",func,0x7100d32b58,0x71015fa9c0,1
+_ZN2nn6socket8RecvFromEiPvmiP8sockaddrPj,"nn::socket::RecvFrom(int, void*, unsigned long, int, sockaddr*, unsigned int*)",func,0x7100d32a38,0x71015fa930,1
+_ZN2nn6socket8ShutdownEii,"nn::socket::Shutdown(int, int)",func,0x7100d32778,0x71015fa7d0,8
+_ZN2nn6socket9InetHtonlEj,nn::socket::InetHtonl(unsigned int),func,0x7100d31c68,0x71015fa248,18
+_ZN2nn6socket9InetHtonsEt,nn::socket::InetHtons(unsigned short),func,0x7100d327a8,0x71015fa7e8,12
+_ZN2nn6socket9InetNtohlEj,nn::socket::InetNtohl(unsigned int),func,0x7100d329f8,0x71015fa910,7
+_ZN2nn6socket9InetNtohsEt,nn::socket::InetNtohs(unsigned short),func,0x7100d32a08,0x71015fa918,27
+_ZN2nn7account10InitializeEv,nn::account::Initialize(),func,0x7100d2fbc8,0x71015f91f8,4
+_ZN2nn7account11GetNicknameEPNS0_8NicknameERKNS0_3UidE,"nn::account::GetNickname(nn::account::Nickname*, nn::account::Uid const&)",func,0x7100d31b68,0x71015fa1c8,2
+_ZN2nn7account12AsyncContext14GetSystemEventEPNS_2os11SystemEventE,nn::account::AsyncContext::GetSystemEvent(nn::os::SystemEvent*),func,0x7100d31a38,0x71015fa130,2
+_ZN2nn7account12AsyncContext6CancelEv,nn::account::AsyncContext::Cancel(),func,0x7100d32ac8,0x71015fa978,1
+_ZN2nn7account12AsyncContext7HasDoneEPb,nn::account::AsyncContext::HasDone(bool*),func,0x7100d325a8,0x71015fa6e8,2
+_ZN2nn7account12AsyncContext9GetResultEv,nn::account::AsyncContext::GetResult(),func,0x7100d31a48,0x71015fa138,3
+_ZN2nn7account12AsyncContextC1Ev,nn::account::AsyncContext::AsyncContext(),func,0x7100d319e8,0x71015fa108,4
+_ZN2nn7account12AsyncContextD1Ev,nn::account::AsyncContext::~AsyncContext(),func,0x7100d319f8,0x71015fa110,5
+_ZN2nn7account16GetUserExistenceEPbRKNS0_3UidE,"nn::account::GetUserExistence(bool*, nn::account::Uid const&)",func,0x7100d31b58,0x71015fa1c0,2
+_ZN2nn7account16ShowUserSelectorEPNS0_3UidERKNS0_21UserSelectionSettingsE,"nn::account::ShowUserSelector(nn::account::Uid*, nn::account::UserSelectionSettings const&)",func,0x7100d305c8,0x71015f96f8,1
+_ZN2nn7account19OpenPreselectedUserEPNS0_10UserHandleE,nn::account::OpenPreselectedUser(nn::account::UserHandle*),func,0x7100d2fbd8,0x71015f9200,1
+_ZN2nn7account26GetNetworkServiceAccountIdEPNS0_23NetworkServiceAccountIdERKNS0_10UserHandleE,"nn::account::GetNetworkServiceAccountId(nn::account::NetworkServiceAccountId*, nn::account::UserHandle const&)",func,0x7100d31a68,0x71015fa148,2
+_ZN2nn7account36EnsureNetworkServiceAccountAvailableERKNS0_10UserHandleE,nn::account::EnsureNetworkServiceAccountAvailable(nn::account::UserHandle const&),func,0x7100d31a18,0x71015fa120,2
+_ZN2nn7account37LoadNetworkServiceAccountIdTokenCacheEPmPcmRKNS0_10UserHandleE,"nn::account::LoadNetworkServiceAccountIdTokenCache(unsigned long*, char*, unsigned long, nn::account::UserHandle const&)",func,0x7100d31a58,0x71015fa140,3
+_ZN2nn7account44EnsureNetworkServiceAccountIdTokenCacheAsyncEPNS0_12AsyncContextERKNS0_10UserHandleE,"nn::account::EnsureNetworkServiceAccountIdTokenCacheAsync(nn::account::AsyncContext*, nn::account::UserHandle const&)",func,0x7100d31a28,0x71015fa128,3
+_ZN2nn7account8OpenUserEPNS0_10UserHandleERKNS0_3UidE,"nn::account::OpenUser(nn::account::UserHandle*, nn::account::Uid const&)",func,0x7100d305d8,0x71015f9700,1
+_ZN2nn7account9GetUserIdEPNS0_3UidERKNS0_10UserHandleE,"nn::account::GetUserId(nn::account::Uid*, nn::account::UserHandle const&)",func,0x7100d2fbe8,0x71015f9208,1
+_ZN2nn7friends14AddPlayHistoryERKNS_7account3UidERKNS0_26PlayHistoryRegistrationKeyERKNS0_15InAppScreenNameESA_,"nn::friends::AddPlayHistory(nn::account::Uid const&, nn::friends::PlayHistoryRegistrationKey const&, nn::friends::InAppScreenName const&, nn::friends::InAppScreenName const&)",func,0x7100d31b48,0x71015fa1b8,2
+_ZN2nn7friends29GetPlayHistoryRegistrationKeyEPNS0_26PlayHistoryRegistrationKeyERKNS_7account3UidEb,"nn::friends::GetPlayHistoryRegistrationKey(nn::friends::PlayHistoryRegistrationKey*, nn::account::Uid const&, bool)",func,0x7100d31b78,0x71015fa1d0,1
+_ZN2nn8settings12LanguageCode4MakeENS0_8LanguageE,nn::settings::LanguageCode::Make(nn::settings::Language),func,0x7100d309f8,0x71015f9910,82
+_ZN2nn8settingseqERKNS0_12LanguageCodeES3_,"nn::settings::operator==(nn::settings::LanguageCode const&, nn::settings::LanguageCode const&)",func,0x7100d30d38,0x71015f9ab0,76
+_ZN2nn9bluetooth11GattServiceC1Ev,nn::bluetooth::GattService::GattService(),func,0x7100d30228,0x71015f9528,101
+_ZN2nn9bluetooth11GattServiceD1Ev,nn::bluetooth::GattService::~GattService(),func,0x7100d30238,0x71015f9530,101
+_ZN2nn9bluetooth13InitializeBleEv,nn::bluetooth::InitializeBle(),func,0x7100d30438,0x71015f9630,1
+_ZN2nn9bluetooth14GattDescriptor8SetValueEPKvm,"nn::bluetooth::GattDescriptor::SetValue(void const*, unsigned long)",func,0x7100d302a8,0x71015f9568,1
+_ZN2nn9bluetooth14GattDescriptorC1Ev,nn::bluetooth::GattDescriptor::GattDescriptor(),func,0x7100d30258,0x71015f9540,2
+_ZN2nn9bluetooth14GattDescriptorD1Ev,nn::bluetooth::GattDescriptor::~GattDescriptor(),func,0x7100d30268,0x71015f9548,3
+_ZN2nn9bluetooth15ConfigureBleMtuEjt,"nn::bluetooth::ConfigureBleMtu(unsigned int, unsigned short)",func,0x7100d30528,0x71015f96a8,1
+_ZN2nn9bluetooth15GetGattServicesEPNS0_11GattServiceEij,"nn::bluetooth::GetGattServices(nn::bluetooth::GattService*, int, unsigned int)",func,0x7100d30538,0x71015f96b0,1
+_ZN2nn9bluetooth16GetBleScanResultEPNS0_13BleScanResultEi,"nn::bluetooth::GetBleScanResult(nn::bluetooth::BleScanResult*, int)",func,0x7100d304f8,0x71015f9690,1
+_ZN2nn9bluetooth18GattCharacteristic8SetValueEPKvm,"nn::bluetooth::GattCharacteristic::SetValue(void const*, unsigned long)",func,0x7100d301f8,0x71015f9510,1
+_ZN2nn9bluetooth18GattCharacteristicC1Ev,nn::bluetooth::GattCharacteristic::GattCharacteristic(),func,0x7100d30248,0x71015f9538,3
+_ZN2nn9bluetooth18GattCharacteristicD1Ev,nn::bluetooth::GattCharacteristic::~GattCharacteristic(),func,0x7100d30218,0x71015f9520,5
+_ZN2nn9bluetooth19AcquireBleScanEventEPNS_2os15SystemEventTypeE,nn::bluetooth::AcquireBleScanEvent(nn::os::SystemEventType*),func,0x7100d30448,0x71015f9638,1
+_ZN2nn9bluetooth19ConnectToGattServerERKNS0_7AddressE,nn::bluetooth::ConnectToGattServer(nn::bluetooth::Address const&),func,0x7100d301c8,0x71015f94f8,3
+_ZN2nn9bluetooth19GetBleScanParameterEPNS0_17GattAttributeUuidEi,"nn::bluetooth::GetBleScanParameter(nn::bluetooth::GattAttributeUuid*, int)",func,0x7100d30568,0x71015f96c8,1
+_ZN2nn9bluetooth19WriteGattDescriptorERKNS0_14GattDescriptorE,nn::bluetooth::WriteGattDescriptor(nn::bluetooth::GattDescriptor const&),func,0x7100d302b8,0x71015f9570,1
+_ZN2nn9bluetooth22GetGattOperationResultEPNS0_26BleClientGattOperationInfoE,nn::bluetooth::GetGattOperationResult(nn::bluetooth::BleClientGattOperationInfo*),func,0x7100d30508,0x71015f9698,1
+_ZN2nn9bluetooth22ReadGattCharacteristicERKNS0_18GattCharacteristicE,nn::bluetooth::ReadGattCharacteristic(nn::bluetooth::GattCharacteristic const&),func,0x7100d301b8,0x71015f94f0,7
+_ZN2nn9bluetooth22StopBleScanSmartDeviceEv,nn::bluetooth::StopBleScanSmartDevice(),func,0x7100d304b8,0x71015f9670,3
+_ZN2nn9bluetooth23StartBleScanSmartDeviceERKNS0_17GattAttributeUuidE,nn::bluetooth::StartBleScanSmartDevice(nn::bluetooth::GattAttributeUuid const&),func,0x7100d30578,0x71015f96d0,1
+_ZN2nn9bluetooth23WriteGattCharacteristicERKNS0_18GattCharacteristicE,nn::bluetooth::WriteGattCharacteristic(nn::bluetooth::GattCharacteristic const&),func,0x7100d30208,0x71015f9518,1
+_ZN2nn9bluetooth24AcquireBleMtuConfigEventEPNS_2os15SystemEventTypeE,nn::bluetooth::AcquireBleMtuConfigEvent(nn::os::SystemEventType*),func,0x7100d30478,0x71015f9650,1
+_ZN2nn9bluetooth24DisconnectFromGattServerEj,nn::bluetooth::DisconnectFromGattServer(unsigned int),func,0x7100d301a8,0x71015f94e8,4
+_ZN2nn9bluetooth24GetBleConnectionInfoListEPNS0_17BleConnectionInfoEi,"nn::bluetooth::GetBleConnectionInfoList(nn::bluetooth::BleConnectionInfo*, int)",func,0x7100d30518,0x71015f96a0,1
+_ZN2nn9bluetooth28AcquireBleGattOperationEventEPNS_2os15SystemEventTypeE,nn::bluetooth::AcquireBleGattOperationEvent(nn::os::SystemEventType*),func,0x7100d30488,0x71015f9658,1
+_ZN2nn9bluetooth31AcquireBleServiceDiscoveryEventEPNS_2os15SystemEventTypeE,nn::bluetooth::AcquireBleServiceDiscoveryEvent(nn::os::SystemEventType*),func,0x7100d30468,0x71015f9648,1
+_ZN2nn9bluetooth33RegisterGattOperationNotificationERKNS0_17GattAttributeUuidE,nn::bluetooth::RegisterGattOperationNotification(nn::bluetooth::GattAttributeUuid const&),func,0x7100d304d8,0x71015f9680,2
+_ZN2nn9bluetooth35UnregisterGattOperationNotificationERKNS0_17GattAttributeUuidE,nn::bluetooth::UnregisterGattOperationNotification(nn::bluetooth::GattAttributeUuid const&),func,0x7100d304a8,0x71015f9668,1
+_ZN2nn9bluetooth36EnableGattCharacteristicNotificationERKNS0_18GattCharacteristicEb,"nn::bluetooth::EnableGattCharacteristicNotification(nn::bluetooth::GattCharacteristic const&, bool)",func,0x7100d30298,0x71015f9560,1
+_ZN2nn9bluetooth37AcquireBleConnectionStateChangedEventEPNS_2os15SystemEventTypeE,nn::bluetooth::AcquireBleConnectionStateChangedEvent(nn::os::SystemEventType*),func,0x7100d30458,0x71015f9640,1
+_ZN2nv16FinalizeGraphicsEv,nv::FinalizeGraphics(),func,0x7100d30038,0x71015f9430,1
+_ZN2nv18InitializeGraphicsEPvm,"nv::InitializeGraphics(void*, unsigned long)",func,0x7100d30068,0x71015f9448,1
+_ZN2nv20SetGraphicsAllocatorEPFPvmmS0_EPFvS0_S0_EPFS0_S0_mS0_ES0_,"nv::SetGraphicsAllocator(void* (*)(unsigned long, unsigned long, void*), void (*)(void*, void*), void* (*)(void*, unsigned long, void*), void*)",func,0x7100d30078,0x71015f9450,1
+_ZN5movie11SetCoreMaskEm,movie::SetCoreMask(unsigned long),func,0x7100d320e8,0x71015fa488,3
+_ZN5movie12SetAllocatorEPFPvmmS0_EPFvS0_S0_EPFS0_S0_mS0_ES0_,"movie::SetAllocator(void* (*)(unsigned long, unsigned long, void*), void (*)(void*, void*), void* (*)(void*, unsigned long, void*), void*)",func,0x7100d32018,0x71015fa420,1
+_ZN5movie17GetThreadPriorityEv,movie::GetThreadPriority(),func,0x7100d320a8,0x71015fa468,2
+_ZN5movie6Buffer12SetInt32DataEi,movie::Buffer::SetInt32Data(int),func,0x7100d32208,0x71015fa518,1
+_ZN5movie6Buffer12SetInt64DataEl,movie::Buffer::SetInt64Data(long),func,0x7100d321e8,0x71015fa508,5
+_ZN5movie6Buffer13SetUint32DataEj,movie::Buffer::SetUint32Data(unsigned int),func,0x7100d321f8,0x71015fa510,2
+_ZN5movie6Buffer18SetDataAndCapacityEPvm,"movie::Buffer::SetDataAndCapacity(void*, unsigned long)",func,0x7100d32148,0x71015fa4b8,1
+_ZN5movie6Buffer8SetRangeEii,"movie::Buffer::SetRange(int, int)",func,0x7100d32158,0x71015fa4c0,7
+_ZN5movie6BufferC1EPvm,"movie::Buffer::Buffer(void*, unsigned long)",func,0x7100d32188,0x71015fa4d8,2
+_ZN5movie6BufferC1ERKS0_,movie::Buffer::Buffer(movie::Buffer const&),func,0x7100d32168,0x71015fa4c8,9
+_ZN5movie6BufferC1Em,movie::Buffer::Buffer(unsigned long),func,0x7100d32178,0x71015fa4d0,1
+_ZN5movie6BufferC1Ev,movie::Buffer::Buffer(),func,0x7100d32108,0x71015fa498,6
+_ZN5movie6BufferD1Ev,movie::Buffer::~Buffer(),func,0x7100d32138,0x71015fa4b0,21
+_ZN5movie6BufferaSERKS0_,movie::Buffer::operator=(movie::Buffer const&),func,0x7100d321d8,0x71015fa500,2
+_ZN5movie7DecoderC1ENS_11DecoderTypeENS_19DecoderOutputFormatENS_11DecoderModeEi,"movie::Decoder::Decoder(movie::DecoderType, movie::DecoderOutputFormat, movie::DecoderMode, int)",func,0x7100d320b8,0x71015fa470,2
+_ZN5movie9ExtractorC1ENS_13ContainerTypeE,movie::Extractor::Extractor(movie::ContainerType),func,0x7100d32048,0x71015fa438,1
+_ZN5movie9MediaData5ClearEv,movie::MediaData::Clear(),func,0x7100d32098,0x71015fa460,8
+_ZN5movie9MediaDataC1Ev,movie::MediaData::MediaData(),func,0x7100d32028,0x71015fa428,9
+_ZN5movie9MediaDataD1Ev,movie::MediaData::~MediaData(),func,0x7100d32038,0x71015fa430,10
+_ZNK2nn3err9ErrorCode7IsValidEv,nn::err::ErrorCode::IsValid() const,func,0x7100d319d8,0x71015fa100,2
+_ZNK2nn3hid18SixAxisSensorState13GetQuaternionEPNS_4util4neon12Vector4fTypeE,nn::hid::SixAxisSensorState::GetQuaternion(nn::util::neon::Vector4fType*) const,func,0x7100d32538,0x71015fa6b0,4
+_ZNK2nn3hid23VibrationNodeConnection14GetDestinationEv,nn::hid::VibrationNodeConnection::GetDestination() const,func,0x7100d31ed8,0x71015fa380,1
+_ZNK2nn3mem17StandardAllocator9GetSizeOfEPKv,nn::mem::StandardAllocator::GetSizeOf(void const*) const,func,0x7100d31a08,0x71015fa118,4
+_ZNK2nn4bcat21DeliveryCacheProgress13GetWholeTotalEv,nn::bcat::DeliveryCacheProgress::GetWholeTotal() const,func,0x7100d32658,0x71015fa740,1
+_ZNK2nn4bcat21DeliveryCacheProgress18GetWholeDownloadedEv,nn::bcat::DeliveryCacheProgress::GetWholeDownloaded() const,func,0x7100d32648,0x71015fa738,1
+_ZNK2nn4bcat21DeliveryCacheProgress9GetResultEv,nn::bcat::DeliveryCacheProgress::GetResult() const,func,0x7100d32638,0x71015fa730,1
+_ZNK2nn4bcat21DeliveryCacheProgress9GetStatusEv,nn::bcat::DeliveryCacheProgress::GetStatus() const,func,0x7100d30428,0x71015f9628,2
+_ZNK2nn4time13ClockSnapshot15GetLocationNameEv,nn::time::ClockSnapshot::GetLocationName() const,func,0x7100d31db8,0x71015fa2f0,2
+_ZNK2nn4time13ClockSnapshot31GetStandardSteadyClockTimePointEv,nn::time::ClockSnapshot::GetStandardSteadyClockTimePoint() const,func,0x7100d31d88,0x71015fa2d8,2
+_ZNK2nn4util16BinaryFileHeader11IsRelocatedEv,nn::util::BinaryFileHeader::IsRelocated() const,func,0x7100d31728,0x71015f9fa8,3
+_ZNK2nn4util16BinaryFileHeader12GetAlignmentEv,nn::util::BinaryFileHeader::GetAlignment() const,func,0x7100d316b8,0x71015f9f70,5
+_ZNK2nn4util16BinaryFileHeader15IsEndianReverseEv,nn::util::BinaryFileHeader::IsEndianReverse() const,func,0x7100d31758,0x71015f9fc0,1
+_ZNK2nn4util16BinaryFileHeader16IsAlignmentValidEv,nn::util::BinaryFileHeader::IsAlignmentValid() const,func,0x7100d31718,0x71015f9fa0,2
+_ZNK2nn4util16BinaryFileHeader16IsSignatureValidEl,nn::util::BinaryFileHeader::IsSignatureValid(long) const,func,0x7100d31708,0x71015f9f98,1
+_ZNK2nn4util17BinaryBlockHeader12GetBlockSizeEv,nn::util::BinaryBlockHeader::GetBlockSize() const,func,0x7100d30098,0x71015f9460,4
+_ZNK2nn6crypto6detail6BigNum6ModExpEPvPKvRKS2_mPjm,"nn::crypto::detail::BigNum::ModExp(void*, void const*, nn::crypto::detail::BigNum const&, unsigned long, unsigned int*, unsigned long) const",func,0x7100d30368,0x71015f95c8,2
+_ZNK2nn9bluetooth11GattService18GetCharacteristicsEPNS0_18GattCharacteristicEi,"nn::bluetooth::GattService::GetCharacteristics(nn::bluetooth::GattCharacteristic*, int) const",func,0x7100d30548,0x71015f96b8,1
+_ZNK2nn9bluetooth13GattAttribute7GetUuidEv,nn::bluetooth::GattAttribute::GetUuid() const,func,0x7100d30598,0x71015f96e0,2
+_ZNK2nn9bluetooth14GattDescriptor17GetCharacteristicEPNS0_18GattCharacteristicE,nn::bluetooth::GattDescriptor::GetCharacteristic(nn::bluetooth::GattCharacteristic*) const,func,0x7100d30588,0x71015f96d8,1
+_ZNK2nn9bluetooth18GattCharacteristic14GetDescriptorsEPNS0_14GattDescriptorEi,"nn::bluetooth::GattCharacteristic::GetDescriptors(nn::bluetooth::GattDescriptor*, int) const",func,0x7100d30558,0x71015f96c0,1
+_ZNK5movie6Buffer12GetInt64DataEv,movie::Buffer::GetInt64Data() const,func,0x7100d321b8,0x71015fa4f0,3
+_ZNK5movie6Buffer13GetUint32DataEv,movie::Buffer::GetUint32Data() const,func,0x7100d321a8,0x71015fa4e8,2
+_ZNK5movie6Buffer4BaseEv,movie::Buffer::Base() const,func,0x7100d32198,0x71015fa4e0,8
+_ZNK5movie6Buffer4SizeEv,movie::Buffer::Size() const,func,0x7100d32118,0x71015fa4a0,15
+_ZNK5movie6Buffer6OffsetEv,movie::Buffer::Offset() const,func,0x7100d32128,0x71015fa4a8,10
+_ZNK5movie6Buffer8CapacityEv,movie::Buffer::Capacity() const,func,0x7100d321c8,0x71015fa4f8,3
+_ZNK5movie9MediaData10FindStringEPKcPS2_,"movie::MediaData::FindString(char const*, char const**) const",func,0x7100d32068,0x71015fa448,4
+_ZNK5movie9MediaData9FindInt32EPKcPi,"movie::MediaData::FindInt32(char const*, int*) const",func,0x7100d32088,0x71015fa458,16
+_ZNK5movie9MediaData9FindInt64EPKcPl,"movie::MediaData::FindInt64(char const*, long*) const",func,0x7100d32058,0x71015fa440,1
+_ZNKSt3__112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEE2atEm,"std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>::at(unsigned long) const",func,0x7100d32408,0x71015fa618,1
+_ZNKSt3__112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEE4findEcm,"std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>::find(char, unsigned long) const",func,0x7100d323a8,0x71015fa5e8,1
+_ZNKSt3__112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEE5rfindEcm,"std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>::rfind(char, unsigned long) const",func,0x7100d322f8,0x71015fa590,8
+_ZNKSt3__112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEE7compareEmmPKcm,"std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>::compare(unsigned long, unsigned long, char const*, unsigned long) const",func,0x7100d32368,0x71015fa5c8,34
+_ZNKSt3__120__vector_base_commonILb1EE20__throw_length_errorEv,std::__1::__vector_base_common<true>::__throw_length_error() const,func,0x7100d2fd48,0x71015f92b8,301
+_ZNKSt3__120__vector_base_commonILb1EE20__throw_out_of_rangeEv,std::__1::__vector_base_common<true>::__throw_out_of_range() const,func,0x7100d30388,0x71015f95d8,160
+_ZNKSt3__121__basic_string_commonILb1EE20__throw_length_errorEv,std::__1::__basic_string_common<true>::__throw_length_error() const,func,0x7100d30288,0x71015f9558,33
+_ZNKSt3__16locale9use_facetERNS0_2idE,std::__1::locale::use_facet(std::__1::locale::id&) const,func,0x7100d324a8,0x71015fa668,1
+_ZNKSt3__18ios_base6getlocEv,std::__1::ios_base::getloc() const,func,0x7100d32498,0x71015fa660,1
+_ZNSt3__112__next_primeEm,std::__1::__next_prime(unsigned long),func,0x7100d2fcd8,0x71015f9280,107
+_ZNSt3__112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEE2atEm,"std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>::at(unsigned long)",func,0x7100d324f8,0x71015fa690,2
+_ZNSt3__112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEE5eraseEmm,"std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>::erase(unsigned long, unsigned long)",func,0x7100d323b8,0x71015fa5f0,7
+_ZNSt3__112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEE6appendEPKc,"std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>::append(char const*)",func,0x7100d322d8,0x71015fa580,145
+_ZNSt3__112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEE6appendEPKcm,"std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>::append(char const*, unsigned long)",func,0x7100d322e8,0x71015fa588,98
+_ZNSt3__112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEE6appendERKS5_mm,"std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>::append(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>> const&, unsigned long, unsigned long)",func,0x7100d323c8,0x71015fa5f8,1
+_ZNSt3__112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEE6appendEmc,"std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>::append(unsigned long, char)",func,0x7100d32378,0x71015fa5d0,9
+_ZNSt3__112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEE6assignEPKc,"std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>::assign(char const*)",func,0x7100d32338,0x71015fa5b0,4
+_ZNSt3__112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEE6assignEPKcm,"std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>::assign(char const*, unsigned long)",func,0x7100d31d38,0x71015fa2b0,6
+_ZNSt3__112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEE6insertEmPKc,"std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>::insert(unsigned long, char const*)",func,0x7100d32318,0x71015fa5a0,4
+_ZNSt3__112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEE6resizeEmc,"std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>::resize(unsigned long, char)",func,0x7100d32398,0x71015fa5e0,15
+_ZNSt3__112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEE7replaceEmmPKc,"std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>::replace(unsigned long, unsigned long, char const*)",func,0x7100d32328,0x71015fa5a8,2
+_ZNSt3__112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEE7reserveEm,"std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>::reserve(unsigned long)",func,0x7100d32308,0x71015fa598,20
+_ZNSt3__112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEE9__grow_byEmmmmmm,"std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>::__grow_by(unsigned long, unsigned long, unsigned long, unsigned long, unsigned long, unsigned long)",func,0x7100d323f8,0x71015fa610,1
+_ZNSt3__112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEE9push_backEc,"std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>::push_back(char)",func,0x7100d32348,0x71015fa5b8,9
+_ZNSt3__112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEC1ERKS5_,"std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>::basic_string(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>> const&)",func,0x7100d302d8,0x71015f9580,76
+_ZNSt3__112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEC1ERKS5_mmRKS4_,"std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>::basic_string(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>> const&, unsigned long, unsigned long, std::__1::allocator<char> const&)",func,0x7100d320c8,0x71015fa478,19
+_ZNSt3__112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEaSERKS5_,"std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>::operator=(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>> const&)",func,0x7100d30278,0x71015f9550,51
+_ZNSt3__113basic_ostreamIcNS_11char_traitsIcEEE6sentryC1ERS3_,"std::__1::basic_ostream<char, std::__1::char_traits<char>>::sentry::sentry(std::__1::basic_ostream<char, std::__1::char_traits<char>>&)",func,0x7100d32488,0x71015fa658,1
+_ZNSt3__113basic_ostreamIcNS_11char_traitsIcEEE6sentryD1Ev,"std::__1::basic_ostream<char, std::__1::char_traits<char>>::sentry::~sentry()",func,0x7100d324d8,0x71015fa680,1
+_ZNSt3__115basic_streambufIcNS_11char_traitsIcEEE4syncEv,"std::__1::basic_streambuf<char, std::__1::char_traits<char>>::sync()",data,,0x710159c440,0
+_ZNSt3__115basic_streambufIcNS_11char_traitsIcEEE5imbueERKNS_6localeE,"std::__1::basic_streambuf<char, std::__1::char_traits<char>>::imbue(std::__1::locale const&)",data,,0x710159c420,0
+_ZNSt3__115basic_streambufIcNS_11char_traitsIcEEE5uflowEv,"std::__1::basic_streambuf<char, std::__1::char_traits<char>>::uflow()",data,,0x710159c460,0
+_ZNSt3__115basic_streambufIcNS_11char_traitsIcEEE6setbufEPcl,"std::__1::basic_streambuf<char, std::__1::char_traits<char>>::setbuf(char*, long)",data,,0x710159c428,0
+_ZNSt3__115basic_streambufIcNS_11char_traitsIcEEE6xsgetnEPcl,"std::__1::basic_streambuf<char, std::__1::char_traits<char>>::xsgetn(char*, long)",data,,0x710159c450,0
+_ZNSt3__115basic_streambufIcNS_11char_traitsIcEEE6xsputnEPKcl,"std::__1::basic_streambuf<char, std::__1::char_traits<char>>::xsputn(char const*, long)",data,,0x710159c470,0
+_ZNSt3__115basic_streambufIcNS_11char_traitsIcEEE9showmanycEv,"std::__1::basic_streambuf<char, std::__1::char_traits<char>>::showmanyc()",data,,0x710159c448,0
+_ZNSt3__115basic_streambufIcNS_11char_traitsIcEEED2Ev,"std::__1::basic_streambuf<char, std::__1::char_traits<char>>::~basic_streambuf()",func,0x7100d32478,0x71015fa650,2
+_ZNSt3__15alignEmmRPvRm,"std::__1::align(unsigned long, unsigned long, void*&, unsigned long&)",func,0x7100d2fd38,0x71015f92b0,1
+_ZNSt3__15ctypeIcE2idE,std::__1::ctype<char>::id,data,,0x71016054d0,0
+_ZNSt3__16__sortIRNS_6__lessIiiEEPiEEvT0_S5_T_,"void std::__1::__sort<std::__1::__less<int, int>&, int*>(int*, int*, std::__1::__less<int, int>&)",func,0x7100d31b88,0x71015fa1d8,3
+_ZNSt3__16__sortIRNS_6__lessIllEEPlEEvT0_S5_T_,"void std::__1::__sort<std::__1::__less<long, long>&, long*>(long*, long*, std::__1::__less<long, long>&)",func,0x7100d319a8,0x71015fa0e8,2
+_ZNSt3__16chrono12steady_clock3nowEv,std::__1::chrono::steady_clock::now(),func,0x7100d306e8,0x71015f9788,36
+_ZNSt3__16localeD1Ev,std::__1::locale::~locale(),func,0x7100d324b8,0x71015fa670,1
+_ZNSt3__18ios_base5clearEj,std::__1::ios_base::clear(unsigned int),func,0x7100d324c8,0x71015fa678,1
+_ZNSt3__1plIcNS_11char_traitsIcEENS_9allocatorIcEEEENS_12basic_stringIT_T0_T1_EEPKS6_RKS9_,"std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>> std::__1::operator+<char, std::__1::char_traits<char>, std::__1::allocator<char>>(char const*, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>> const&)",func,0x7100d32358,0x71015fa5c0,68
+_ZNSt9exceptionD2Ev,std::exception::~exception(),func,0x7100d32548,0x71015a7390,3
+_ZSt7nothrow,std::nothrow,data,,0x7101605510,0
+_ZSt9terminatev,std::terminate(),func,0x7100d30df8,0x71015f9b10,1
+_ZTIb,typeinfo for bool,data,,0x7101609f10,0
+_ZTIi,typeinfo for int,data,,0x7101609ef8,0
+_ZTVN10__cxxabiv117__class_type_infoE,vtable for __cxxabiv1::__class_type_info,data,,0x710155d0b0,0
+_ZTVN10__cxxabiv120__si_class_type_infoE,vtable for __cxxabiv1::__si_class_type_info,data,,0x710155d1e0,0
+_ZTVN10__cxxabiv121__vmi_class_type_infoE,vtable for __cxxabiv1::__vmi_class_type_info,data,,0x7101586fc0,0
+_ZTVN2nn9bluetooth14GattDescriptorE,vtable for nn::bluetooth::GattDescriptor,data,,0x71015fbd20,0
+_ZTVN2nn9bluetooth18GattCharacteristicE,vtable for nn::bluetooth::GattCharacteristic,data,,0x71015fbd00,0
+_ZdaPv,operator delete[](void*),func,0x7100d30398,0x71015f95e0,80
+_Znam,operator new[](unsigned long),func,0x7100d303a8,0x71015f95e8,24
+_ZnwmRKSt9nothrow_t,"operator new(unsigned long, std::nothrow_t const&)",func,0x7100d32518,0x71015fa6a0,1
+__assert_fail,__assert_fail,func,0x7100d303c8,0x71015f95f8,396
+__cxa_begin_catch,__cxa_begin_catch,func,0x7100d30de8,0x71015f9b08,1
+__cxa_guard_acquire,__cxa_guard_acquire,func,0x7100d2fb08,0x71015f9198,7262
+__cxa_guard_release,__cxa_guard_release,func,0x7100d2fb18,0x71015f91a0,7262
+__cxa_pure_virtual,__cxa_pure_virtual,data,,0x7101527250,0
+__errno_location,__errno_location,func,0x7100d311c8,0x71015f9cf8,18
+__gxx_personality_v0,__gxx_personality_v0,data,,0x71015525a0,0
+__nnmusl_fini_dso,__nnmusl_fini_dso,func,0x7100d2fa88,0x71015f9158,1
+__nnmusl_init_dso,__nnmusl_init_dso,func,0x7100d2fa78,0x71015f9150,1
+__rel_dyn_end,__rel_dyn_end,data,,0x71015faa18,0
+__rel_dyn_start,__rel_dyn_start,data,,0x71015faa20,0
+__rel_plt_end,__rel_plt_end,data,,0x71015fa9f8,0
+__rel_plt_start,__rel_plt_start,data,,0x71015faa00,0
+abort,abort,func,0x7100d2faf8,0x71015f9190,2767
+acosf,acosf,func,0x7100d31d58,0x71015fa2c0,15
+asinf,asinf,func,0x7100d30ee8,0x71015f9b88,7
+at_quick_exit,at_quick_exit,func,0x7100d32688,0x71015fa758,2
+atan2f,atan2f,func,0x7100d30ed8,0x71015f9b80,10
+atanf,atanf,func,0x7100d31d68,0x71015fa2c8,22
+atof,atof,func,0x7100d30bd8,0x71015f9a00,4
+atoi,atoi,func,0x7100d30bc8,0x71015f99f8,35
+atol,atol,func,0x7100d328b8,0x71015fa870,1
+cos,cos,func,0x7100d30e48,0x71015f9b38,16
+cosf,cosf,func,0x7100d30d78,0x71015f9ad0,87
+difftime,difftime,func,0x7100d32568,0x71015fa6c8,1
+exit,exit,func,0x7100d323d8,0x71015fa600,1
+exp,exp,func,0x7100d30e38,0x71015f9b30,3
+exp2f,exp2f,func,0x7100d30d58,0x71015f9ac0,37
+expf,expf,func,0x7100d30e18,0x71015f9b20,101
+fclose,fclose,func,0x7100d32888,0x71015fa858,7
+fflush,fflush,func,0x7100d32428,0x71015fa628,2
+fmodf,fmodf,func,0x7100d30e58,0x71015f9b40,14
+fopen,fopen,func,0x7100d32938,0x71015fa8b0,2
+fprintf,fprintf,func,0x7100d32418,0x71015fa620,1
+fputs,fputs,func,0x7100d32898,0x71015fa860,1
+fread,fread,func,0x7100d32968,0x71015fa8c8,3
+fscanf,fscanf,func,0x7100d329c8,0x71015fa8f8,1
+fseek,fseek,func,0x7100d32948,0x71015fa8b8,11
+ftell,ftell,func,0x7100d32958,0x71015fa8c0,5
+fwrite,fwrite,func,0x7100d329a8,0x71015fa8e8,3
+fwscanf,fwscanf,func,0x7100d329d8,0x71015fa900,1
+getenv,getenv,func,0x7100d314f8,0x71015f9e90,2
+glslcCompile,glslcCompile,data,,0x7101604690,0
+glslcCompilePreSpecialized,glslcCompilePreSpecialized,data,,0x7101604670,0
+glslcCompileSpecialized,glslcCompileSpecialized,data,,0x7101604678,0
+glslcFinalize,glslcFinalize,data,,0x7101604688,0
+glslcGetDefaultOptions,glslcGetDefaultOptions,data,,0x71016046a8,0
+glslcGetVersion,glslcGetVersion,data,,0x7101604698,0
+glslcInitialize,glslcInitialize,data,,0x7101604680,0
+glslcSetAllocator,glslcSetAllocator,data,,0x71016046a0,0
+gmtime,gmtime,func,0x7100d31528,0x71015f9ea8,1
+isalnum,isalnum,func,0x7100d31518,0x71015f9ea0,1
+isalpha,isalpha,func,0x7100d2fcb8,0x71015f9270,6
+isspace,isspace,func,0x7100d326e8,0x71015fa788,4
+isxdigit,isxdigit,func,0x7100d31298,0x71015f9d60,6
+ldexp,ldexp,func,0x7100d326c8,0x71015fa778,9
+ldexpf,ldexpf,func,0x7100d326d8,0x71015fa780,4
+localtime,localtime,func,0x7100d32628,0x71015fa728,5
+localtime_r,localtime_r,func,0x7100d30918,0x71015f98a0,3
+log,log,func,0x7100d30e28,0x71015f9b28,14
+log10,log10,func,0x7100d322b8,0x71015fa570,3
+log10f,log10f,func,0x7100d30ff8,0x71015f9c10,2
+logf,logf,func,0x7100d32578,0x71015fa6d0,66
+longjmp,longjmp,func,0x7100d32928,0x71015fa8a8,3
+mbsinit,mbsinit,func,0x7100d328c8,0x71015fa878,2
+mbsrtowcs,mbsrtowcs,func,0x7100d328d8,0x71015fa880,2
+memchr,memchr,func,0x7100d311d8,0x71015f9d00,5
+memcmp,memcmp,func,0x7100d300a8,0x71015f9468,156
+memcpy,memcpy,func,0x7100d2fb28,0x71015f91a8,2198
+memmove,memmove,func,0x7100d2fb48,0x71015f91b8,460
+memset,memset,func,0x7100d2fa98,0x71015f9160,2392
+memset_s,memset_s,func,0x7100d319b8,0x71015fa0f0,1
+mktime,mktime,func,0x7100d30908,0x71015f9898,2
+modff,modff,func,0x7100d30c08,0x71015f9a18,3
+nnResultGetDescription,nnResultGetDescription,func,0x7100d31568,0x71015f9ec8,28
+nnResultGetModule,nnResultGetModule,func,0x7100d31558,0x71015f9ec0,28
+nnResultIsFailure,nnResultIsFailure,func,0x7100d31348,0x71015f9db8,29
+nnResultIsSuccess,nnResultIsSuccess,func,0x7100d31678,0x71015f9f50,1
+nndetailDiagAbortFormatImpl,nndetailDiagAbortFormatImpl,func,0x7100d312a8,0x71015f9d68,18
+nnosConvertTickToNanoSeconds,nnosConvertTickToNanoSeconds,func,0x7100d312f8,0x71015f9d90,1
+nnosCreateThread,nnosCreateThread,func,0x7100d31338,0x71015f9db0,1
+nnosDestroyThread,nnosDestroyThread,func,0x7100d31358,0x71015f9dc0,4
+nnosFinalizeEvent,nnosFinalizeEvent,func,0x7100d313b8,0x71015f9df0,2
+nnosFinalizeMutex,nnosFinalizeMutex,func,0x7100d31408,0x71015f9e18,4
+nnosGetCurrentThread,nnosGetCurrentThread,func,0x7100d31318,0x71015f9da0,1
+nnosGetSystemTick,nnosGetSystemTick,func,0x7100d312d8,0x71015f9d80,2
+nnosGetSystemTickFrequency,nnosGetSystemTickFrequency,func,0x7100d312e8,0x71015f9d88,2
+nnosGetThreadPriority,nnosGetThreadPriority,func,0x7100d31328,0x71015f9da8,1
+nnosInitializeEvent,nnosInitializeEvent,func,0x7100d31388,0x71015f9dd8,2
+nnosInitializeMutex,nnosInitializeMutex,func,0x7100d31378,0x71015f9dd0,2
+nnosLockMutex,nnosLockMutex,func,0x7100d313e8,0x71015f9e08,9
+nnosSetThreadNamePointer,nnosSetThreadNamePointer,func,0x7100d31368,0x71015f9dc8,1
+nnosSignalEvent,nnosSignalEvent,func,0x7100d313c8,0x71015f9df8,3
+nnosSleepThread,nnosSleepThread,func,0x7100d31428,0x71015f9e28,1
+nnosStartThread,nnosStartThread,func,0x7100d31398,0x71015f9de0,2
+nnosUnlockMutex,nnosUnlockMutex,func,0x7100d313d8,0x71015f9e00,11
+nnosWaitEvent,nnosWaitEvent,func,0x7100d313a8,0x71015f9de8,2
+nnosWaitThread,nnosWaitThread,func,0x7100d313f8,0x71015f9e10,2
+nnsocketBind,nnsocketBind,func,0x7100d314c8,0x71015f9e78,2
+nnsocketClose,nnsocketClose,func,0x7100d31478,0x71015f9e50,9
+nnsocketConnect,nnsocketConnect,func,0x7100d314d8,0x71015f9e80,1
+nnsocketFcntl,nnsocketFcntl,func,0x7100d31508,0x71015f9e98,2
+nnsocketGetHostByNameWithOptions,nnsocketGetHostByNameWithOptions,func,0x7100d31308,0x71015f9d98,1
+nnsocketGetLastErrno,nnsocketGetLastErrno,func,0x7100d31218,0x71015f9d20,24
+nnsocketGetPeerName,nnsocketGetPeerName,func,0x7100d31448,0x71015f9e38,1
+nnsocketGetSockName,nnsocketGetSockName,func,0x7100d31458,0x71015f9e40,2
+nnsocketGetSockOpt,nnsocketGetSockOpt,func,0x7100d31488,0x71015f9e58,2
+nnsocketInetHtons,nnsocketInetHtons,func,0x7100d314b8,0x71015f9e70,2
+nnsocketInetNtohs,nnsocketInetNtohs,func,0x7100d31468,0x71015f9e48,4
+nnsocketPoll,nnsocketPoll,func,0x7100d31208,0x71015f9d18,11
+nnsocketRecv,nnsocketRecv,func,0x7100d31248,0x71015f9d38,3
+nnsocketResolverGetOption,nnsocketResolverGetOption,func,0x7100d31438,0x71015f9e30,1
+nnsocketResolverSetOption,nnsocketResolverSetOption,func,0x7100d31418,0x71015f9e20,2
+nnsocketSend,nnsocketSend,func,0x7100d31238,0x71015f9d30,2
+nnsocketSetLastErrno,nnsocketSetLastErrno,func,0x7100d31228,0x71015f9d28,5
+nnsocketSetSockOpt,nnsocketSetSockOpt,func,0x7100d31498,0x71015f9e60,3
+nnsocketSocket,nnsocketSocket,func,0x7100d314a8,0x71015f9e68,1
+nnsslConnectionCreate,nnsslConnectionCreate,func,0x7100d315a8,0x71015f9ee8,1
+nnsslConnectionDestroy,nnsslConnectionDestroy,func,0x7100d31638,0x71015f9f30,2
+nnsslConnectionDoHandshakeWithCertBuffer,nnsslConnectionDoHandshakeWithCertBuffer,func,0x7100d31588,0x71015f9ed8,1
+nnsslConnectionGetConnectionId,nnsslConnectionGetConnectionId,func,0x7100d31628,0x71015f9f28,2
+nnsslConnectionGetVerifyCertError,nnsslConnectionGetVerifyCertError,func,0x7100d31618,0x71015f9f20,1
+nnsslConnectionPeek,nnsslConnectionPeek,func,0x7100d31658,0x71015f9f40,1
+nnsslConnectionPending,nnsslConnectionPending,func,0x7100d31668,0x71015f9f48,1
+nnsslConnectionRead,nnsslConnectionRead,func,0x7100d31688,0x71015f9f58,1
+nnsslConnectionSetHostName,nnsslConnectionSetHostName,func,0x7100d315d8,0x71015f9f00,1
+nnsslConnectionSetIoMode,nnsslConnectionSetIoMode,func,0x7100d31648,0x71015f9f38,1
+nnsslConnectionSetOption,nnsslConnectionSetOption,func,0x7100d315b8,0x71015f9ef0,2
+nnsslConnectionSetSessionCacheMode,nnsslConnectionSetSessionCacheMode,func,0x7100d315f8,0x71015f9f10,1
+nnsslConnectionSetSocketDescriptor,nnsslConnectionSetSocketDescriptor,func,0x7100d315c8,0x71015f9ef8,1
+nnsslConnectionSetVerifyOption,nnsslConnectionSetVerifyOption,func,0x7100d315e8,0x71015f9f08,1
+nnsslConnectionWrite,nnsslConnectionWrite,func,0x7100d31698,0x71015f9f60,1
+nnsslContextDestroy,nnsslContextDestroy,func,0x7100d31608,0x71015f9f18,3
+nnsslContextGetContextId,nnsslContextGetContextId,func,0x7100d31598,0x71015f9ee0,4
+nnsslFinalize,nnsslFinalize,func,0x7100d31578,0x71015f9ed0,1
+nnsslInitialize,nnsslInitialize,func,0x7100d31548,0x71015f9eb8,1
+nvnBootstrapLoader,nvnBootstrapLoader,func,0x7100d31d48,0x710160a1f8,2
+pow,pow,func,0x7100d322a8,0x71015fa568,11
+powf,powf,func,0x7100d30e08,0x71015f9b18,168
+printf,printf,func,0x7100d30c18,0x71015f9a20,6
+pthread_cond_broadcast,pthread_cond_broadcast,func,0x7100d32668,0x71015fa748,3
+pthread_cond_wait,pthread_cond_wait,func,0x7100d32678,0x71015fa750,1
+pthread_join,pthread_join,func,0x7100d32698,0x71015fa760,1
+pthread_mutex_destroy,pthread_mutex_destroy,func,0x7100d32438,0x71015fa630,8
+pthread_mutex_init,pthread_mutex_init,func,0x7100d32448,0x71015fa638,6
+pthread_mutex_lock,pthread_mutex_lock,func,0x7100d32458,0x71015fa640,8
+pthread_mutex_trylock,pthread_mutex_trylock,func,0x7100d32918,0x71015fa8a0,3
+pthread_mutex_unlock,pthread_mutex_unlock,func,0x7100d32468,0x71015fa648,9
+pthread_mutexattr_destroy,pthread_mutexattr_destroy,func,0x7100d32908,0x71015fa898,6
+pthread_mutexattr_init,pthread_mutexattr_init,func,0x7100d328e8,0x71015fa888,3
+pthread_mutexattr_settype,pthread_mutexattr_settype,func,0x7100d328f8,0x71015fa890,3
+qsort,qsort,func,0x7100d314e8,0x71015f9e88,5
+sched_yield,sched_yield,func,0x7100d324e8,0x71015fa688,1
+setjmp,setjmp,func,0x7100d32978,0x71015fa8d0,2
+sin,sin,func,0x7100d30e68,0x71015f9b48,5
+sinf,sinf,func,0x7100d30d48,0x71015f9ab8,103
+snprintf,snprintf,func,0x7100d2ffb8,0x71015f93f0,260
+sprintf,sprintf,func,0x7100d311f8,0x71015f9d10,443
+sqrt,sqrt,func,0x7100d30dc8,0x71015f9af8,11
+sqrtf,sqrtf,func,0x7100d30948,0x71015f98b8,175
+sscanf,sscanf,func,0x7100d311b8,0x71015f9cf0,21
+stderr,stderr,data,,0x7101600d48,0
+stdin,stdin,data,,0x7101600d40,0
+stdout,stdout,data,,0x7101600d38,0
+strcasecmp,strcasecmp,func,0x7100d32aa8,0x71015fa968,1
+strcat,strcat,func,0x7100d2fc98,0x71015f9260,203
+strchr,strchr,func,0x7100d2fcc8,0x71015f9278,58
+strcmp,strcmp,func,0x7100d2fc38,0x71015f9230,174
+strcpy,strcpy,func,0x7100d2fc78,0x71015f9250,45
+strdup,strdup,data,,0x7101600da0,0
+strerror,strerror,func,0x7100d31258,0x71015f9d40,3
+strlen,strlen,func,0x7100d2fc68,0x71015f9248,835
+strncasecmp,strncasecmp,func,0x7100d32078,0x71015fa450,26
+strncat,strncat,func,0x7100d31268,0x71015f9d48,9
+strncmp,strncmp,func,0x7100d2fca8,0x71015f9268,138
+strncpy,strncpy,func,0x7100d302c8,0x71015f9578,74
+strnlen,strnlen,func,0x7100d325d8,0x71015fa700,4
+strpbrk,strpbrk,func,0x7100d31278,0x71015f9d50,1
+strrchr,strrchr,func,0x7100d2fc88,0x71015f9258,43
+strstr,strstr,func,0x7100d30d68,0x71015f9ac8,86
+strtod,strtod,func,0x7100d323e8,0x71015fa608,3
+strtof,strtof,func,0x7100d32508,0x71015fa698,1
+strtok,strtok,func,0x7100d30d88,0x71015f9ad8,6
+strtok_r,strtok_r,func,0x7100d326b8,0x71015fa770,4
+strtol,strtol,func,0x7100d311e8,0x71015f9d08,14
+strtoll,strtoll,func,0x7100d32388,0x71015fa5d8,1
+strtoul,strtoul,func,0x7100d31288,0x71015f9d58,4
+strtoull,strtoull,func,0x7100d31938,0x71015fa0b0,3
+swscanf,swscanf,func,0x7100d32998,0x71015fa8e0,1
+tan,tan,func,0x7100d322c8,0x71015fa578,1
+tanf,tanf,func,0x7100d306d8,0x71015f9780,49
+time,time,func,0x7100d30d98,0x71015f9ae0,5
+tolower,tolower,func,0x7100d311a8,0x71015f9ce8,96
+toupper,toupper,func,0x7100d31538,0x71015f9eb0,17
+usleep,usleep,func,0x7100d329e8,0x71015fa908,1
+vfprintf,vfprintf,func,0x7100d329b8,0x71015fa8f0,1
+vsnprintf,vsnprintf,func,0x7100d318c8,0x71015fa078,4
+vsprintf,vsprintf,func,0x7100d328a8,0x71015fa868,5
+vswprintf,vswprintf,func,0x7100d32988,0x71015fa8d8,1
+wcslen,wcslen,func,0x7100d30ec8,0x71015f9b78,2
+wcsrtombs,wcsrtombs,func,0x7100d30ea8,0x71015f9b68,5

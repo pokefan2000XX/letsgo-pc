@@ -1,0 +1,299 @@
+# Names of original functions and data, by address. Decompiled code uses these names:
+#  - a function the decomp module defines replaces the original at that address
+#  - a symbol it only uses is linked to the original
+# A name is the C++ name without parameters (pokemon::Accessor::IsBadEgg), the full signature
+# when overloads share a name (pokemon::Accessor::Serialize(void*)), or a plain C name.
+# "Class::~Class" is the destructor, "Class::~Class [deleting]" the one that also frees.
+# FUN_<address> and DAT_<address> work without an entry, and so do main's imports (nn::, libc).
+# Notes go after a '#'. Entries are grouped by the file that defines them, by address within a group.
+#
+# address       name                                        # notes
+
+# util/name_hash.cpp
+0x7100101b30    UnkNamedObject_NameEquals                   # FNV-1a 64 of the name at +0x88 == FNV-1a 64 of a string
+0x7100101ba0    UnkNamedObject_GetName                      # the name at +0x88
+
+# pokemon/record.cpp, pokemon/accessor.cpp (D1 step 1: the record)
+0x7100729540    pokemon::Accessor::Accessor
+0x7100729560    pokemon::Accessor::~Accessor
+0x7100729570    pokemon::Accessor::~Accessor [deleting]
+0x7100729580    pokemon::Accessor::AttachDecoded
+0x7100729600    pokemon::Accessor::AttachEncoded
+0x7100729610    pokemon::Accessor::HasCalcData
+0x7100729620    pokemon::Accessor::Clear
+0x71007296d0    pokemon::Accessor::ClearCalcData
+0x71007297f0    pokemon::Accessor::IsFastMode
+0x7100729800    pokemon::Accessor::StartFastMode
+0x7100729890    pokemon::Accessor::EndFastMode
+0x7100729920    pokemon::Accessor::Serialize(void*)
+0x7100729930    pokemon::Accessor::Serialize(pokemon::CoreData*, pokemon::CalcData*)
+0x7100729a70    pokemon::Accessor::SerializeCore
+0x7100729a80    pokemon::Accessor::Deserialize(void const*)
+0x7100729a90    pokemon::Accessor::Deserialize(pokemon::CoreData const*, pokemon::CalcData const*)
+0x7100729bc0    pokemon::Accessor::DeserializeCore
+0x7100729bd0    pokemon::Accessor::GetEncryptionKey
+0x7100729be0    pokemon::Accessor::IsBadEgg
+0x7100738770    pokemon::InitDefaultRecords
+0x7100738800    pokemon::CalcLevelFromExp
+0x7100738870    pokemon::CalcHp
+0x71007388b0    pokemon::CalcAttack
+0x7100738970    pokemon::CalcDefense
+0x7100738a30    pokemon::CalcSpAttack
+0x7100738af0    pokemon::CalcSpDefense
+0x7100738bb0    pokemon::CalcSpeed
+0x7100738c70    pokemon::GetNatureModifier
+0x7100738ca0    pokemon::CalcCp
+0x7100738da0    pokemon::CalcBaseCp
+0x7100739050    pokemon::IsShiny
+0x7100739070    pokemon::MakeNonShinyPid
+0x71007390a0    pokemon::MakeShinyPid
+0x71007390e0    pokemon::GetValidGender
+0x7100739140    pokemon::GetAbilityId
+0x7100739190    pokemon::GetHiddenPowerType
+0x71007391e0    pokemon::GetNatureFlavor
+0x7100739200    pokemon::GetPlateType
+0x7100739370    pokemon::GetMemoryType
+0x71007393b0    pokemon::CalcChecksum
+0x7100739420    pokemon::EncodeData
+0x71007394b0    pokemon::DecodeData
+0x7100739540    pokemon::CreateCoreData
+0x7100739fc0    pokemon::CreateCalcData
+0x710073a0c0    pokemon::GetBitPair
+0x710073a0e0    pokemon::SetBitPair
+0x710073a110    pokemon::SetHighByte
+0x710073a120    pokemon::SetLowByte
+
+# pokemon/accessor_fields.cpp (D1 step 2: the record's fields)
+0x7100729bf0    pokemon::Accessor::GetStatus
+0x7100729d10    pokemon::Accessor::GetHp
+0x7100729e30    pokemon::Accessor::GetMaxHp
+0x7100729f50    pokemon::Accessor::GetAttack
+0x710072a070    pokemon::Accessor::GetDefense
+0x710072a190    pokemon::Accessor::GetSpAttack
+0x710072a2b0    pokemon::Accessor::GetSpDefense
+0x710072a3d0    pokemon::Accessor::GetSpeed
+0x710072a4f0    pokemon::Accessor::GetPartyLevel
+0x710072a610    pokemon::Accessor::GetCp
+0x710072a730    pokemon::Accessor::GetUnkAE
+0x710072a870    pokemon::Accessor::GetUnk100
+0x710072a9a0    pokemon::Accessor::GetUnk101
+0x710072aac0    pokemon::Accessor::GetSpecies
+0x710072abf0    pokemon::Accessor::GetHeldItem
+0x710072ad20    pokemon::Accessor::GetId
+0x710072ae50    pokemon::Accessor::GetExp
+0x710072af80    pokemon::Accessor::GetFriendship
+0x710072b130    pokemon::Accessor::GetAbility
+0x710072b260    pokemon::Accessor::GetMarkings
+0x710072b390    pokemon::Accessor::GetLanguage
+0x710072b4c0    pokemon::Accessor::GetEvHp
+0x710072b5f0    pokemon::Accessor::GetEvAttack
+0x710072b720    pokemon::Accessor::GetEvDefense
+0x710072b850    pokemon::Accessor::GetEvSpAttack
+0x710072b980    pokemon::Accessor::GetEvSpDefense
+0x710072bab0    pokemon::Accessor::GetEvSpeed
+0x710072bbe0    pokemon::Accessor::GetAvHp
+0x710072bd10    pokemon::Accessor::GetAvAttack
+0x710072be40    pokemon::Accessor::GetAvDefense
+0x710072bf70    pokemon::Accessor::GetAvSpAttack
+0x710072c0a0    pokemon::Accessor::GetAvSpDefense
+0x710072c1d0    pokemon::Accessor::GetAvSpeed
+0x710072c300    pokemon::Accessor::GetUnkD7
+0x710072c430    pokemon::Accessor::GetMove
+0x710072c580    pokemon::Accessor::GetMovePp
+0x710072c6d0    pokemon::Accessor::GetMovePpUps
+0x710072c820    pokemon::Accessor::GetRelearnMove
+0x710072c970    pokemon::Accessor::GetIvHp
+0x710072ca90    pokemon::Accessor::GetIvAttack
+0x710072cbb0    pokemon::Accessor::GetIvDefense
+0x710072ccd0    pokemon::Accessor::GetIvSpAttack
+0x710072cdf0    pokemon::Accessor::GetIvSpDefense
+0x710072cf10    pokemon::Accessor::GetIvSpeed
+0x710072d030    pokemon::Accessor::IsEgg
+0x710072d160    pokemon::Accessor::IsNicknamed
+0x710072d290    pokemon::Accessor::IsFatefulEncounter
+0x710072d3c0    pokemon::Accessor::GetGender
+0x710072d4e0    pokemon::Accessor::GetForm
+0x710072d600    pokemon::Accessor::GetNature
+0x710072d730    pokemon::Accessor::IsSecondAbility
+0x710072d860    pokemon::Accessor::IsHiddenAbility
+0x710072d990    pokemon::Accessor::IsFavorite
+0x710072dac0    pokemon::Accessor::GetPid
+0x710072dbf0    pokemon::Accessor::GetNickname(gfl::str::StrBuf*)
+0x710072dd50    pokemon::Accessor::GetNickname(unsigned short*, unsigned int)
+0x710072ded0    pokemon::Accessor::GetVersion
+0x710072e000    pokemon::Accessor::GetOtName(gfl::str::StrBuf*)
+0x710072e130    pokemon::Accessor::GetOtName(unsigned short*, unsigned int)
+0x710072e270    pokemon::Accessor::GetEggYear
+0x710072e3a0    pokemon::Accessor::GetEggMonth
+0x710072e4d0    pokemon::Accessor::GetEggDay
+0x710072e600    pokemon::Accessor::GetMetYear
+0x710072e730    pokemon::Accessor::GetMetMonth
+0x710072e860    pokemon::Accessor::GetMetDay
+0x710072e990    pokemon::Accessor::GetEggLocation
+0x710072eac0    pokemon::Accessor::GetMetLocation
+0x710072ebf0    pokemon::Accessor::GetPokerus
+0x710072ed20    pokemon::Accessor::GetBall
+0x710072ee50    pokemon::Accessor::GetMetLevel
+0x710072ef70    pokemon::Accessor::GetOtGender
+0x710072f090    pokemon::Accessor::GetUnk94
+0x710072f1c0    pokemon::Accessor::GetHandlerFriendship
+0x710072f2f0    pokemon::Accessor::GetUnkA4
+0x710072f420    pokemon::Accessor::GetUnkA5
+0x710072f550    pokemon::Accessor::GetUnkA8
+0x710072f680    pokemon::Accessor::GetUnkA6
+0x710072f7b0    pokemon::Accessor::IsOtName
+0x710072f8f0    pokemon::Accessor::GetHeightAbsolute
+0x710072fa20    pokemon::Accessor::GetWeightAbsolute
+0x710072fb50    pokemon::Accessor::GetHeightScalar
+0x710072fc80    pokemon::Accessor::GetWeightScalar
+0x710072fdb0    pokemon::Accessor::GetUnkAC
+0x710072fee0    pokemon::Accessor::GetUnkAD
+0x7100730010    pokemon::Accessor::GetUnkCB
+0x7100730140    pokemon::Accessor::GetUnkCC
+0x7100730270    pokemon::Accessor::GetUnkCD
+0x71007303a0    pokemon::Accessor::GetUnkCE
+0x71007304d0    pokemon::Accessor::GetUnkCF
+0x7100730600    pokemon::Accessor::GetUnkD0
+0x7100730730    pokemon::Accessor::SetEncryptionKey
+0x71007308d0    pokemon::Accessor::SetBadEgg
+0x71007308f0    pokemon::Accessor::SetStatus
+0x7100730a10    pokemon::Accessor::SetPartyLevel
+0x7100730b30    pokemon::Accessor::SetMaxHp
+0x7100730c50    pokemon::Accessor::SetHp
+0x7100730d70    pokemon::Accessor::SetAttack
+0x7100730e90    pokemon::Accessor::SetDefense
+0x7100730fb0    pokemon::Accessor::SetSpAttack
+0x71007310d0    pokemon::Accessor::SetSpDefense
+0x71007311f0    pokemon::Accessor::SetSpeed
+0x7100731310    pokemon::Accessor::SetCp
+0x7100731430    pokemon::Accessor::SetUnkAE
+0x7100731570    pokemon::Accessor::SetUnk100
+0x7100731690    pokemon::Accessor::SetUnk101
+0x71007317b0    pokemon::Accessor::SetSpecies
+0x71007318f0    pokemon::Accessor::SetHeldItem
+0x7100731a30    pokemon::Accessor::SetId
+0x7100731b70    pokemon::Accessor::SetExp
+0x7100731cb0    pokemon::Accessor::SetFriendship
+0x7100731e70    pokemon::Accessor::SetAbility
+0x7100731fb0    pokemon::Accessor::SetMarkings
+0x71007320f0    pokemon::Accessor::SetCountry
+0x7100732230    pokemon::Accessor::SetRegion
+0x7100732370    pokemon::Accessor::SetConsoleRegion
+0x71007324b0    pokemon::Accessor::SetLanguage
+0x71007325f0    pokemon::Accessor::SetEvHp
+0x7100732730    pokemon::Accessor::SetEvAttack
+0x7100732870    pokemon::Accessor::SetEvDefense
+0x71007329b0    pokemon::Accessor::SetEvSpAttack
+0x7100732af0    pokemon::Accessor::SetEvSpDefense
+0x7100732c30    pokemon::Accessor::SetEvSpeed
+0x7100732d70    pokemon::Accessor::SetAvHp
+0x7100732eb0    pokemon::Accessor::SetAvAttack
+0x7100732ff0    pokemon::Accessor::SetAvDefense
+0x7100733130    pokemon::Accessor::SetAvSpAttack
+0x7100733270    pokemon::Accessor::SetAvSpDefense
+0x71007333b0    pokemon::Accessor::SetAvSpeed
+0x71007334f0    pokemon::Accessor::SetUnkD7
+0x7100733630    pokemon::Accessor::SetMove
+0x7100733770    pokemon::Accessor::SetMovePp
+0x71007338b0    pokemon::Accessor::SetMovePpUps
+0x71007339f0    pokemon::Accessor::SetRelearnMove
+0x7100733b30    pokemon::Accessor::SetIvHp
+0x7100733c60    pokemon::Accessor::SetIvAttack
+0x7100733da0    pokemon::Accessor::SetIvDefense
+0x7100733ee0    pokemon::Accessor::SetIvSpAttack
+0x7100734020    pokemon::Accessor::SetIvSpDefense
+0x7100734160    pokemon::Accessor::SetIvSpeed
+0x71007342a0    pokemon::Accessor::SetEgg
+0x71007343e0    pokemon::Accessor::SetNicknamed
+0x7100734520    pokemon::Accessor::SetFatefulEncounter
+0x7100734660    pokemon::Accessor::SetGender
+0x71007347a0    pokemon::Accessor::SetForm
+0x71007348d0    pokemon::Accessor::SetNature
+0x7100734a10    pokemon::Accessor::SetFirstAbility
+0x7100734b50    pokemon::Accessor::SetSecondAbility
+0x7100734c90    pokemon::Accessor::SetHiddenAbility
+0x7100734dd0    pokemon::Accessor::SetFavorite
+0x7100734f10    pokemon::Accessor::SetPid
+0x7100735050    pokemon::Accessor::SetNickname
+0x7100735180    pokemon::Accessor::SetVersion
+0x71007352c0    pokemon::Accessor::SetOtName
+0x71007353f0    pokemon::Accessor::SetEggYear
+0x7100735530    pokemon::Accessor::SetEggMonth
+0x7100735670    pokemon::Accessor::SetEggDay
+0x71007357b0    pokemon::Accessor::SetMetYear
+0x71007358f0    pokemon::Accessor::SetMetMonth
+0x7100735a30    pokemon::Accessor::SetMetDay
+0x7100735b70    pokemon::Accessor::SetEggLocation
+0x7100735cb0    pokemon::Accessor::SetMetLocation
+0x7100735df0    pokemon::Accessor::SetBall
+0x7100735f30    pokemon::Accessor::SetMetLevel
+0x7100736060    pokemon::Accessor::SetOtGender
+0x7100736190    pokemon::Accessor::SetCurrentHandler
+0x71007362d0    pokemon::Accessor::SetUnk94
+0x7100736410    pokemon::Accessor::SetOtFriendship
+0x7100736550    pokemon::Accessor::SetHandlerFriendship
+0x7100736690    pokemon::Accessor::SetUnkA4
+0x71007367d0    pokemon::Accessor::SetUnkA5
+0x7100736910    pokemon::Accessor::SetUnkA8
+0x7100736a50    pokemon::Accessor::SetUnkA6
+0x7100736b90    pokemon::Accessor::SetHandlerName
+0x7100736cc0    pokemon::Accessor::SetHandlerGender
+0x7100736e00    pokemon::Accessor::SetHeightAbsolute
+0x7100736f40    pokemon::Accessor::SetWeightAbsolute
+0x7100737080    pokemon::Accessor::SetHeightScalar
+0x71007371c0    pokemon::Accessor::SetWeightScalar
+0x7100737300    pokemon::Accessor::SetUnkAC
+0x7100737440    pokemon::Accessor::SetUnkAD
+0x7100737580    pokemon::Accessor::SetUnkCB
+0x71007376c0    pokemon::Accessor::SetUnkCC
+0x7100737800    pokemon::Accessor::SetUnkCD
+0x7100737940    pokemon::Accessor::SetUnkCE
+0x7100737a80    pokemon::Accessor::SetUnkCF
+0x7100737bc0    pokemon::Accessor::SetUnkD0
+0x7100737d00    pokemon::Accessor::HasRibbon
+0x7100737eb0    pokemon::Accessor::SetRibbon
+0x7100738050    pokemon::Accessor::SetUnk3C
+0x7100738190    pokemon::Accessor::GetUnk3C
+0x71007382c0    pokemon::Accessor::SetHyperTraining
+0x7100738400    pokemon::Accessor::GetHyperTraining
+0x7100738530    pokemon::Accessor::SetUnkED
+0x7100738650    pokemon::Accessor::SetUnkEE
+
+# pokemon/personal.h (D1 step 3, not decompiled yet)
+0x710071fa80    pokemon::personal::Load
+0x710071faa0    pokemon::personal::GetParam
+0x710071fae0    pokemon::personal::LoadGrowthTable
+0x710071fb70    pokemon::personal::GetMinExp
+0x710071f980    pokemon::GetSpeciesName(unsigned short*, unsigned int, unsigned int)
+0x710071fa10    pokemon::GetSpeciesName(gfl::str::StrBuf*, unsigned int, unsigned int)
+
+# gfl/str.h (Game Freak's text library, not decompiled yet)
+0x710003a840    gfl::str::StrBuf::GetPtr
+0x710003a8f0    gfl::str::StrBuf::SetStr
+0x710003aab0    gfl::str::StrNCopy
+0x710003abe0    gfl::str::StrEqual
+
+# Data
+0x7100efd2e5    gfl::mem::g_assertBadAllocExpr              # boost::container's assertion strings
+0x7100efd30a    gfl::mem::g_assertThrowExceptionFile
+0x7100efd37b    gfl::mem::g_assertThrowBadAllocFunc
+0x7100efd38b    gfl::mem::g_assertNotEmptyExpr
+0x7100efd39a    gfl::mem::g_assertVectorFile
+0x7100efd402    gfl::mem::g_assertPopBackFunc
+0x7100f52eb8    pokemon::kHiddenPowerTypes
+0x7100f83a90    pokemon::kBlockOrder
+0x7100f83da8    pokemon::kNatureModifiers
+0x7100f83e28    pokemon::kNatureFlavors
+0x7100f8401c    pokemon::kPlateTypes
+0x7100f840a4    pokemon::kMemoryTypes
+0x710160e388    gfl::mem::g_resourceStackSlot
+0x710163eec4    pokemon::g_badEggCalc
+0x710163eee0    pokemon::g_badEggBlockA
+0x710163ef18    pokemon::g_badEggBlockB
+0x710163ef50    pokemon::g_badEggBlockC
+0x710163ef88    pokemon::g_badEggBlockD
+0x710163efc0    pokemon::g_discardCalc
+0x710163efdc    pokemon::g_discardBlockA
+0x710163f014    pokemon::g_discardBlockB
+0x710163f04c    pokemon::g_discardBlockC
+0x710163f084    pokemon::g_discardBlockD

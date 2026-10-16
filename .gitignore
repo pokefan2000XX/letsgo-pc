@@ -1,0 +1,19 @@
+# Nothing from the game or the user's console is ever committed.
+/orig/
+*.nsp
+*.xci
+*.nca
+*.nso
+*.npdm
+prod.keys
+title.keys
+
+# Generated / downloaded
+/build/
+/toolchain/
+__pycache__/
+*.pyc
+
+# Runtime output: your save data and logs
+/save/
+letsgo.log

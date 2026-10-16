@@ -1,0 +1,14 @@
+Name,Demangled,Kind,PLT,GOT,CallSites
+__nnDetailNintendoSdkRuntimeObjectFile,__nnDetailNintendoSdkRuntimeObjectFile,func,0x71804cd5c0,0x7180b19410,1
+__rel_dyn_end,__rel_dyn_end,data,,0x7180b2e600,0
+__rel_dyn_start,__rel_dyn_start,data,,0x7180b2e608,0
+__rel_plt_end,__rel_plt_end,data,,0x7180b2e5e0,0
+__rel_plt_start,__rel_plt_start,data,,0x7180b2e5e8,0
+aligned_alloc,aligned_alloc,func,0x71804f77a0,0x7180b2e500,1
+calloc,calloc,func,0x71804f2a50,0x7180b2be58,17
+free,free,func,0x71804ce140,0x7180b30c48,1058
+malloc,malloc,func,0x71804ce130,0x7180b199c8,356
+nnMain,nnMain,func,0x71804d0390,0x7180b2e8e0,2
+nninitStartup,nninitStartup,func,0x71804d0380,0x7180b1aaf0,1
+nnosGetDefaultUserExceptionStackForApplication,nnosGetDefaultUserExceptionStackForApplication,func,0x71804d2300,0x7180b2eaf0,1
+realloc,realloc,func,0x71804dd960,0x7180b215e0,36
