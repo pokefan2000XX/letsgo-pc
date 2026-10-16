@@ -1,6 +1,6 @@
 # letsgo-pc
 
-A native Windows port of **Pokémon: Let's Go, Pikachu!** (v1.0.2). It isn't an
+A work in progress native Windows port of **Pokémon: Let's Go, Pikachu!** (v1.0.2). It isn't an
 emulator: the game's Switch code is recompiled ahead of time from ARM64 to x86-64
 and runs on a PC reimplementation of the Switch SDK, with its own Vulkan renderer,
 sound and input. The recompiled code is being replaced with decompiled C++, one
