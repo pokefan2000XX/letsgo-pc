@@ -20,7 +20,7 @@ isn't public.
 
 ## Status
 
-Work In Progress (roughly 80% complete)
+Work In Progress (recomp roughly 80% complete, decomp still in early stages)
 
 Works:
 
