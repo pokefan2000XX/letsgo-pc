@@ -7,7 +7,7 @@ sound and input. The recompiled code is being replaced with decompiled C++, one
 function at a time.
 
 This repository holds the downloads and info about the project. The source code
-isn't public.
+isn't public (yet).
 
 <p align="center">
   <img src="screenshots/bedroom.jpg" width="49%" alt="The player's bedroom">
