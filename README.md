@@ -92,6 +92,7 @@ are trademarks of their respective owners. The downloads contain none of the
 game's assets (models, textures, sound, text or movies), so the game won't run
 without your own dump.
 
-This project's own work is under the [MIT License](LICENSE). The licenses of
+This project's own work is under the [MIT License](LICENSE), which grants no
+rights to the game or its code, assets or trademarks. The licenses of
 the libraries built into `letsgo.exe` are in
 [THIRD_PARTY_NOTICES.txt](THIRD_PARTY_NOTICES.txt).
