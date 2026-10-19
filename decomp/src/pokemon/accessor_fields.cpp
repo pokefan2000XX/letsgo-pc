@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "pokemon/accessor.h"
+#include "pokemon/ids.h"
 #include "pokemon/personal.h"
 
 namespace pokemon {
@@ -311,10 +312,10 @@ void Accessor::SetRibbon(u32 ribbon) {
     }
 }
 
-// 0x710072dbf0: a bad egg is called by species 0x32A's name in its language
+// 0x710072dbf0: a bad egg is called "Egg" in its language
 void Accessor::GetNickname(gfl::str::StrBuf* out) {
     if (BadEgg()) {
-        GetSpeciesName(out, 0x32A, GetLanguage());
+        GetSpeciesName(out, kSpeciesEgg, GetLanguage());
         return;
     }
     Access access(this);
@@ -326,7 +327,7 @@ void Accessor::GetNickname(u16* out, u32 size) {
     u32 length = size < 13 ? size : 13;
     if (BadEgg()) {
         u16 name[13];
-        GetSpeciesName(name, 0x32A, GetLanguage());
+        GetSpeciesName(name, kSpeciesEgg, GetLanguage());
         gfl::str::StrNCopy(out, name, length);
         return;
     }

@@ -28,6 +28,9 @@ constexpr uint64_t kMainBase = 0x7100000000ull;
 constexpr uint64_t kSdkBase = 0x7180000000ull;
 constexpr uint64_t kTrampBase = 0x7200000000ull;
 constexpr uint64_t kTrampSize = 0x100000ull;          // 64k host functions
+// a hook's call to the original it replaces (ORIG_<address>): main's functions again, at the same
+// offsets (recomp/recomp.py's ORIGINALS)
+constexpr uint64_t kOriginalsBase = 0x7104000000ull, kOriginalsSize = 0x2000000ull;
 constexpr uint64_t kAslrBase = 0x0008000000ull, kAslrSize = 0x7FF8000000ull;
 constexpr uint64_t kHeapBase = 0x2000000000ull, kHeapRegionSize = 0x180000000ull;
 constexpr uint64_t kAliasBase = 0x0800000000ull, kAliasSize = 0x1000000000ull;

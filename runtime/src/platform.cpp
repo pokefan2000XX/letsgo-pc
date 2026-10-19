@@ -489,7 +489,8 @@ void platform_rumble(float low, float high) {
             if (e.type == SDL_EVENT_QUIT) {
                 log("window closed");
                 for (SDL_Gamepad* p : g_pads) SDL_RumbleGamepad(p, 0, 0, 0);
-                SDL_Quit();
+                // no SDL_Quit: it frees the audio streams while the audio thread may still be feeding
+                // one (a crash in SDL_LockMutex on the way out); ending the process frees everything
                 TerminateProcess(GetCurrentProcess(), 0);
             }
             if (e.type == SDL_EVENT_GAMEPAD_ADDED) open_pad(e.gdevice.which);
@@ -501,8 +502,8 @@ void platform_rumble(float low, float high) {
         apply_rumble();
         if (WaitForSingleObject((HANDLE)guest_thread, 0) == WAIT_OBJECT_0) {
             log("main guest thread finished");
-            SDL_Quit();
-            ExitProcess(0);
+            for (SDL_Gamepad* p : g_pads) SDL_RumbleGamepad(p, 0, 0, 0);
+            TerminateProcess(GetCurrentProcess(), 0);   // as above: other threads may still be in SDL
         }
         if (g_ren) {
             draw_status();

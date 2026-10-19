@@ -10,8 +10,10 @@
 #include <filesystem>
 #include <mutex>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "hle.h"
+#include "mods.h"
 #include "nx.h"
 
 namespace rt {
@@ -36,20 +38,18 @@ constexpr uint32_t kPathNotFound = 0x202, kPathAlreadyExists = 0x402, kOutOfRang
 struct File {
     FILE* f;
     std::string path;
+    bool romfs = false;                 // a RomFS file (read-only): the game's or a mod's
     bool rom = false;                   // read from the player's NSPs (g_game)
     std::string rom_path;
-    uint64_t size = 0;
+    uint64_t size = 0;                  // a RomFS file's, as the game sees it
+    uint64_t base_size = 0;             // the file a patched archive is made from
+    std::shared_ptr<const mods::Patched> patched;   // a gfpak the mods change (mods.h)
 };
 // the RomFS mount when the game comes from the player's NSPs: paths under it go to g_game
 static const std::string kRomMount = "\x01rom";
-static bool is_rom(const std::string& hp) { return !hp.compare(0, kRomMount.size(), kRomMount); }
-static std::string rom_rel(const std::string& hp) {
-    size_t i = kRomMount.size();
-    while (i < hp.size() && hp[i] == '/') i++;
-    return hp.substr(i);
-}
 static std::mutex lock;
 static std::unordered_map<std::string, std::string> mounts;   // "rom" -> host dir
+static std::unordered_set<std::string> rom_mounts;            // the mounts that are the RomFS
 static std::unordered_map<uint64_t, File> files;
 static uint64_t next_handle = 0x1000;
 std::string g_orig = "orig";
@@ -71,8 +71,20 @@ std::string host_path_of(const char* guest) {
     return host_path(guest);
 }
 
+// the RomFS path ("bin/...") of a path under a RomFS mount
+static bool rom_rel_of(const char* guest, std::string* rel) {
+    std::string s = guest;
+    size_t c = s.find(":/");
+    if (c == std::string::npos || !rom_mounts.count(s.substr(0, c))) return false;
+    size_t i = c + 2;
+    while (i < s.size() && s[i] == '/') i++;
+    *rel = s.substr(i);
+    return true;
+}
+
 static void MountRom(Ctx* c) {
     std::lock_guard<std::mutex> lk(lock);
+    rom_mounts.insert(cstr(c->x[0]));
     if (g_game) {
         mounts[cstr(c->x[0])] = kRomMount;
         log("fs: MountRom(\"%s\") -> the game's NSPs", cstr(c->x[0]));
@@ -83,21 +95,117 @@ static void MountRom(Ctx* c) {
     c->x[0] = 0;
 }
 
+// the bytes of the file under a RomFS file: from the player's NSPs, or a host file
+static uint64_t base_read(const File& f, uint64_t off, void* out, uint64_t size) {
+    if (off >= f.base_size) return 0;
+    uint64_t n = std::min(size, f.base_size - off);
+    if (f.rom) return g_game->read(f.rom_path, off, out, n) ? n : 0;
+    _fseeki64(f.f, (int64_t)off, SEEK_SET);
+    return fread(out, 1, (size_t)n, f.f);
+}
+// A RomFS file: a mod's when one has it, else the game's (the player's NSPs, or orig/romfs), with the
+// mods' files put in when it's a gfpak they change
+static bool open_rom(const char* guest, const std::string& rel, File* fe) {
+    fe->romfs = true;
+    if (const std::filesystem::path* m = mods::file(rel, true)) {
+        fe->path = rel;
+        fe->f = _wfopen(m->c_str(), L"rb");
+    } else if (g_game) {
+        if (!g_game->file_size(rel, &fe->base_size)) return false;
+        fe->rom = true;
+        fe->rom_path = rel;
+    } else {
+        fe->path = host_path(guest);
+        fe->f = fopen(fe->path.c_str(), "rb");
+    }
+    if (!fe->rom) {
+        if (!fe->f) return false;
+        _fseeki64(fe->f, 0, SEEK_END);
+        fe->base_size = (uint64_t)_ftelli64(fe->f);
+    }
+    fe->size = fe->base_size;
+    auto in_romfs = [](const std::string& path) {         // the game's own files, not the mods'
+        uint64_t size;
+        return g_game ? g_game->file_size(path, &size) : std::filesystem::is_regular_file(g_orig + "/romfs/" + path);
+    };
+    // the archives beside it that can share its folders: the others in its folder, the one named after its
+    // folder one level up (bin/archive/field/area02.gfpak beside bin/archive/field/area02/), and those in
+    // the folder named after it; the game's own (a mod's archive of the same path takes their place)
+    auto neighbours = [](const std::string& rel) {
+        std::vector<mods::Neighbour> out;
+        auto gfpaks_in = [](const std::string& dir) {
+            std::vector<std::string> found;
+            if (g_game) {
+                for (const std::string& p : g_game->list(dir))
+                    if (p.size() > 6 && p.compare(p.size() - 6, 6, ".gfpak") == 0) found.push_back(p);
+            } else {
+                std::error_code ec;
+                for (auto it = std::filesystem::directory_iterator(g_orig + "/romfs/" + dir, ec); !ec && it != std::filesystem::directory_iterator(); it.increment(ec))
+                    if (it->is_regular_file(ec) && it->path().extension() == ".gfpak") found.push_back(dir + "/" + it->path().filename().string());
+            }
+            return found;
+        };
+        auto add = [&](const std::string& path) {
+            uint64_t size = 0;
+            if (path == rel) return;
+            if (g_game) {
+                if (!g_game->file_size(path, &size)) return;
+                out.push_back({path, size, [path](uint64_t off, void* p, uint64_t n) { return g_game->read(path, off, p, n); }});
+            } else {
+                std::string host = g_orig + "/romfs/" + path;
+                std::error_code ec;
+                size = std::filesystem::file_size(host, ec);
+                if (ec) return;
+                out.push_back({path, size, [host](uint64_t off, void* p, uint64_t n) {
+                    FILE* f = fopen(host.c_str(), "rb");
+                    if (!f) return false;
+                    _fseeki64(f, (int64_t)off, SEEK_SET);
+                    bool ok = fread(p, 1, (size_t)n, f) == n;
+                    fclose(f);
+                    return ok;
+                }});
+            }
+        };
+        size_t slash = rel.rfind('/');
+        std::string dir = slash == std::string::npos ? "" : rel.substr(0, slash);
+        for (const std::string& p : gfpaks_in(dir)) add(p);
+        if (!dir.empty()) add(dir + ".gfpak");
+        for (const std::string& p : gfpaks_in(rel.substr(0, rel.size() - 6))) add(p);
+        return out;
+    };
+    fe->patched = mods::patch_archive(rel, fe->base_size, [fe](uint64_t off, void* out, uint64_t n) { return base_read(*fe, off, out, n) == n; },
+                                      in_romfs, neighbours);
+    if (fe->patched) fe->size = fe->patched->size;
+    return true;
+}
+// Reads an open file; from the game's NSPs outside the lock (they're positional and slow next to
+// everything else), host files under it
+static uint64_t read_at(File* f, uint64_t off, void* out, uint64_t size, std::unique_lock<std::mutex>& lk) {
+    if (!f->romfs) {
+        _fseeki64(f->f, (int64_t)off, SEEK_SET);
+        return fread(out, 1, (size_t)size, f->f);
+    }
+    File copy = *f;
+    if (copy.rom) lk.unlock();
+    if (!copy.patched) return base_read(copy, off, out, size);
+    return mods::read(*copy.patched, off, out, size, [&](uint64_t o, void* p, uint64_t n) { return base_read(copy, o, p, n) == n; });
+}
+
 // a whole file, wherever it is (for host code like the movie library): false if it doesn't exist
 bool read_whole_file(const char* guest, std::vector<uint8_t>* out) {
-    std::string hp;
-    {
-        std::lock_guard<std::mutex> lk(lock);
-        hp = host_path(guest);
+    std::unique_lock<std::mutex> lk(lock);
+    std::string rel;
+    if (rom_rel_of(guest, &rel)) {
+        File f{};
+        if (!open_rom(guest, rel, &f)) return false;
+        out->resize((size_t)f.size);
+        bool ok = read_at(&f, 0, out->data(), f.size, lk) == f.size;
+        if (f.f) fclose(f.f);
+        return ok;
     }
+    std::string hp = host_path(guest);
+    lk.unlock();
     if (hp.empty()) hp = guest;
-    if (is_rom(hp)) {
-        uint64_t size;
-        std::string rel = rom_rel(hp);
-        if (!g_game->file_size(rel, &size)) return false;
-        out->resize((size_t)size);
-        return g_game->read(rel, 0, out->data(), size);
-    }
     FILE* f = fopen(hp.c_str(), "rb");
     if (!f) return false;
     _fseeki64(f, 0, SEEK_END);
@@ -118,28 +226,34 @@ static void MountSaveData(Ctx* c) {
 static void Unmount(Ctx* c) {
     std::lock_guard<std::mutex> lk(lock);
     mounts.erase(cstr(c->x[0]));
+    rom_mounts.erase(cstr(c->x[0]));
 }
+// The last RomFS file this thread looked for and didn't find. The game goes on without checking for some
+// files (a species' learnset, wot_NNN.bin, when a trainer's team has a Pokémon Let's Go doesn't have) and
+// then uses a handle it never got, so the bad-handle error names it.
+static thread_local std::string t_missing;
 static void OpenFile(Ctx* c) {
     std::lock_guard<std::mutex> lk(lock);
-    std::string hp = host_path(cstr(c->x[1]));
     int mode = (int)c->x[2];
-    if (is_rom(hp)) {                   // the game's own files: read-only
-        uint64_t size = 0;
-        std::string rel = rom_rel(hp);
-        bool found = !(mode & 2) && g_game->file_size(rel, &size);
+    std::string rel;
+    if (rom_rel_of(cstr(c->x[1]), &rel)) {   // the game's own files (and the mods'): read-only
+        File fe{};
+        bool found = !(mode & 2) && open_rom(cstr(c->x[1]), rel, &fe);
         RT_TRACE("fs: OpenFile(\"%s\", %d) -> %s", cstr(c->x[1]), mode, found ? "ok" : "not found");
-        if (!found) { c->x[0] = kPathNotFound; return; }
+        if (!found) {
+            if (fe.f) fclose(fe.f);
+            t_missing = rel;
+            c->x[0] = kPathNotFound;
+            return;
+        }
         activity("load  %s", rel.c_str());
         uint64_t h = next_handle++;
-        File fe{nullptr, hp};
-        fe.rom = true;
-        fe.rom_path = rel;
-        fe.size = size;
-        files[h] = fe;
+        files[h] = std::move(fe);
         *(uint64_t*)c->x[0] = h;
         c->x[0] = 0;
         return;
     }
+    std::string hp = host_path(cstr(c->x[1]));
     FILE* f = hp.empty() ? nullptr : fopen(hp.c_str(), (mode & 2) ? "r+b" : "rb");
     RT_TRACE("fs: OpenFile(\"%s\", %d) -> %s", cstr(c->x[1]), mode, f ? "ok" : "not found");
     if (!f) { c->x[0] = kPathNotFound; return; }
@@ -151,7 +265,11 @@ static void OpenFile(Ctx* c) {
 }
 static File* file(uint64_t h) {
     auto it = files.find(h);
-    if (it == files.end()) fatal("fs: bad file handle 0x%llx", (unsigned long long)h);
+    if (it == files.end()) {
+        if (t_missing.empty()) fatal("fs: bad file handle 0x%llx", (unsigned long long)h);
+        fatal("The game needed %s, which isn't in the game's files or the mods (a Pokemon, move or item Let's Go "
+              "doesn't have can cause this).\n\nfs: bad file handle 0x%llx", t_missing.c_str(), (unsigned long long)h);
+    }
     return &it->second;
 }
 static void CloseFile(Ctx* c) {
@@ -163,7 +281,7 @@ static void CloseFile(Ctx* c) {
 static void GetFileSize(Ctx* c) {
     std::lock_guard<std::mutex> lk(lock);
     File* f = file(c->x[1]);
-    if (f->rom) {
+    if (f->romfs) {
         *(int64_t*)c->x[0] = (int64_t)f->size;
         c->x[0] = 0;
         return;
@@ -173,45 +291,22 @@ static void GetFileSize(Ctx* c) {
     c->x[0] = 0;
 }
 // ReadFile(FileHandle, long offset, void*, size_t)
-// reads from the game's NSPs (outside the lock: they're positional and slow next to everything else)
-static uint64_t rom_read(const File& f, uint64_t off, void* out, uint64_t size) {
-    if (off >= f.size) return 0;
-    uint64_t n = std::min(size, f.size - off);
-    return g_game->read(f.rom_path, off, out, n) ? n : 0;
-}
 static void ReadFile(Ctx* c) {
     std::unique_lock<std::mutex> lk(lock);
-    File* f = file(c->x[0]);
-    if (f->rom) {
-        File copy = *f;
-        lk.unlock();
-        c->x[0] = rom_read(copy, c->x[1], (void*)c->x[2], c->x[3]) == c->x[3] ? 0 : kOutOfRange;
-        return;
-    }
-    _fseeki64(f->f, (int64_t)c->x[1], SEEK_SET);
-    size_t n = fread((void*)c->x[2], 1, (size_t)c->x[3], f->f);
+    uint64_t n = read_at(file(c->x[0]), c->x[1], (void*)c->x[2], c->x[3], lk);
     c->x[0] = n == c->x[3] ? 0 : kOutOfRange;
 }
 // ReadFile(size_t* out, FileHandle, long offset, void*, size_t)
 static void ReadFile2(Ctx* c) {
     std::unique_lock<std::mutex> lk(lock);
-    File* f = file(c->x[1]);
-    if (f->rom) {
-        File copy = *f;
-        lk.unlock();
-        *(uint64_t*)c->x[0] = rom_read(copy, c->x[2], (void*)c->x[3], c->x[4]);
-        c->x[0] = 0;
-        return;
-    }
-    _fseeki64(f->f, (int64_t)c->x[2], SEEK_SET);
-    *(uint64_t*)c->x[0] = fread((void*)c->x[3], 1, (size_t)c->x[4], f->f);
+    *(uint64_t*)c->x[0] = read_at(file(c->x[1]), c->x[2], (void*)c->x[3], c->x[4], lk);
     c->x[0] = 0;
 }
 // WriteFile(FileHandle, long offset, void const*, size_t, WriteOption const&)
 static void WriteFile(Ctx* c) {
     std::lock_guard<std::mutex> lk(lock);
     File* f = file(c->x[0]);
-    if (f->rom) { c->x[0] = kPathNotFound; return; }
+    if (f->romfs) { c->x[0] = kPathNotFound; return; }
     _fseeki64(f->f, (int64_t)c->x[1], SEEK_SET);
     fwrite((const void*)c->x[2], 1, (size_t)c->x[3], f->f);
     c->x[0] = 0;
@@ -225,15 +320,15 @@ static void FlushFile(Ctx* c) {
 static void SetFileSize(Ctx* c) {
     std::lock_guard<std::mutex> lk(lock);
     File* f = file(c->x[0]);
-    if (f->rom) { c->x[0] = kPathNotFound; return; }
+    if (f->romfs) { c->x[0] = kPathNotFound; return; }
     fflush(f->f);
     _chsize_s(_fileno(f->f), (int64_t)c->x[1]);
     c->x[0] = 0;
 }
 static void CreateFile(Ctx* c) {
     std::lock_guard<std::mutex> lk(lock);
-    std::string hp = host_path(cstr(c->x[0]));
-    if (hp.empty() || is_rom(hp)) { c->x[0] = kPathNotFound; return; }
+    std::string hp = host_path(cstr(c->x[0])), rel;
+    if (hp.empty() || rom_rel_of(cstr(c->x[0]), &rel)) { c->x[0] = kPathNotFound; return; }
     if (std::filesystem::exists(hp)) { c->x[0] = kPathAlreadyExists; return; }
     std::filesystem::create_directories(std::filesystem::path(hp).parent_path());
     FILE* f = fopen(hp.c_str(), "wb");
@@ -242,21 +337,23 @@ static void CreateFile(Ctx* c) {
 }
 static void DeleteFile(Ctx* c) {
     std::lock_guard<std::mutex> lk(lock);
-    std::string hp = host_path(cstr(c->x[0]));
-    c->x[0] = (!hp.empty() && !is_rom(hp) && std::filesystem::remove(hp)) ? 0 : kPathNotFound;
+    std::string hp = host_path(cstr(c->x[0])), rel;
+    c->x[0] = (!hp.empty() && !rom_rel_of(cstr(c->x[0]), &rel) && std::filesystem::remove(hp)) ? 0 : kPathNotFound;
 }
 // GetEntryType(DirectoryEntryType*, char const*): 0 = directory, 1 = file
 static void GetEntryType(Ctx* c) {
     std::lock_guard<std::mutex> lk(lock);
-    std::string hp = host_path(cstr(c->x[1]));
-    if (is_rom(hp)) {
+    std::string hp = host_path(cstr(c->x[1])), rel;
+    if (rom_rel_of(cstr(c->x[1]), &rel)) {   // a mod's, then the game's (orig/romfs is a host folder, below)
         uint64_t size;
-        std::string rel = rom_rel(hp);
-        if (g_game->is_dir(rel)) *(uint32_t*)c->x[0] = 0;
-        else if (g_game->file_size(rel, &size)) *(uint32_t*)c->x[0] = 1;
-        else { c->x[0] = kPathNotFound; return; }
-        c->x[0] = 0;
-        return;
+        int type = mods::file(rel) ? 1 : mods::is_dir(rel) ? 0 : -1;
+        if (type < 0 && g_game) type = g_game->is_dir(rel) ? 0 : g_game->file_size(rel, &size) ? 1 : -1;
+        if (type >= 0 || g_game) {
+            if (type < 0) { c->x[0] = kPathNotFound; return; }
+            *(uint32_t*)c->x[0] = (uint32_t)type;
+            c->x[0] = 0;
+            return;
+        }
     }
     std::error_code ec;
     auto st = std::filesystem::status(hp, ec);

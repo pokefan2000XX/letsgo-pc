@@ -16,6 +16,8 @@ public:
     // RomFS paths are relative to the root ("bin/..."); false if there's no such file
     virtual bool file_size(const std::string& path, uint64_t* size) const = 0;
     virtual bool is_dir(const std::string& path) const = 0;
+    // The files (not folders) right inside a RomFS folder, as paths from the root
+    virtual std::vector<std::string> list(const std::string& dir) const = 0;
     virtual bool read(const std::string& path, uint64_t offset, void* out, uint64_t size) const = 0;
     // An ExeFS file of the update (main, sdk, main.npdm, ...)
     virtual std::vector<uint8_t> exefs(const std::string& name) const = 0;

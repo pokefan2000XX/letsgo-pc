@@ -12,15 +12,15 @@ import os
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Roadmap phases and the parts of main they cover (filled in as each phase's code is found)
+# The code each roadmap phase decompiles (filled in as it's found); phases 1 and 4 are tools only
 PHASES = [
-    ("D1 Pokemon data", [(0x710071C000, 0x710073A400)]),
-    ("D2 Saves", []),
-    ("D3 Script commands", []),
-    ("D4 Game data tables", []),
-    ("D5 Battle", []),
-    ("D6 Field and catching", []),
-    ("D7 Menus and screens", []),
+    ("D1 Pokemon data", [(0x710071C3F0, 0x710073A130)]),        # after protobuf, before the system
+    ("2 Model tables", []),
+    ("3 Field (maps)", []),
+    ("5 Battle core", [(0x71009C0000, 0x7100AB0000)]),       # the battle's code, roughly (its events: battle/event.cpp)
+    ("6 Script commands", []),
+    ("7 Field camera", []),
+    ("8 UI code", []),
 ]
 
 

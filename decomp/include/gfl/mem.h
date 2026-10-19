@@ -19,11 +19,28 @@ public:
     virtual ~MemoryResource();
     void* Allocate(size_t size, size_t align) { return DoAllocate(size, align); }
     void Deallocate(void* p, size_t size, size_t align) { DoDeallocate(p, size, align); }
+    // Logs what the resource holds (gflib3 calls it when an allocation fails)
+    void Dump() { DoDump(); }
 
 protected:
     virtual void* DoAllocate(size_t size, size_t align) = 0;
     virtual void DoDeallocate(void* p, size_t size, size_t align) = 0;
     virtual bool DoIsEqual(const MemoryResource& other) const = 0;
+    // gflib3's own functions, before DoDump
+    virtual void Unk28() = 0;
+    virtual void Unk30() = 0;
+    virtual void Unk38() = 0;
+    virtual void Unk40() = 0;
+    virtual void Unk48() = 0;
+    virtual void Unk50() = 0;
+    virtual void Unk58() = 0;
+    virtual void Unk60() = 0;
+    virtual void Unk68() = 0;
+    virtual void Unk70() = 0;
+    virtual void Unk78() = 0;
+    virtual void Unk80() = 0;
+    virtual void Unk88() = 0;
+    virtual void DoDump() = 0;
 };
 
 // The resources of objects under construction on this thread: a
@@ -136,12 +153,85 @@ private:
     size_t align_ = 0;
 };
 
+// The same for an array: each element is destroyed, as many as fit the allocation's size
+template <class T>
+class UniquePtr<T[]> {
+public:
+    UniquePtr() = default;
+    UniquePtr(T* p, MemoryResource* resource, size_t size, size_t align)
+        : ptr_(p), resource_(resource), size_(size), align_(align) {}
+    UniquePtr(UniquePtr&& other)
+        : ptr_(other.ptr_), resource_(other.resource_), size_(other.size_), align_(other.align_) {
+        other.ptr_ = nullptr;
+    }
+    UniquePtr& operator=(UniquePtr&& other) {
+        T* old = ptr_;
+        ptr_ = other.ptr_;
+        other.ptr_ = nullptr;
+        if (old != nullptr) {
+            Destroy(old);
+        }
+        resource_ = other.resource_;
+        size_ = other.size_;
+        align_ = other.align_;
+        return *this;
+    }
+    ~UniquePtr() { Reset(); }
+    UniquePtr(const UniquePtr&) = delete;
+    UniquePtr& operator=(const UniquePtr&) = delete;
+
+    void Reset() {
+        T* old = ptr_;
+        ptr_ = nullptr;
+        if (old != nullptr) {
+            Destroy(old);
+        }
+    }
+    T* Get() const { return ptr_; }
+    T& operator[](size_t i) const { return ptr_[i]; }
+    explicit operator bool() const { return ptr_ != nullptr; }
+
+private:
+    void Destroy(T* p) {
+        size_t count = size_ / sizeof(T);
+        for (size_t i = 0; i < count; i++) {
+            p[i].~T();
+        }
+        resource_->Deallocate(p, size_, align_);
+    }
+
+    T* ptr_ = nullptr;
+    MemoryResource* resource_ = nullptr;
+    size_t size_ = 0;
+    size_t align_ = 0;
+};
+
 // Allocates a T from the resource and constructs it with the resource current
 template <class T, class... Args>
 UniquePtr<T> MakeUnique(MemoryResource* resource, Args&&... args) {
     void* p = resource->Allocate(sizeof(T), alignof(T));
     ResourceScope scope(resource);
     return UniquePtr<T>(new (p) T(static_cast<Args&&>(args)...), resource);
+}
+
+// The same for an array of `count` zeroed Ts (T without a constructor)
+template <class T>
+UniquePtr<T[]> MakeUniqueArray(MemoryResource* resource, size_t count) {
+    void* p = resource->Allocate(count * sizeof(T), alignof(T));
+    ResourceScope scope(resource);
+    return UniquePtr<T[]>(new (p) T[count](), resource, count * sizeof(T), alignof(T));
+}
+
+// An array of `count` objects, each constructed with `args`. The game has this as a function of
+// its own (for each type), so it's never inlined.
+template <class T, class... Args>
+[[gnu::noinline]] UniquePtr<T[]> MakeObjectArray(MemoryResource* resource, size_t count, Args&&... args) {
+    T* elements = static_cast<T*>(resource->Allocate(count * sizeof(T), alignof(T)));
+    ResourceScope scope(resource);
+    for (size_t i = 0; i < count; i++) {
+        new (&elements[i]) T(args...);
+    }
+    return UniquePtr<T[]>(elements, resource, count * sizeof(T), alignof(T));
 }
 
 }  // namespace gfl::mem

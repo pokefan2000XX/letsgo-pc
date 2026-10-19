@@ -5,6 +5,7 @@
 #include <timeapi.h>
 
 #include <cstdio>
+#include <cstring>
 #include <filesystem>
 #include <string>
 #include <vector>
@@ -12,6 +13,7 @@
 #include <chrono>
 
 #include "hle.h"
+#include "mods.h"
 #include "nx.h"
 #include "setup.h"
 
@@ -50,12 +52,25 @@ static LONG WINAPI on_exception(EXCEPTION_POINTERS* ep) {
     static const uint64_t image_end = image + ((IMAGE_NT_HEADERS*)(image + ((IMAGE_DOS_HEADER*)image)->e_lfanew))
                                                   ->OptionalHeader.SizeOfImage;
     uint64_t rip = ep->ContextRecord->Rip;
-    if (rip < image || rip >= image_end) return EXCEPTION_CONTINUE_SEARCH;
     Ctx* c = current_ctx();
-    log("host exception 0x%08lx at letsgo.exe+0x%llx (access 0x%llx %s)", er->ExceptionCode,
-        (unsigned long long)(ep->ContextRecord->Rip - (uint64_t)GetModuleHandleW(nullptr)),
-        (unsigned long long)(er->NumberParameters > 1 ? er->ExceptionInformation[1] : 0),
-        er->NumberParameters > 0 && er->ExceptionInformation[0] == 1 ? "write" : "read");
+    if (rip < image || rip >= image_end) {
+        // another module's: its own business (drivers handle some of theirs), unless a game thread
+        // faults in it, as in the C runtime's memcpy called for the game
+        if (!c || er->ExceptionCode != EXCEPTION_ACCESS_VIOLATION) return EXCEPTION_CONTINUE_SEARCH;
+        HMODULE module = nullptr;
+        wchar_t path[MAX_PATH] = L"?";
+        if (GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCWSTR)rip, &module))
+            GetModuleFileNameW(module, path, MAX_PATH);
+        log("host exception 0x%08lx in %ls+0x%llx on a game thread (access 0x%llx %s)", er->ExceptionCode,
+            std::filesystem::path(path).filename().c_str(), (unsigned long long)(rip - (uint64_t)module),
+            (unsigned long long)(er->NumberParameters > 1 ? er->ExceptionInformation[1] : 0),
+            er->NumberParameters > 0 && er->ExceptionInformation[0] == 1 ? "write" : "read");
+    } else {
+        log("host exception 0x%08lx at letsgo.exe+0x%llx (access 0x%llx %s)", er->ExceptionCode,
+            (unsigned long long)(rip - image),
+            (unsigned long long)(er->NumberParameters > 1 ? er->ExceptionInformation[1] : 0),
+            er->NumberParameters > 0 && er->ExceptionInformation[0] == 1 ? "write" : "read");
+    }
     if (uint64_t g = guest_of_host(ep->ContextRecord->Rip))
         log("  in guest function %s", describe(g).c_str());
     if (c) {
@@ -100,6 +115,7 @@ static std::string find_orig() {
 }
 
 namespace rt::nvn { extern uint64_t g_trace_frame; }
+namespace gpu { void shaders_set_cache(const std::string& path); }
 
 int main(int argc, char** argv) {
     using namespace rt;
@@ -119,6 +135,7 @@ int main(int argc, char** argv) {
         else if (a == "--dump-threads" && i + 1 < argc) dump_at.push_back(atof(argv[++i]));
     }
     GameFiles files;                                      // --base / --update / --keys (any characters)
+    std::wstring mods_dir;                                // --mods
     {
         int wargc = 0;
         wchar_t** wargv = CommandLineToArgvW(GetCommandLineW(), &wargc);
@@ -126,6 +143,7 @@ int main(int argc, char** argv) {
             if (!wcscmp(wargv[i], L"--base")) files.base = wargv[++i];
             else if (!wcscmp(wargv[i], L"--update")) files.update = wargv[++i];
             else if (!wcscmp(wargv[i], L"--keys")) files.keys = wargv[++i];
+            else if (!wcscmp(wargv[i], L"--mods")) mods_dir = wargv[++i];
         }
         LocalFree(wargv);
     }
@@ -152,6 +170,12 @@ int main(int argc, char** argv) {
         fsx::g_orig = orig;
         fsx::g_save = (std::filesystem::absolute(orig).parent_path() / "save").string();   // beside orig/
     }
+    // translated shaders kept between runs (gpu/shaders.cpp): beside the saves, or LETSGO_SHADER_CACHE
+    // (a file, or "off")
+    std::string shader_cache = from_nsp ? narrow(data_dir + L"\\shader_cache.bin")
+                                        : narrow((std::filesystem::absolute(orig).parent_path() / "cache" / "shader_cache.bin").wstring());
+    if (const char* sc = getenv("LETSGO_SHADER_CACHE")) shader_cache = !strcmp(sc, "off") ? "" : sc;
+    gpu::shaders_set_cache(shader_cache);
     if (const char* d = getenv("LETSGO_SAVE_DIR")) {                                    // tests: a save of their own
         std::filesystem::create_directories(d);
         fsx::g_save = std::filesystem::absolute(d).string();
@@ -160,6 +184,19 @@ int main(int argc, char** argv) {
         fsx::g_save.c_str());
     if (!from_nsp && !std::filesystem::exists(orig + "/elf/main.elf"))
         fatal("game files not found in \"%s\": run tools/prepare.sh, or pass --orig <dir>", orig.c_str());
+    // the mods folder (mods.h): --mods DIR or LETSGO_MODS ("off": none), else mods/ beside the exe, then
+    // beside orig/ (or, with the NSPs, in %APPDATA%\LetsGoPikachu)
+    if (mods_dir.empty())
+        if (const wchar_t* m = _wgetenv(L"LETSGO_MODS")) mods_dir = m;
+    if (mods_dir.empty()) {
+        wchar_t exe[MAX_PATH];
+        GetModuleFileNameW(nullptr, exe, MAX_PATH);
+        std::filesystem::path beside = std::filesystem::path(exe).parent_path() / L"mods";
+        mods_dir = std::filesystem::exists(beside) ? beside.wstring()
+                   : from_nsp                      ? data_dir + L"\\mods"
+                                                   : (std::filesystem::absolute(orig).parent_path() / L"mods").wstring();
+    }
+    if (mods_dir != L"off") mods::init(mods_dir);
     mem_init();
     timeBeginPeriod(1);                                   // 1 ms sleep granularity for frame and audio pacing
     load_modules(orig);

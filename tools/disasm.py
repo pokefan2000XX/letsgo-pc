@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Disassemble functions of main with names and targets filled in, for decomp work.
 
-  python -P tools/dis.py 0x7100197770 [...]       whole functions (any address inside one)
-  python -P tools/dis.py 0x7100197770 -n 20        only the first 20 instructions
+  python -P tools/disasm.py 0x7100197770 [...]       whole functions (any address inside one)
+  python -P tools/disasm.py 0x7100197770 -n 20        only the first 20 instructions
 
 Calls show the callee's name (decomp/symbols.txt, main's exports, imports) or FUN_<address>.
 ADRP pairs show their target: a string's text, a known name or DAT_<address>. The output is

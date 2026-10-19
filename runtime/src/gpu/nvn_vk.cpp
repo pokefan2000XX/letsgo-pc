@@ -17,6 +17,7 @@
 #include <memory>
 #include <mutex>
 #include <set>
+#include <thread>
 #include <unordered_map>
 #include <vector>
 
@@ -24,12 +25,14 @@
 #include "gpu.h"
 #include "maxwell.h"
 #include "nvasm.h"
-#include "spirv.h"
+#include "shaders.h"
+#include "../perf.h"
 #include "texture.h"
 
 namespace rt::nvn {
 void set_proc(const char* name, rc_fn fn);
-void frame_presented(uint64_t window_interval);
+void frame_pace(uint64_t window_interval);
+void frame_done();
 uint32_t window_interval(uint64_t window);
 }  // namespace rt::nvn
 
@@ -147,6 +150,7 @@ void transition_general(VkCommandBuffer cb, VkImage img, VkImageAspectFlags aspe
 void upload_from_guest(Texture* t) {
     const FormatInfo& f = *t->fi;
     if (!f.bpb || t->aspect != VK_IMAGE_ASPECT_COLOR_BIT || !t->addr) return;
+    rt::perf::Scope timed(rt::perf::TextureUpload);
     std::vector<uint8_t> tmp;
     std::vector<uint8_t> all;
     std::vector<VkBufferImageCopy> regions;
@@ -317,11 +321,16 @@ void destroy_texture(Texture* t) {
         std::lock_guard<std::mutex> lk(g_watch_lock);
         g_watched.erase(std::remove(g_watched.begin(), g_watched.end(), t), g_watched.end());
     }
-    retire(g.submitted, [t] {
-        for (auto& [k, v] : t->views) vk::vkDestroyImageView(g.dev, v, nullptr);
-        vk::vkDestroyImage(g.dev, t->image, nullptr);
-        free_memory(t->mem);
-        delete t;
+    // its first layout change and uploads may still be waiting in the deferred work, which goes into the next command buffer (after
+    // the retirements that are due): it goes once that command buffer is done, never before (a texture made and dropped between two
+    // command buffers was destroyed and then copied into, which crashed the driver)
+    defer([t](VkCommandBuffer) {
+        retire(g.submitted + 1, [t] {
+            for (auto& [k, v] : t->views) vk::vkDestroyImageView(g.dev, v, nullptr);
+            vk::vkDestroyImage(g.dev, t->image, nullptr);
+            free_memory(t->mem);
+            delete t;
+        });
     });
 }
 
@@ -416,78 +425,25 @@ void write_sampler_descriptor(uint32_t id, VkSampler s) {
 }
 
 // ---- programs ----------------------------------------------------------------------------------------
+// The shader objects belong to shaders.cpp, shared by every program with the same code
 struct StageShader {
     bool present = false;
     bool maxwell = false;                                 // translated from GPU code (no assembly)
     nvasm::Reflection refl;
-    std::vector<uint8_t> control;                         // a copy of the control section
-    std::vector<uint8_t> code;                            // maxwell: a copy of the data section
-    std::string glsl;                                     // the last translation (kept for frame dumps)
+    std::shared_ptr<ShaderSource> src;
+    std::string glsl;                                     // the variant last used (kept for frame dumps)
     std::unordered_map<uint32_t, VkShaderEXT> variants;   // vertex: by the integer inputs' signedness
 };
 struct Program {
     StageShader st[3];                                    // vertex, fragment, compute
     std::mutex lock;
 };
-std::mutex g_compile_lock;
-std::atomic<int> g_programs, g_shader_failures;
+std::atomic<int> g_programs;
 extern uint64_t g_dump_frame;
 
-// `key`: assembly programs: the integer inputs with a signed format; GPU-code programs: the
-// inputs with an unsigned (bits 0..15) or signed (bits 16..31) integer format
-VkShaderEXT build_shader(StageShader& s, int stage, uint32_t key) {
-    nvasm::Options opt;
-    nvasm::Result r;
-    if (s.maxwell) {
-        opt.uint_inputs = key & 0xFFFF;
-        opt.sint_inputs = key >> 16;
-        r = maxwell::translate(s.control.data(), s.control.size(), s.code.data(), s.code.size(), opt);
-    } else {
-        opt.sint_inputs = key;
-        r = nvasm::translate(s.control.data(), s.control.size(), opt);
-    }
-    if (!r.ok) {
-        if (g_shader_failures++ < 20) log("gpu: shader translation failed: %s", r.error.c_str());
-        return VK_NULL_HANDLE;
-    }
-    // LETSGO_DEBUG_FS=1: every fragment program writes magenta (shows what rasterizes)
-    static const bool debug_fs = getenv("LETSGO_DEBUG_FS") != nullptr;
-    if (debug_fs && stage == 1 && r.glsl.find("out vec4 fo_0;") != std::string::npos) {
-        size_t end = r.glsl.rfind('}');
-        if (end != std::string::npos) r.glsl.insert(end, "    fo_0 = vec4(1.0, 0.0, 1.0, 1.0);\n");
-        for (size_t at = 0; (at = r.glsl.find("return;", at)) != std::string::npos; at += 40)
-            r.glsl.replace(at, 7, "{ fo_0 = vec4(1.0, 0.0, 1.0, 1.0); return; }");
-    }
-    if (g_dump_frame != ~0ull) s.glsl = r.glsl;
-    std::vector<uint32_t> spv;
-    std::string msg;
-    {
-        std::lock_guard<std::mutex> lk(g_compile_lock);
-        if (!compile_glsl(r.refl.stage, r.glsl, spv, msg)) {
-            if (g_shader_failures++ < 20) log("gpu: shader compile failed: %s", msg.c_str());
-            return VK_NULL_HANDLE;
-        }
-    }
-    VkShaderCreateInfoEXT ci{VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT};
-    ci.stage = stage == 0 ? VK_SHADER_STAGE_VERTEX_BIT : stage == 1 ? VK_SHADER_STAGE_FRAGMENT_BIT : VK_SHADER_STAGE_COMPUTE_BIT;
-    ci.nextStage = stage == 0 ? VK_SHADER_STAGE_FRAGMENT_BIT : 0;
-    ci.codeType = VK_SHADER_CODE_TYPE_SPIRV_EXT;
-    ci.codeSize = spv.size() * 4;
-    ci.pCode = spv.data();
-    ci.pName = "main";
-    VkDescriptorSetLayout sets[2] = {g.set0_layout, g.set1_layout};
-    ci.setLayoutCount = 2;
-    ci.pSetLayouts = sets;
-    VkShaderEXT sh = VK_NULL_HANDLE;
-    VkResult res = vk::vkCreateShadersEXT(g.dev, 1, &ci, nullptr, &sh);
-    if (res != VK_SUCCESS) {
-        log("gpu: vkCreateShadersEXT failed: %s", vk::result_name(res));
-        return VK_NULL_HANDLE;
-    }
-    return sh;
-}
-
-// `types`: bit i = vertex attribute i has an unsigned-integer format, bit 16 + i a signed one
+// `types`: bit i = vertex attribute i has an unsigned-integer format, bit 16 + i a signed one.
+// The variant's key: assembly programs: the integer inputs with a signed format; GPU-code
+// programs: the inputs with an unsigned (bits 0..15) or signed (bits 16..31) integer format
 VkShaderEXT shader_variant(Program* p, int stage, uint32_t types) {
     StageShader& s = p->st[stage];
     if (!s.present) return VK_NULL_HANDLE;
@@ -495,7 +451,9 @@ VkShaderEXT shader_variant(Program* p, int stage, uint32_t types) {
     std::lock_guard<std::mutex> lk(p->lock);
     auto it = s.variants.find(key);
     if (it != s.variants.end()) return it->second;
-    VkShaderEXT sh = build_shader(s, stage, key);
+    auto b = shader_build(s.src, key);
+    VkShaderEXT sh = shader_object(*b);                   // usually built by now (ProgramSetShaders queued it)
+    if (g_dump_frame != ~0ull) s.glsl = shader_glsl(*b);
     s.variants[key] = sh;
     return sh;
 }
@@ -1159,7 +1117,9 @@ void capture_if_requested(Texture* t, int32_t x, int32_t y, uint32_t w, uint32_t
     std::vector<uint8_t> crop((size_t)w * h * 4);
     for (uint32_t r = 0; r < h; r++)
         memcpy(crop.data() + (size_t)r * w * 4, rgba.data() + ((size_t)(t->h - (uint32_t)y - h + r) * t->w + (uint32_t)x) * 4, (size_t)w * 4);
-    rt::platform_save_png(path, w, h, crop.data());
+    // writing the PNG takes longer than a frame, so it happens on a thread of its own: the game doesn't slow down while
+    // a test takes shots
+    std::thread([path, w, h, crop = std::move(crop)] { rt::platform_save_png(path, w, h, crop.data()); }).detach();
 }
 
 // LETSGO_DUMP_FRAME=N: save every color render target of frame N (and the presented image) as
@@ -1350,6 +1310,7 @@ P(DeviceInitialize) {
         g_dump_multi = g_dump_frames.size() + g_dump_times.size() > 1;
         if (!g_dump_frames.empty()) g_dump_frame = g_dump_frames.front();
         else if (!g_dump_times.empty()) g_dump_frame = ~0ull - 1;              // dump mode: keep the GLSL
+        if (g_dump_frame != ~0ull) shaders_keep_glsl();
         g_ready = init();
         if (!g_ready) rt::fatal("Vulkan could not be initialized (see letsgo.log). Run with --no-gpu for the logging-only renderer.");
         // sampler 0 until the game registers its own: texel-fetch handles carry no sampler
@@ -1646,12 +1607,7 @@ P(ProgramFinalize) {
     Program* p = *G<Program*>(c->x[0]);
     if (getenv("LETSGO_PROG_LOG")) log("gpu: ProgramFinalize(0x%llx)", (unsigned long long)c->x[0]);
     if (!p) return;
-    retire(g.submitted, [p] {
-        for (auto& s : p->st)
-            for (auto& [k, v] : s.variants)
-                if (v) vk::vkDestroyShaderEXT(g.dev, v, nullptr);
-        delete p;
-    });
+    retire(g.submitted, [p] { delete p; });     // its shader objects stay with shaders.cpp (other programs share them)
     *G<Program*>(c->x[0]) = nullptr;
 }
 // SetShaders(program, count, NVNshaderData[] {data address, control pointer})
@@ -1670,16 +1626,17 @@ P(ProgramSetShaders) {
         }
         uint32_t asm_off = *(const uint32_t*)(ctrl + 0x14), asm_size = *(const uint32_t*)(ctrl + 0x18);
         uint32_t const_off = *(const uint32_t*)(ctrl + 0x20);
-        size_t size = std::max<size_t>(asm_off + asm_size, const_off + 16 * 64);
         const char* hdr = (const char*)ctrl + asm_off;
+        // the program.local constants the text declares ("PARAM c[N] = ..."), not more: what follows
+        // them differs between runs, and the copy identifies the shader in the shader cache
+        uint32_t constants = 0;
+        if (std::string_view text(hdr, asm_size); text.find("PARAM c[") != std::string_view::npos)
+            constants = (uint32_t)strtoul(hdr + text.find("PARAM c[") + 8, nullptr, 10);
+        size_t size = std::max<size_t>(asm_off + asm_size, const_off + 16 * (size_t)std::min(constants, 64u));
         int stage = !strncmp(hdr, "!!NVvp", 6) ? 0 : !strncmp(hdr, "!!NVfp", 6) ? 1 : !strncmp(hdr, "!!NVcp", 6) ? 2 : -1;
-        nvasm::Result r;
+        std::shared_ptr<ShaderSource> src;
         if (stage >= 0) {
-            StageShader& s = p->st[stage];
-            s.maxwell = false;
-            s.code.clear();
-            s.control.assign(ctrl, ctrl + size);
-            r = nvasm::translate(s.control.data(), s.control.size());
+            src = make_source(stage, false, ctrl, size);
         } else {
             // no assembly: translate the GPU code (control+0x6F0: control section size)
             size_t csize = std::min<size_t>(std::max<uint32_t>(0x710, *(const uint32_t*)(ctrl + 0x6F0)), 1u << 20);
@@ -1699,23 +1656,24 @@ P(ProgramSetShaders) {
                 if (FILE* f = fopen((base + ".ctrl").c_str(), "wb")) { fwrite(ctrl, 1, csize, f); fclose(f); }
                 if (FILE* f = fopen((base + ".code").c_str(), "wb")) { fwrite(data, 1, dsize, f); fclose(f); }
             }
-            StageShader& s = p->st[stage];
-            s.maxwell = true;
-            s.control.assign(ctrl, ctrl + csize);
-            s.code.assign(data, data + dsize);
-            r = maxwell::translate(s.control.data(), s.control.size(), s.code.data(), s.code.size());
+            src = make_source(stage, true, ctrl, csize, data, dsize);
         }
+        // the build starts now, on a worker (the game sets programs while it loads what uses them);
+        // the reflection comes from the shader cache, or from translating here
+        auto b = shader_build(src, 0, true);
         StageShader& s = p->st[stage];
-        if (!r.ok) {
-            log("gpu: program stage %d%s: %s", stage, s.maxwell ? " (GPU code)" : "", r.error.c_str());
+        std::lock_guard<std::mutex> lk(p->lock);
+        std::string error;
+        s.maxwell = src->maxwell;
+        s.src = src;
+        s.variants.clear();
+        if (!shader_reflection(*b, s.refl, error)) {
+            log("gpu: program stage %d%s: %s", stage, s.maxwell ? " (GPU code)" : "", error.c_str());
             s.present = false;
             ok = false;
             continue;
         }
-        s.refl = r.refl;
         s.present = true;
-        s.variants.clear();
-        if (stage != 2) shader_variant(p, stage, 0);
     }
     static std::atomic<int> logged{0};
     if (!ok && logged++ < 40) log("gpu: ProgramSetShaders(%d stages): not all stages could be translated", n);
@@ -2270,9 +2228,13 @@ P(QueuePresentTexture) {
         capture_if_requested(t, x, y, (uint32_t)cw, (uint32_t)ch);
         if (g_dump_frame != ~0ull) dump_frame(t);
         dump_time_check();
+        // on the frame's place on the virtual 60 Hz display, so frames reach the screen evenly spaced
+        rt::nvn::frame_pace(w->interval);
         present(t->image, is_srgb(t->fi->image), x, y, (uint32_t)cw, (uint32_t)ch, true);
+    } else {
+        rt::nvn::frame_pace(w->interval);
     }
-    rt::nvn::frame_presented(w->interval);
+    rt::nvn::frame_done();
 }
 
 #undef P

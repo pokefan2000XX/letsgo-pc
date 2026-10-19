@@ -6,7 +6,7 @@
 namespace pokemon {
 
 // 0x7100729540
-Accessor::Accessor() : calc_(nullptr), core_(nullptr), encrypted_(false), fastMode_(false) {}
+Accessor::Accessor() : calc_(nullptr), core_(nullptr), encrypted_(false), fastMode_(false), unk1A_(0) {}
 
 // 0x7100729560, deleting: 0x7100729570
 Accessor::~Accessor() {}

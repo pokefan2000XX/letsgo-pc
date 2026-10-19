@@ -320,6 +320,7 @@ public:
     CoreData* core_;
     bool encrypted_;
     bool fastMode_;
+    u16 unk1A_;                           // zeroed by the constructor, otherwise unused
 };
 DECOMP_SIZE(Accessor, 0x20);
 DECOMP_OFFSET(Accessor, calc_, 0x08);

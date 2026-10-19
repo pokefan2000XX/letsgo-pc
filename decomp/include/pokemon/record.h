@@ -12,6 +12,7 @@
 #pragma once
 #include "decomp.h"
 #include "gfl/mem.h"
+#include "pokemon/ids.h"
 
 namespace pokemon {
 
@@ -167,9 +168,47 @@ u16 CalcChecksum(const void* data, u32 size);
 
 void InitDefaultRecords();
 
+// What a new Pokémon is made from. Fields left at their "random" values are rolled when it's made
+// (ResolveSpec); the defaults make a random level 1 egg.
+struct CreationSpec {
+    static constexpr u64 kRandom = ~0ull;
+    static constexpr u64 kPidNotShiny = 0x1FFFFFFFF;   // a random PID that isn't shiny
+    static constexpr u64 kPidShiny = 0x2FFFFFFFF;      // a random shiny PID
+    static constexpr u64 kPidRolls = 0x3FFFFFFFF;      // a random PID, rerolled until shiny up to shinyRolls times
+
+    u64 key = kRandom;                    // the encryption key
+    u64 pid = kPidRolls;
+    u64 id = kRandom;                     // the original trainer's ID
+    u32 species = kSpeciesEgg;
+    u8 form = 0;                          // 0xFF: random (0 for species with Mega Evolutions)
+    u16 level = 1;                        // 100 at most
+    u16 gender = 0xFF;                    // 0xFF: by the species' gender ratio
+    s16 nature = -1;                      // -1: random
+    u8 ability = 0xFF;                    // slot 0-2; 0xFF: 0 or 1 at random, 0xFE: 0, 1 or 2
+    u8 shinyRolls = 1;
+    s16 ivs[6] = {-1, -1, -1, -1, -1, -1};    // in Stat order; -1: random
+    u32 friendship = 0xFFFF;              // 0xFFFF: the species' base friendship
+    u8 perfectIvs = 0;                    // how many of the random IVs are 31 instead (6 or more: none)
+    u8 sizeRolls = 1;                     // the most extreme of this many size rolls is kept (0: none)
+    u16 weight = 0x100;                   // a scalar, or how to roll one (RollSize)
+    u16 height = 0x100;
+};
+DECOMP_SIZE(CreationSpec, 0x40);
+
 // New zeroed records from a memory resource. CalcData is returned encrypted with the key.
 gfl::mem::UniquePtr<CoreData> CreateCoreData(gfl::mem::MemoryResource* resource);
 gfl::mem::UniquePtr<CalcData> CreateCalcData(gfl::mem::MemoryResource* resource, u32 encryptionKey);
+// A new Pokémon's record (encrypted): from a spec, or of a species at a level with a random PID
+gfl::mem::UniquePtr<CoreData> CreateCoreData(gfl::mem::MemoryResource* resource, const CreationSpec& spec);
+gfl::mem::UniquePtr<CoreData> CreateCoreData(gfl::mem::MemoryResource* resource, u32 species, u16 level, u64 id);
+// The spec with everything left to chance rolled
+void ResolveSpec(CreationSpec* out, const CreationSpec* spec);
+// Writes a resolved spec's values into a record (nothing when the species is 0)
+void InitCoreData(CoreData* core, const CreationSpec* spec);
+// A size scalar from a spec's value: 0-255 as it is, 0x100 at random (two rolls added, so average
+// sizes are likelier), 0x101-0x105 at random within XS, S, M, L or XL, and 128 for anything above.
+// Values that are negative as an s16 stay as they are.
+u16 RollSize(u16 value);
 
 // Stat formulas (Let's Go: awakening values add flat, friendship adds up to 10%, no EVs)
 u16 CalcHp(u32 species, u8 level, u16 base, u16 iv, u8 av);
@@ -205,10 +244,10 @@ u32 GetNatureFlavor(u32 nature, u32 flavor);
 u8 GetPlateType(u32 item);
 u8 GetMemoryType(u32 item);
 
-// 2-bit fields in a 16-bit value (markings), and the bytes of a 16-bit value
+// 2-bit fields in a 16-bit value (markings), and the two low bytes of a 32-bit value
 u16 GetBitPair(u16 bits, u16 index);
 u16 SetBitPair(u16 bits, u16 index, u16 value);
-u16 SetHighByte(u16 value, u8 byte);
-u16 SetLowByte(u16 value, u8 byte);
+u32 SetHighByte(u32 value, u8 byte);
+u32 SetLowByte(u32 value, u8 byte);
 
 }  // namespace pokemon

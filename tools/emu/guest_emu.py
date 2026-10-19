@@ -12,6 +12,8 @@ Memory map (same as the PC runtime):
   0x7100000000  main (relocated, .bss zeroed)
   0x7200000000  import trampolines: one 16-byte slot per dynamic symbol; reaching one
                 calls the Python handler for that import (or stops with an error)
+  0x7104000000  the originals by another address, for the patch module's ORIG_<address> calls
+                (recomp/recomp.py's ORIGINALS): reaching one runs the original
   0x7300000000  stack (1 MiB) and TLS block
   0x7400000000  scratch heap for test inputs (bump allocator)
 """
@@ -32,6 +34,7 @@ STACK_BASE, STACK_SIZE = 0x7300000000, 0x100000
 TLS_BASE = STACK_BASE + STACK_SIZE
 HEAP_BASE, HEAP_SIZE = 0x7400000000, 0x1000000
 RETURN_MAGIC = STUB_BASE + 0xFFF0   # LR for calls made by the harness
+ORIGINALS, ORIGINALS_SPAN = 0x7104000000, 0x2000000
 
 
 def _memcpy(e):
@@ -101,6 +104,7 @@ class GuestEmu:
         self.host_funcs = {}             # stub index -> (name, handler): fake functions for tests
         self.n_stub_slots = n_stub // 16
         self.calls = []
+        self.replacements = {}           # original -> its replacement in the patch module
         uc.hook_add(UC_HOOK_CODE, self._on_stub, begin=STUB_BASE, end=STUB_BASE + n_stub - 1)
 
     def load_patch(self, elf_path):
@@ -119,6 +123,12 @@ class GuestEmu:
                 if not any(r[0] <= page < r[1] + 1 for r in self.uc.mem_regions()):
                     self.uc.mem_map(page, 0x1000, UC_PROT_ALL)
             self.uc.mem_write(va, data[off:off + fsz] + bytes(msz - fsz))
+        # a hook's call to the function it replaces (ORIG_<address>) goes on in the original
+        self.uc.mem_map(ORIGINALS, ORIGINALS_SPAN, UC_PROT_ALL)
+
+        def original(uc, address, size, _):
+            uc.reg_write(UC_ARM64_REG_PC, address - ORIGINALS + MAIN_BASE)
+        self.uc.hook_add(UC_HOOK_CODE, original, begin=ORIGINALS, end=ORIGINALS + ORIGINALS_SPAN - 1)
 
     # ---------------------------------------------------------------- memory --
     def alloc(self, data_or_size, align=16):
@@ -170,10 +180,21 @@ class GuestEmu:
     def stub_function(self, addr, name, handler):
         """Replaces the original function at addr with handler(emu) (its result goes to X0): for
         code a test doesn't exercise but the code under test calls, like species data lookups
-        that need the game's data loaded. Calls are recorded in calls by name."""
+        that need the game's data loaded. Calls are recorded in calls by name. A function the
+        patch module replaces (replacements, set by decomp/tools/difftest.py) is faked there too,
+        since decompiled code calls the replacement directly."""
         target = self.host_function(name, handler)
         # ldr x16, #8; br x16; .quad target
         self.uc.mem_write(addr, struct.pack("<IIQ", 0x58000050, 0xD61F0200, target))
+        if addr in self.replacements:
+            self.redirect(self.replacements[addr], target)
+
+    def redirect(self, addr, target):
+        """Code that reaches addr continues at target instead, with the code there left alone
+        (functions in the patch module can be shorter than a stub)."""
+        def hook(uc, address, size, _):
+            uc.reg_write(UC_ARM64_REG_PC, target)
+        self.uc.hook_add(UC_HOOK_CODE, hook, begin=addr, end=addr)
 
     # ----------------------------------------------------------------- calls --
     def _on_stub(self, uc, addr, size, _):

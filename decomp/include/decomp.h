@@ -18,6 +18,11 @@ using s64 = std::int64_t;
 using f32 = float;
 using f64 = double;
 
+// What the compiler uses for the destructors of global objects: decompiled static initializers
+// call it themselves (in this game it does nothing, since the game never exits)
+extern "C" int __cxa_atexit(void (*destructor)(void*), void* object, void* dso);
+extern "C" void* __dso_handle;
+
 // checks a member's offset against the original layout
 #define DECOMP_OFFSET(type, member, offset) \
     static_assert(offsetof(type, member) == (offset), #type "::" #member " is at " #offset " in the original")

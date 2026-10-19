@@ -564,6 +564,17 @@ public:
         while (!p.empty() && p.back() == '/') p.pop_back();
         return p.empty() || dirs_.count(p);
     }
+    std::vector<std::string> list(const std::string& dir) const override {
+        std::string prefix = lower(dir);
+        while (!prefix.empty() && prefix.back() == '/') prefix.pop_back();
+        if (!prefix.empty()) prefix += '/';
+        std::vector<std::string> out;
+        for (auto& [path, entry] : files_)
+            if (path.size() > prefix.size() && path.compare(0, prefix.size(), prefix) == 0 && path.find('/', prefix.size()) == std::string::npos)
+                out.push_back(path);
+        std::sort(out.begin(), out.end());
+        return out;
+    }
     bool read(const std::string& path, uint64_t offset, void* out, uint64_t size) const override {
         auto it = files_.find(lower(path));
         if (it == files_.end() || offset > it->second.size || size > it->second.size - offset) return false;

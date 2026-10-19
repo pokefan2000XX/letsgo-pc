@@ -419,6 +419,15 @@ extern "C" rc_fn rc_lookup(uint64_t t) {
     if (o < g_patch_len && !(t & 3) && g_patch_tab[o]) return g_patch_tab[o];
     o = t - kTrampBase;
     if (o < kTrampSize && !(o & 15) && o / 16 < g_tramp_fns.size()) return g_tramp_fns[o / 16];
+    // a hook calling the original it replaces: the original's recompiled body (o<address>), which
+    // runs even when the decomp module replaces that function
+    o = t - kOriginalsBase;
+    if (o < kOriginalsSize && !(t & 3)) {
+        const RcEntry* end = rc_main_bodies + rc_main_nfuncs;
+        const RcEntry* it = std::lower_bound(rc_main_bodies, end, kMainBase + o,
+                                             [](const RcEntry& e, uint64_t a) { return e.addr < a; });
+        if (it != end && it->addr == kMainBase + o) return it->fn;
+    }
     t_bad_target = t;
     return bad_target;
 }

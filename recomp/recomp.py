@@ -32,10 +32,23 @@ import nso2elf  # noqa: E402
 
 BASES = {"main": 0x7100000000, "sdk": 0x7180000000}
 FLAG_SETTERS = {"bcond", "ccmp", "fcmp", "fccmp", "csel", "fcsel", "adc"}
+# Originals by another address, for hooks: the decomp module calls ORIG_<address> (decomp/tools/build.py)
+# at ORIGINALS + (address - main's base), and that call reaches o<address>, the original's body, even
+# when the decomp module replaces it. The range is within BL reach of the patch module (0x7102000000), so
+# a BL there stays a direct call; the guest toolchain's calls are mostly indirect (-fno-plt), and those
+# reach the same body through rc_lookup (runtime/src/loader.cpp).
+ORIGINALS, ORIGINALS_SPAN = 0x7104000000, 0x2000000
 
 
 def fname(addr):
     return "f%x" % addr
+
+
+def callee_name(addr):
+    """The C function a call to addr reaches: an original's body for its ORIGINALS address, else f<addr>."""
+    if ORIGINALS <= addr < ORIGINALS + ORIGINALS_SPAN:
+        return bname(addr - ORIGINALS + BASES["main"])
+    return fname(addr)
 
 
 def dest_reg(ins):
@@ -293,7 +306,7 @@ def translate(mod, out_dir, per_file, src, extern_starts=frozenset()):
         decl = sorted(cur_callees | set(cur_defined))
         text = ('#include "rc.h"\n#pragma clang diagnostic ignored "-Wunused-label"\n'
                 '#pragma clang diagnostic ignored "-Wpedantic"\n' +
-                "".join("void %s(Ctx* restrict c);\n" % fname(a) for a in decl) + "\n".join(cur) + "\n")
+                "".join("void %s(Ctx* restrict c);\n" % callee_name(a) for a in decl) + "\n".join(cur) + "\n")
         write_if_changed(path, text)
         files.append(path)
         cur, cur_n, cur_defined, cur_callees = [], 0, [], set()
@@ -325,7 +338,7 @@ def translate(mod, out_dir, per_file, src, extern_starts=frozenset()):
             report["computed_goto"].append(("0x%x" % fstart, len(goto_targets)))
         else:
             goto_targets = []
-        fc = emit.FuncCtx(fstart, fend, labels, starts | extern_starts, jts, fname)
+        fc = emit.FuncCtx(fstart, fend, labels, starts | extern_starts, jts, callee_name)
         fc.goto_targets = goto_targets
         body = []
         for ins in insns:
@@ -446,7 +459,8 @@ def main():
                 src["patch_extra"] = patch_extra(None, {}, main_starts)
             else:
                 src["patch_extra"] = patch_extra(src, replaces, main_starts)
-            r = translate(mod, a.out, 1 << 40, src, frozenset(main_starts))
+            originals = {ORIGINALS + s - BASES["main"] for s in main_starts}
+            r = translate(mod, a.out, 1 << 40, src, frozenset(main_starts) | originals)
         else:
             r = translate(mod, a.out, a.per_file, load_nso_module(mod))
         print("%s: %d functions (%d extra entries), %d instructions, %d files, %d jump tables, %d computed-goto functions, %d bad branches, %d fallthrough" % (

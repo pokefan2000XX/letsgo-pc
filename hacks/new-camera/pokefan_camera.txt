@@ -1,0 +1,4 @@
+# pokefan_camera.dat: the new-camera hack's lines. tools/msg.py build writes the file and its label table.
+msg_pokefan_camera_01	Two demos with changed cameras:\nZapdos's with a wider view...
+msg_pokefan_camera_02	...and Bill's with a new camera\nall of its own.
+#end	msg_pokefan_camera_max

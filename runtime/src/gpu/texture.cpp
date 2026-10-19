@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cstring>
 
+#include "../perf.h"
 #include "../rt.h"
 
 namespace gpu {
@@ -293,6 +294,7 @@ size_t read_level(const FormatInfo& f, const TexLayout& L, const uint8_t* base, 
             }
         }
     }
+    rt::perf::Scope timed(rt::perf::TextureDecode);
     if (f.conv == Conv::ASTC) {
         // decode block by block into RGBA8 texels
         out.resize((size_t)l.w * l.h * 4);
@@ -314,6 +316,7 @@ size_t read_level(const FormatInfo& f, const TexLayout& L, const uint8_t* base, 
 }
 
 void convert_linear(const FormatInfo& f, const uint8_t* src, size_t src_size, uint32_t w, uint32_t h, std::vector<uint8_t>& out) {
+    rt::perf::Scope timed(rt::perf::TextureDecode);
     if (f.conv == Conv::ASTC) {
         uint32_t wb = div_up(w, f.bw), hb = div_up(h, f.bh);
         out.assign((size_t)w * h * 4, 0);

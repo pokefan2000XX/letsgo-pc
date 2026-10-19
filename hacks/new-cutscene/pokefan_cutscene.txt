@@ -1,0 +1,4 @@
+# pokefan_cutscene.dat: the new-cutscene hack's lines. tools/msg.py build writes the file and its label table.
+msg_pokefan_cutscene_01	This is a new cutscene,\nstarted by a new trigger!
+msg_pokefan_cutscene_02	It faded the screen and turned you.\nNow it walks you back.
+#end	msg_pokefan_cutscene_max

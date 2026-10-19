@@ -3,8 +3,12 @@
 // frames headlessly. Object state lives inside the game-owned opaque NVN
 // structs. nvnQueuePresentTexture marks a frame and is paced by a virtual 60 Hz
 // display at the window's present interval.
+#include <windows.h>
+#include <dwmapi.h>
+
 #include <atomic>
 #include <chrono>
+#include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include <mutex>
@@ -12,6 +16,7 @@
 #include <unordered_map>
 
 #include "hle.h"
+#include "perf.h"
 
 namespace gpu {
 void register_nvn_vulkan();
@@ -223,25 +228,102 @@ static bool turbo_now() {
     int t = g_turbo.load();
     return t < 0 ? uptime() < until : t == 1;
 }
+// times in QueryPerformanceCounter ticks (the compositor's clock too)
+static int64_t qpc() {
+    LARGE_INTEGER t;
+    QueryPerformanceCounter(&t);
+    return t.QuadPart;
+}
+static int64_t qpc_freq() {
+    static const int64_t f = [] {
+        LARGE_INTEGER q;
+        QueryPerformanceFrequency(&q);
+        return (int64_t)q.QuadPart;
+    }();
+    return f;
+}
+// sleeps until `t` to within a few microseconds: a high-resolution waitable timer for most of the
+// wait (Sleep can oversleep by a millisecond or two), then a spin for the rest
+static void sleep_precisely_until(int64_t t) {
+    static HANDLE timer = CreateWaitableTimerExW(nullptr, nullptr, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
+    const int64_t f = qpc_freq();
+    for (;;) {
+        int64_t left = t - qpc();
+        if (left <= 0) return;
+        if (left > f * 3 / 2000) {                                      // over 1.5 ms: sleep all but 1 ms
+            LONGLONG wait_100ns = (LONGLONG)((left - f / 1000) * 10000000 / f);
+            LARGE_INTEGER due;
+            due.QuadPart = -wait_100ns;
+            if (timer && SetWaitableTimerEx(timer, &due, 0, nullptr, nullptr, nullptr, 0)) WaitForSingleObject(timer, INFINITE);
+            else Sleep(1);
+        } else if (left > f / 5000) {                                   // over 0.2 ms
+            SwitchToThread();
+        } else {
+            YieldProcessor();
+        }
+    }
+}
+// The display the window is on, from the compositor: the time of its last vblank and its refresh
+// period. When that's a whole multiple of 60 Hz (59.94, 60, 120, 240 Hz...), frames are timed to the
+// display itself, half a refresh after a vblank, so each stays on screen for exactly as many
+// refreshes as the game asked for. Otherwise (144 Hz, variable refresh rate) the 60 Hz clock alone.
+static bool display_refresh(int64_t& vblank, int64_t& refresh, int& per_60hz) {
+    static const bool off = getenv("LETSGO_NO_VSYNC_LOCK") != nullptr;
+    if (off || !platform_hwnd()) return false;
+    DWM_TIMING_INFO ti{};
+    ti.cbSize = sizeof ti;
+    if (FAILED(DwmGetCompositionTimingInfo(nullptr, &ti))) return false;
+    const int64_t f = qpc_freq();
+    vblank = (int64_t)ti.qpcVBlank;
+    refresh = (int64_t)ti.qpcRefreshPeriod;
+    if (vblank <= 0 || refresh < f / 500 || refresh > f / 24) return false;
+    double hz = (double)f / (double)refresh;
+    per_60hz = (int)(hz / 60.0 + 0.5);
+    return per_60hz >= 1 && std::fabs(hz - 60.0 * per_60hz) < 0.5 * per_60hz;
+}
+// waits for the frame's place on the virtual 60 Hz display: frames go out evenly spaced, whatever
+// each took to make
 static void pace(uint32_t interval) {
-    using clk = std::chrono::steady_clock;
     static std::mutex m;
-    static clk::time_point next{};
+    static int64_t next = 0;
+    static int logged = 0;
     if (!interval || turbo_now()) return;
     std::lock_guard<std::mutex> lk(m);
-    const auto period = std::chrono::nanoseconds(1000000000 / 60) * interval;
-    auto now = clk::now();
-    if (next == clk::time_point{} || now > next + period) next = now;   // first frame, or a stall: resync
-    else std::this_thread::sleep_until(next);
+    const int64_t f = qpc_freq();
+    int64_t period = f * interval / 60;
+    int64_t vblank = 0, refresh = 0;
+    int per_60hz = 0;
+    bool locked = display_refresh(vblank, refresh, per_60hz);
+    if (locked) period = refresh * per_60hz * interval;
+    if (locked != (logged == 1) || !logged) {
+        logged = locked ? 1 : 2;
+        if (locked) log("nvn: frames timed to the display (%.3f Hz)", (double)f / (double)refresh);
+        else log("nvn: frames timed to a 60 Hz clock");
+    }
+    int64_t now = qpc();
+    if (!next || now > next + period) next = now;                     // first frame, or a stall: resync
+    if (locked) {
+        // half a refresh after a vblank: clear of the refreshes on both sides. A quarter of the way
+        // there each frame, so a correction never shows
+        int64_t phase = ((next - vblank) % refresh + refresh) % refresh;
+        next -= (phase - refresh / 2) / 4;
+    }
+    if (next > now) sleep_precisely_until(next);
     next += period;
 }
-// QueuePresentTexture(queue, window, index)
-// a presented frame: pacing at the window's interval, counting, a periodic log line
-void frame_presented(uint64_t interval) {
-    pace((uint32_t)interval);
+// a frame's present: pacing at the window's interval comes first (frame_pace), then the present,
+// then counting and a periodic log line (frame_done)
+void frame_pace(uint64_t interval) { pace((uint32_t)interval); }
+void frame_done() {
+    perf::frame();
     uint64_t n = ++g_frames;
     if (n <= 5 || (n % 300) == 0) log("nvn: *** frame %llu presented ***", (unsigned long long)n);
 }
+void frame_presented(uint64_t interval) {
+    frame_pace(interval);
+    frame_done();
+}
+// QueuePresentTexture(queue, window, index)
 static void QueuePresentTexture(Ctx* c) { frame_presented(obj<Win>(c->x[1])->present_interval); }
 static uint64_t g_cmd_handles = 0x1000;
 static void CommandBufferEndRecording(Ctx* c) { c->x[0] = g_cmd_handles++; }

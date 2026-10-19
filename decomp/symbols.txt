@@ -3,7 +3,8 @@
 #  - a symbol it only uses is linked to the original
 # A name is the C++ name without parameters (pokemon::Accessor::IsBadEgg), the full signature
 # when overloads share a name (pokemon::Accessor::Serialize(void*)), or a plain C name.
-# "Class::~Class" is the destructor, "Class::~Class [deleting]" the one that also frees.
+# "Class::~Class" is the destructor, "Class::~Class [deleting]" the one that also frees, and a
+# thunk is named "non-virtual thunk to " and its function's name.
 # FUN_<address> and DAT_<address> work without an entry, and so do main's imports (nn::, libc).
 # Notes go after a '#'. Entries are grouped by the file that defines them, by address within a group.
 #
@@ -12,6 +13,46 @@
 # util/name_hash.cpp
 0x7100101b30    UnkNamedObject_NameEquals                   # FNV-1a 64 of the name at +0x88 == FNV-1a 64 of a string
 0x7100101ba0    UnkNamedObject_GetName                      # the name at +0x88
+
+# field/placement.cpp (roadmap phase 3, step 2: the zone lookups in the placement files the field reads)
+0x7100132900    field::FieldSystem::PlacementRoot                           # a placement file's root, by its place on the game's list
+0x7100132960    field::FieldSystem::FindZone(unsigned long) const           # the zone with a name hash, in every placement file
+0x7100132aa0    field::FieldSystem::FindZone(unsigned long, unsigned long*) const   # and its area's name hash
+
+# item/item.cpp (items: their data, flags, and the lists checked by ID)
+0x710071c3f0    item::DestroyFlags
+0x710071c420    item::Item::Item(bool)
+0x710071c4d0    item::Item::Item(unsigned int)
+0x710071c570    item::Item::Read
+0x710071c720    item::Item::~Item
+0x710071c730    non-virtual thunk to item::Item::~Item
+0x710071c740    item::Item::~Item [deleting]
+0x710071c750    non-virtual thunk to item::Item::~Item [deleting]
+0x710071c760    item::Item::Load
+0x710071c910    item::Item::CopyFrom
+0x710071c930    item::Item::GetParam
+0x710071cc60    item::Item::GetEffect
+0x710071ce30    item::Item::IsUsedOnMove
+0x710071cec0    item::LoadFlags
+0x710071d180    item::UnloadFlags
+0x710071d1b0    item::GetFlagsLow
+0x710071d1e0    item::GetFlag6
+0x710071d210    item::GetFlag7
+0x710071d240    item::GetBallId
+0x710071d360    item::GetBallItem
+0x710071d390    item::IsMachine
+0x710071d3f0    item::GetMachineIndex
+0x710071d4a0    item::GetMachineMove
+0x710071d560    item::GetMachineMoveByIndex
+0x710071d5a0    item::IsBerry
+0x710071d610    item::GetBerry
+0x710071d640    item::IsMegaStone
+0x710071d690    item::IsGem
+0x710071d6b0    item::IsZCrystal
+0x710071d6f0    item::IsHeldZCrystal
+0x710071d720    item::IsCandy
+0x710071d770    item::IsUnk121
+0x710071d7a0    item::InitializeGlobals
 
 # pokemon/record.cpp, pokemon/accessor.cpp (D1 step 1: the record)
 0x7100729540    pokemon::Accessor::Accessor
@@ -56,7 +97,12 @@
 0x71007393b0    pokemon::CalcChecksum
 0x7100739420    pokemon::EncodeData
 0x71007394b0    pokemon::DecodeData
-0x7100739540    pokemon::CreateCoreData
+0x7100739540    pokemon::CreateCoreData(gfl::mem::MemoryResource*)
+0x7100739640    pokemon::CreateCoreData(gfl::mem::MemoryResource*, unsigned int, unsigned short, unsigned long)
+0x71007396b0    pokemon::CreateCoreData(gfl::mem::MemoryResource*, pokemon::CreationSpec const&)
+0x7100739820    pokemon::ResolveSpec
+0x7100739cd0    pokemon::InitCoreData
+0x7100739ed0    pokemon::RollSize
 0x7100739fc0    pokemon::CreateCalcData
 0x710073a0c0    pokemon::GetBitPair
 0x710073a0e0    pokemon::SetBitPair
@@ -259,19 +305,695 @@
 0x7100738530    pokemon::Accessor::SetUnkED
 0x7100738650    pokemon::Accessor::SetUnkEE
 
-# pokemon/personal.h (D1 step 3, not decompiled yet)
-0x710071fa80    pokemon::personal::Load
-0x710071faa0    pokemon::personal::GetParam
-0x710071fae0    pokemon::personal::LoadGrowthTable
-0x710071fb70    pokemon::personal::GetMinExp
+# pokemon/pokemon.cpp (D1 step 3: the Pokémon object)
+0x7100723770    pokemon::Pokemon::Initialize
+0x7100723780    pokemon::Pokemon::Pokemon(gfl::mem::MemoryResource*)
+0x71007239e0    pokemon::Pokemon::Pokemon(gfl::mem::MemoryResource*, unsigned int, unsigned short, unsigned long)
+0x7100723c30    pokemon::Pokemon::InitNewPokemon
+0x7100723e00    pokemon::Pokemon::Pokemon(gfl::mem::MemoryResource*, pokemon::CreationSpec const&)
+0x7100724040    pokemon::Pokemon::SetLanguage
+0x7100724050    pokemon::Pokemon::ResetMoves
+0x71007241e0    pokemon::Pokemon::ClearNickname
+0x7100724240    pokemon::Pokemon::Heal
+0x71007242a0    pokemon::Pokemon::SetUnkAC
+0x71007242b0    pokemon::Pokemon::SetUnkAD
+0x71007242c0    pokemon::Pokemon::UpdateAbsoluteSize
+0x71007243a0    pokemon::Pokemon::Pokemon(gfl::mem::MemoryResource*, pokemon::Pokemon const&)
+0x7100724600    pokemon::Pokemon::~Pokemon
+0x7100724740    non-virtual thunk to pokemon::Pokemon::~Pokemon
+0x7100724750    pokemon::Pokemon::~Pokemon [deleting]
+0x7100724760    non-virtual thunk to pokemon::Pokemon::~Pokemon [deleting]
+0x7100724770    pokemon::Pokemon::SerializeCore
+0x7100724780    pokemon::Pokemon::DeserializeCore
+0x7100724790    pokemon::Pokemon::Clear
+0x71007247a0    pokemon::Pokemon::IsEmpty
+0x71007247c0    pokemon::Pokemon::GetSpecies
+0x71007247d0    pokemon::Pokemon::GetHeldItem
+0x71007247f0    pokemon::Pokemon::SetHeldItem
+0x7100724800    pokemon::Pokemon::HasMarking
+0x7100724850    pokemon::Pokemon::GetMarking
+0x7100724880    pokemon::Pokemon::SetMarking
+0x71007248f0    pokemon::Pokemon::ClearMarking
+0x7100724940    pokemon::Pokemon::SetAllMarkings
+0x7100724ac0    pokemon::Pokemon::GetAllMarkings
+0x7100724b60    pokemon::Pokemon::GetLanguage
+0x7100724b70    pokemon::Pokemon::GetVersion
+0x7100724b80    pokemon::Pokemon::SetVersion
+0x7100724b90    pokemon::Pokemon::GetBall
+0x7100724ba0    pokemon::Pokemon::SetBall
+0x7100724bb0    pokemon::Pokemon::GetUnkAE
+0x7100724bc0    pokemon::Pokemon::AddUnkAE
+0x7100724c00    pokemon::Pokemon::SetUnk3CLowByte
+0x7100724c40    pokemon::Pokemon::SetUnk3CHighByte
+0x7100724c80    pokemon::Pokemon::GetMetInfo
+0x7100724d70    pokemon::Pokemon::SetMetInfo
+0x7100724e40    pokemon::Pokemon::GetCp
+0x7100724e50    pokemon::Pokemon::GetIv
+0x7100724eb0    pokemon::Pokemon::GetEffectiveIv
+0x7100724f10    pokemon::Pokemon::IsHyperTrained
+0x7100724f70    pokemon::Pokemon::SetIv
+0x7100725080    pokemon::Pokemon::UpdateMaxHp
+0x7100725170    pokemon::Pokemon::UpdateCp
+0x7100725470    pokemon::Pokemon::SetHyperTrained
+0x71007254c0    pokemon::Pokemon::GetHiddenPowerType
+0x7100725550    pokemon::Pokemon::GetEv
+0x71007255b0    pokemon::Pokemon::GetEvTotal
+0x7100725620    pokemon::Pokemon::AddEv
+0x7100725670    pokemon::Pokemon::SetEv
+0x71007257a0    pokemon::Pokemon::SubtractEv
+0x71007257e0    pokemon::Pokemon::ClampEv
+0x71007258a0    pokemon::Pokemon::GetAv
+0x7100725900    pokemon::Pokemon::AddAv
+0x7100725940    pokemon::Pokemon::SetAv
+0x7100725a60    pokemon::Pokemon::SetUnkD7
+0x7100725aa0    pokemon::Pokemon::RecalcStats
+0x7100725bd0    pokemon::Pokemon::GetStat
+0x7100725d10    pokemon::Pokemon::GetMaxHp
+0x7100725d60    pokemon::Pokemon::CalcMaxHp
+0x7100725e50    pokemon::Pokemon::CalcAttack
+0x7100725f70    pokemon::Pokemon::CalcDefense
+0x7100726090    pokemon::Pokemon::CalcSpAttack
+0x71007261b0    pokemon::Pokemon::CalcSpDefense
+0x71007262d0    pokemon::Pokemon::CalcSpeed
+0x71007263f0    pokemon::Pokemon::GetHp
+0x7100726440    pokemon::Pokemon::SetHp
+0x7100726480    pokemon::Pokemon::RecoverHp
+0x71007264d0    pokemon::Pokemon::IsFullHp
+0x7100726530    pokemon::Pokemon::IsFainted
+0x7100726580    pokemon::Pokemon::GetLevel
+0x7100726600    pokemon::Pokemon::AddLevels
+0x7100726710    pokemon::Pokemon::SetExp
+0x7100726780    pokemon::Pokemon::GetExp
+0x7100726790    pokemon::Pokemon::AddExp
+0x7100726810    pokemon::Pokemon::GetLevelExp
+0x71007268c0    pokemon::Pokemon::GetForm
+0x71007268d0    pokemon::Pokemon::GetNextLevelExp
+0x7100726980    pokemon::Pokemon::HasStatus
+0x71007269a0    pokemon::Pokemon::GetStatus
+0x71007269b0    pokemon::Pokemon::SetStatus
+0x71007269c0    pokemon::Pokemon::ClearStatus
+0x71007269d0    pokemon::Pokemon::GetMovePp
+0x71007269f0    pokemon::Pokemon::SetMovePp
+0x7100726a60    pokemon::Pokemon::GetMaxPp
+0x7100726ab0    pokemon::Pokemon::RecoverAllPp
+0x7100726bb0    pokemon::Pokemon::RecoverPp
+0x7100726c80    pokemon::Pokemon::GetMovePpUps
+0x7100726ca0    pokemon::Pokemon::SetMovePpUps
+0x7100726cc0    pokemon::Pokemon::GetMove
+0x7100726cd0    pokemon::Pokemon::GetMoveCount
+0x7100726d50    pokemon::Pokemon::HasMove
+0x7100726dd0    pokemon::Pokemon::GetRelearnMove
+0x7100726de0    pokemon::Pokemon::SetRelearnMove
+0x7100726e00    pokemon::Pokemon::ClearMove
+0x7100726e70    pokemon::Pokemon::PushMove
+0x71007270f0    pokemon::Pokemon::SetMove
+0x7100727180    pokemon::Pokemon::SwapMoves
+0x71007272b0    pokemon::Pokemon::CompactMoves
+0x7100727370    pokemon::Pokemon::CanLearnMachine
+0x71007273c0    pokemon::MoveList::Clear
+0x71007273d0    pokemon::MoveList::Contains
+0x7100727670    pokemon::Pokemon::LearnLevelUpMove
+0x7100727850    pokemon::Pokemon::LearnMove
+0x7100727980    pokemon::Pokemon::LearnEvolutionMove
+0x7100727ab0    pokemon::Pokemon::GetGender
+0x7100727ac0    pokemon::Pokemon::GetNature
+0x7100727ad0    pokemon::Pokemon::GetNatureFlavor
+0x7100727b00    pokemon::Pokemon::GetAbility
+0x7100727b10    pokemon::Pokemon::SetFavorite
+0x7100727b20    pokemon::Pokemon::IsFavorite
+0x7100727b30    pokemon::Pokemon::IsOriginalTrainer
+0x7100727ba0    pokemon::Pokemon::SetCurrentTrainer
+0x7100727ca0    pokemon::Pokemon::IsNicknamed
+0x7100727cb0    pokemon::Pokemon::GetNickname(gfl::str::StrBuf*)
+0x7100727cc0    pokemon::Pokemon::GetNickname(unsigned short*, unsigned int)
+0x7100727cd0    pokemon::Pokemon::SetNickname
+0x7100727d60    pokemon::Pokemon::IsNicknameSpeciesName
+0x7100727dd0    pokemon::Pokemon::GetOtName(gfl::str::StrBuf*)
+0x7100727de0    pokemon::Pokemon::GetOtName(unsigned short*, unsigned int)
+0x7100727df0    pokemon::Pokemon::SetOtName
+0x7100727e20    pokemon::Pokemon::GetOtGender
+0x7100727e30    pokemon::Pokemon::SetOtGender
+0x7100727e40    pokemon::Pokemon::GetFriendship
+0x7100727e50    pokemon::Pokemon::SetFriendship
+0x7100727e90    pokemon::Pokemon::AddFriendship
+0x7100727ee0    pokemon::Pokemon::SubtractFriendship
+0x7100727f30    pokemon::Pokemon::SetOtFriendship
+0x7100727f50    pokemon::Pokemon::GetHandlerFriendship
+0x7100727f70    pokemon::Pokemon::SetHandlerFriendship
+0x7100727f90    pokemon::Pokemon::GetUnk94
+0x7100727fa0    pokemon::Pokemon::SetUnk94
+0x7100727fb0    pokemon::Pokemon::IsEgg
+0x7100728020    pokemon::Pokemon::MakeEgg
+0x7100728120    pokemon::Pokemon::MarkBadEgg
+0x7100728130    pokemon::Pokemon::GetId
+0x7100728140    pokemon::Pokemon::CanEvolve
+0x7100728170    pokemon::Pokemon::GetLevelUpEvolution
+0x71007281e0    pokemon::Pokemon::GetItemEvolution
+0x7100728250    pokemon::Pokemon::GetTradeEvolution
+0x71007282c0    pokemon::Pokemon::Evolve
+0x71007283c0    pokemon::Pokemon::ChangeSpecies
+0x71007285d0    pokemon::Pokemon::ChangeForm
+0x71007286b0    pokemon::Pokemon::FixGenderForForm
+0x7100728750    pokemon::Pokemon::MegaEvolve
+0x71007287f0    pokemon::Pokemon::CanMegaEvolve
+0x7100728830    pokemon::Pokemon::MegaEvolveTo
+0x71007288b0    pokemon::Pokemon::RevertMegaEvolution
+0x7100728900    pokemon::Pokemon::GetUnk100
+0x7100728910    pokemon::Pokemon::UpdateKyuremMoves
+0x7100728b00    pokemon::Pokemon::IsShiny
+0x7100728b40    pokemon::Pokemon::SetId
+0x7100728b50    pokemon::Pokemon::GetEncryptionKey
+0x7100728b60    pokemon::Pokemon::GetType1
+0x7100728c00    pokemon::Pokemon::GetType2
+0x7100728ca0    pokemon::Pokemon::HasRibbon
+0x7100728cb0    pokemon::Pokemon::SetRibbon
+0x7100728cc0    pokemon::Pokemon::HasPokerus
+0x7100728ce0    pokemon::Pokemon::IsFatefulEncounter
+0x7100728cf0    pokemon::Pokemon::SetFatefulEncounter
+0x7100728d00    pokemon::Pokemon::StartFastMode
+0x7100728d50    pokemon::Pokemon::EndFastMode
+0x7100728da0    pokemon::Pokemon::ClearMegaEvolution
+0x7100728de0    pokemon::Pokemon::GetHeightAbsolute
+0x7100728df0    pokemon::Pokemon::GetWeightAbsolute
+0x7100728e00    pokemon::Pokemon::GetHeightScalar
+0x7100728e10    pokemon::Pokemon::GetWeightScalar
+0x7100728e20    pokemon::Pokemon::GetHeightClass
+0x7100728e90    pokemon::Pokemon::SetAbsoluteSize
+0x7100728fb0    pokemon::Pokemon::GetUnkAC
+0x7100728fc0    pokemon::Pokemon::GetUnkAD
+0x7100728fd0    pokemon::Pokemon::GetUnkCB
+0x7100728fe0    pokemon::Pokemon::SetUnkCB
+0x7100728ff0    pokemon::Pokemon::GetUnkCC
+0x7100729000    pokemon::Pokemon::SetUnkCC
+0x7100729010    pokemon::Pokemon::GetUnkCD
+0x7100729020    pokemon::Pokemon::SetUnkCD
+0x7100729030    pokemon::Pokemon::GetUnkCE
+0x7100729040    pokemon::Pokemon::SetUnkCE
+0x7100729050    pokemon::Pokemon::GetUnkCF
+0x7100729060    pokemon::Pokemon::SetUnkCF
+0x7100729070    pokemon::Pokemon::GetUnkD0
+0x7100729080    pokemon::Pokemon::SetUnkD0
+0x7100729090    pokemon::Pokemon::GetNatureModifier
+0x71007290a0    gfl::Create<gfl::str::StrBuf>::operator()<int>  # this file's copy (gfl/object.h)
+0x71007294c0    pokemon::Pokemon::Serialize(void*) const
+0x71007294d0    pokemon::Pokemon::Deserialize(void const*)
+
+# pokemon/party_pokemon.cpp (D1 step 3: party Pokémon)
+0x71007291a0    pokemon::PartyPokemon::Initialize
+0x71007291b0    pokemon::PartyPokemon::PartyPokemon(gfl::mem::MemoryResource*)
+0x7100729200    pokemon::PartyPokemon::AddCalcData
+0x71007292d0    pokemon::PartyPokemon::PartyPokemon(gfl::mem::MemoryResource*, unsigned int, unsigned short, unsigned long)
+0x7100729350    pokemon::PartyPokemon::PartyPokemon(gfl::mem::MemoryResource*, pokemon::CreationSpec const&)
+0x71007293d0    pokemon::PartyPokemon::PartyPokemon(gfl::mem::MemoryResource*, pokemon::Pokemon const&)
+0x7100729440    pokemon::PartyPokemon::CopyFrom
+0x7100729480    pokemon::PartyPokemon::~PartyPokemon
+0x7100729490    non-virtual thunk to pokemon::PartyPokemon::~PartyPokemon
+0x71007294a0    pokemon::PartyPokemon::~PartyPokemon [deleting]
+0x71007294b0    non-virtual thunk to pokemon::PartyPokemon::~PartyPokemon [deleting]
+0x71007294e0    pokemon::PartyPokemon::SerializeCore
+0x71007294f0    pokemon::PartyPokemon::DeserializeCore
+
+# pokemon/evolution.cpp (D1 step 3: evolution rules)
+0x7100722960    pokemon::EvolutionChecker::EvolutionChecker
+0x71007229f0    pokemon::EvolutionChecker::~EvolutionChecker
+0x7100722a00    non-virtual thunk to pokemon::EvolutionChecker::~EvolutionChecker
+0x7100722a10    pokemon::EvolutionChecker::~EvolutionChecker [deleting]
+0x7100722a20    non-virtual thunk to pokemon::EvolutionChecker::~EvolutionChecker [deleting]
+0x7100722a30    pokemon::EvolutionChecker::HasEvolutions
+0x7100722a80    pokemon::EvolutionChecker::GetLevelUpEvolution
+0x7100722b90    pokemon::EvolutionChecker::CheckLevelUpEvolution
+0x7100723020    pokemon::EvolutionChecker::GetItemEvolution
+0x7100723150    pokemon::EvolutionChecker::CheckItemEvolution
+0x7100723220    pokemon::EvolutionChecker::GetTradeEvolution
+0x7100723340    pokemon::EvolutionChecker::CheckTradeEvolution
+0x7100723430    pokemon::EvolutionChecker::GetMegaForm
+0x7100723580    pokemon::EvolutionChecker::CanMegaEvolveTo
+0x71007236e0    pokemon::EvolutionChecker::IsMegaStone
+0x7100723760    pokemon::EvolutionChecker::BlocksEvolution
+
+# pokemon/personal_table.cpp (D1 step 3: species entries)
+0x710071d7d0    pokemon::personal::DestroyPersonalData
+0x710071d800    pokemon::personal::PersonalTable::LoadAll
+0x710071dad0    pokemon::personal::PersonalTable::UnloadAll
+0x710071db30    pokemon::personal::PersonalTable::PersonalTable
+0x710071dc60    pokemon::personal::PersonalTable::~PersonalTable
+0x710071dca0    pokemon::personal::PersonalTable::~PersonalTable [deleting]
+0x710071dcf0    pokemon::personal::PersonalTable::GetSpecies
+0x710071dd00    pokemon::personal::PersonalTable::GetForm
+0x710071dd10    pokemon::personal::PersonalTable::Load
+0x710071ddd0    pokemon::personal::PersonalTable::GetEntryIndex
+0x710071de40    pokemon::personal::PersonalTable::GetParam
+0x710071e0e0    pokemon::personal::PersonalTable::CanLearnMachine
+0x710071e120    pokemon::personal::InitializePersonalTableGlobals
+
+# pokemon/personal.cpp (D1 step 3: the species data's tables and lookups)
+0x710071e150    pokemon::personal::DestroyNameBuffer
+0x710071e190    pokemon::personal::DestroySpeciesNames
+0x710071e2c0    pokemon::personal::InitializeGlobals
+0x710071e4f0    pokemon::personal::DestroyUnkCache
+0x710071e550    pokemon::personal::DestroyPersonalTable
+0x710071e5b0    pokemon::personal::DestroyGrowth
+0x710071e610    pokemon::personal::DestroyGrowthCache
+0x710071e670    pokemon::personal::DestroyLearnset
+0x710071e6c0    pokemon::personal::DestroyLearnsetCache
+0x710071e720    pokemon::personal::DestroyEvolutions
+0x710071e780    pokemon::personal::DestroyEvolutionCache
+0x710071e7e0    pokemon::personal::DestroyMegaTable
+0x710071e840    pokemon::personal::DestroyMegaCache
+0x710071e8a0    pokemon::personal::DestroyPmsData
+0x710071e8d0    pokemon::personal::Initialize
+0x710071f540    pokemon::personal::Finalize
 0x710071f980    pokemon::GetSpeciesName(unsigned short*, unsigned int, unsigned int)
 0x710071fa10    pokemon::GetSpeciesName(gfl::str::StrBuf*, unsigned int, unsigned int)
+0x710071fa80    pokemon::personal::Load
+0x710071faa0    pokemon::personal::GetParam
+0x710071fac0    pokemon::personal::CanLearnMachine
+0x710071fae0    pokemon::personal::LoadGrowthTable
+0x710071fb70    pokemon::personal::GetMinExp
+0x710071fba0    pokemon::personal::LoadLevelUpMoves
+0x710071fc30    pokemon::personal::GetLevelUpMoveCount
+0x710071fc40    pokemon::personal::GetLevelUpMoveLevel
+0x710071fc60    pokemon::personal::GetLevelUpMove
+0x710071fc80    pokemon::personal::GetLevelUpMoveKind
+0x710071fca0    pokemon::personal::LoadEvolutions
+0x710071fd10    pokemon::personal::GetEvolutionCount
+0x710071fd20    pokemon::personal::GetEvolutionMethod
+0x710071fd40    pokemon::personal::GetEvolutionParam
+0x710071fd60    pokemon::personal::GetEvolutionSpecies
+0x710071fd80    pokemon::personal::GetEvolutionForm
+0x710071fda0    pokemon::personal::HasEvolutionForm
+0x710071fdc0    pokemon::personal::GetEvolutionLevel
+0x710071fde0    pokemon::personal::LoadMegaEvolutions
+0x710071fe40    pokemon::personal::GetMegaEvolutionCount
+0x710071fe50    pokemon::personal::GetMegaEvolutionMethod
+0x710071fe70    pokemon::personal::GetMegaEvolutionItem
+0x710071fe90    pokemon::personal::GetMegaEvolutionForm
+0x710071feb0    pokemon::personal::HasMegaForm
+0x710071ff80    pokemon::personal::IsPrimalForm
+0x710071ffc0    pokemon::personal::IsMiniorMeteorForm
+0x710071ffd0    pokemon::personal::GetMiniorMeteorForm
+0x7100720000    pokemon::personal::GetMiniorCoreForm
+0x7100720030    gfl::Create<gfl::str::StrBuf>::operator()<unsigned int const&>  # this file's copy (gfl/object.h)
+0x7100720130    gfl::Create<gfl::str::MsgData>::operator()<gfl::fs::Path&, unsigned int&>
+
+# pokemon/learnset.cpp (D1 step 3: level-up moves)
+0x7100720240    pokemon::personal::Learnset::SetSource
+0x7100720260    pokemon::personal::Learnset::ClearSource
+0x7100720270    pokemon::personal::Learnset::Learnset
+0x7100720390    pokemon::personal::Learnset::~Learnset
+0x71007203c0    pokemon::personal::Learnset::GetSpecies
+0x71007203d0    pokemon::personal::Learnset::GetForm
+0x71007203e0    pokemon::personal::Learnset::Load
+0x7100720600    pokemon::personal::Learnset::StartLoad
+0x71007206c0    pokemon::personal::Learnset::FinishLoad
+0x7100720750    pokemon::personal::Learnset::CopyTo
+0x71007207a0    pokemon::personal::Learnset::GetCount
+0x71007207b0    pokemon::personal::Learnset::GetKind
+0x71007207f0    pokemon::personal::Learnset::GetLevel
+0x7100720810    pokemon::personal::Learnset::GetMove
+0x7100720830    pokemon::personal::LearnsetCache::LearnsetCache
+0x71007209a0    gfl::mem::MakeObjectArray<pokemon::personal::Learnset, gfl::mem::MemoryResource*&>
+0x7100720ab0    pokemon::personal::LearnsetCache::~LearnsetCache
+0x7100720b60    pokemon::personal::LearnsetCache::~LearnsetCache [deleting]
+0x7100720c00    pokemon::personal::LearnsetCache::Find
+0x7100720cb0    pokemon::personal::LearnsetCache::Add
+
+# pokemon/party.cpp (D1 step 4: the party)
+0x7100720d80    pokemon::Party::Party
+0x7100721070    pokemon::Party::~Party
+0x7100721140    non-virtual thunk to pokemon::Party::~Party
+0x7100721210    pokemon::Party::~Party [deleting]
+0x71007212e0    non-virtual thunk to pokemon::Party::~Party [deleting]
+0x71007213b0    pokemon::Party::Add
+0x7100721480    pokemon::Party::Set
+0x7100721550    pokemon::Party::Remove
+0x7100721610    pokemon::Party::Compact
+0x7100721700    pokemon::Party::Swap
+0x71007217c0    pokemon::Party::Reorder
+0x7100721960    pokemon::Party::GetMember(unsigned int)
+0x7100721970    pokemon::Party::GetMember(unsigned int) const
+0x7100721990    pokemon::Party::GetMemberCount
+0x71007219a0    pokemon::Party::IsFull
+0x71007219b0    pokemon::Party::Count(pokemon::CountKind) const
+0x71007219c0    pokemon::Party::Count(pokemon::CountKind, unsigned char) const
+0x7100721b20    pokemon::Party::HasSpecies
+0x7100721cc0    pokemon::Party::CopyFrom
+0x7100721e40    pokemon::Party::Clear
+0x7100721ef0    pokemon::Party::SerializeCores
+0x7100721fe0    pokemon::Party::GetCoresSize
+0x7100721ff0    pokemon::Party::Serialize(void*, bool) const
+0x71007221a0    pokemon::Party::Serialize(void*) const
+0x71007221c0    pokemon::Party::DeserializeCores
+0x71007223d0    pokemon::Party::Deserialize(void const*, bool)
+0x7100722750    pokemon::Party::Deserialize(void const*)
+0x7100722760    pokemon::Party::HealAll
+0x71007227c0    pokemon::Party::SetPartner
+0x71007227d0    pokemon::Party::GetPartner
+0x71007227e0    pokemon::Party::UpdatePartner
+0x7100722840    gfl::Create<pokemon::PartyPokemon>::operator()<gfl::mem::MemoryResource*&, int, int, int>  # this file's copy (gfl/object.h)
+
+# the species data's tables outside D1 (pokemon/personal.h, not decompiled yet)
+0x710073d830    pokemon::personal::SetEvolutionSource
+0x710073d850    pokemon::personal::ClearEvolutionSource
+0x710073d870    pokemon::personal::EvolutionTable::EvolutionTable
+0x710073da40    pokemon::personal::EvolutionTable::Load
+0x710073dc50    pokemon::personal::EvolutionTable::GetCount
+0x710073dce0    pokemon::personal::EvolutionTable::GetMethod
+0x710073dd10    pokemon::personal::EvolutionTable::GetParam
+0x710073ddb0    pokemon::personal::EvolutionTable::GetSpecies
+0x710073de50    pokemon::personal::EvolutionTable::GetForm
+0x710073def0    pokemon::personal::EvolutionTable::HasForm
+0x710073df90    pokemon::personal::EvolutionTable::GetLevel
+0x710073e030    pokemon::personal::EvolutionCache::EvolutionCache
+0x710073e430    pokemon::personal::EvolutionCache::Find
+0x710073e4e0    pokemon::personal::EvolutionCache::Add
+0x710073e5b0    pokemon::personal::SetGrowthSource
+0x710073e5d0    pokemon::personal::ClearGrowthSource
+0x710073e5e0    pokemon::personal::GrowthTable::GrowthTable
+0x710073e620    pokemon::personal::GrowthTable::Load
+0x710073e830    pokemon::personal::GrowthTable::GetMinExp
+0x710073e850    pokemon::personal::GrowthCache::GrowthCache
+0x710073ec50    pokemon::personal::GrowthCache::Find
+0x710073ece0    pokemon::personal::GrowthCache::Add
+0x710073ed90    pokemon::personal::SetMegaSource
+0x710073edb0    pokemon::personal::ClearMegaSource
+0x710073edc0    pokemon::personal::MegaTable::MegaTable
+0x710073ef70    pokemon::personal::MegaTable::Load
+0x710073f160    pokemon::personal::MegaTable::GetCount
+0x710073f190    pokemon::personal::MegaTable::GetMethod
+0x710073f1c0    pokemon::personal::MegaTable::GetItem
+0x710073f200    pokemon::personal::MegaTable::GetForm
+0x710073f240    pokemon::personal::MegaCache::MegaCache
+0x710073f640    pokemon::personal::MegaCache::Find
+0x710073f6d0    pokemon::personal::MegaCache::Add
+0x710073f770    pokemon::personal::UnkCache::UnkCache
+
+# pokemon/system.h (not decompiled yet)
+0x710073a230    pokemon::FileLoader::Read
+0x710073a9c0    pokemon::FileLoader::IsDone
+0x710073ab70    pokemon::GetFileLoader
+0x710073b320    pokemon::GetSystem
+0x710073b330    pokemon::GetPersonalDataPath
+0x710073b490    pokemon::GetLearnsetPath
+0x710073b7d0    pokemon::GetPmsDataPath
+0x710073b880    pokemon::GetItemDataPath
+0x710073b950    pokemon::GetItemFlagsPath
+0x710073d7e0    pokemon::Random()
+0x710073d800    pokemon::Random(unsigned int)
+
+# battle/event.cpp (roadmap phase 5, step 3: the battle's events: handler sets, calling an event's handlers, event variables)
+0x7100a66740    battle::ResetEvents
+0x7100a667c0    battle::WakeAllHandlerSets
+0x7100a667f0    battle::AddHandlerSet
+0x7100a66910    battle::FreeRemovedHandlerSets
+0x7100a669f0    battle::RemoveHandlerSet
+0x7100a66aa0    battle::MarkRemoved
+0x7100a66ab0    battle::IsMarkedRemoved
+0x7100a66ac0    battle::PutToSleep
+0x7100a66ae0    battle::WakeUp
+0x7100a66b00    battle::ClearWork
+0x7100a66b20    battle::GetId
+0x7100a66b30    battle::GetOwner
+0x7100a66b40    battle::GetWork
+0x7100a66b50    battle::AnswerEvent8b
+0x7100a66b60    battle::AllowReentry
+0x7100a66b80    battle::SetWork
+0x7100a66b90    battle::CallEvent
+0x7100a66c70    battle::CallEventWithSkipChecks                     # what nearly every event goes through (142 calls)
+0x7100a66d50    battle::SetSkipCheck
+0x7100a66d60    battle::ClearSkipCheck
+0x7100a66d70    battle::FirstHandlerSet
+0x7100a66dc0    battle::NextHandlerSet
+0x7100a66e10    battle::PutMovesToSleep
+0x7100a66e80    battle::WakeMoves
+0x7100a66ec0    battle::Suppress
+0x7100a66f10    battle::Unsuppress
+0x7100a66f70    battle::ResetVars
+0x7100a66fa0    battle::PushVars
+0x7100a67000    battle::PopVars
+0x7100a67090    battle::SetVar
+0x7100a67100    battle::SetConstVar
+0x7100a67170    battle::SetVarRewritableOnce
+0x7100a671e0    battle::MakeVarRewritableOnce
+0x7100a67230    battle::SetRatioVar
+0x7100a672a0    battle::RewriteVar
+0x7100a67340    battle::MultiplyVar
+0x7100a673e0    battle::GetVar
+0x7100a67450    battle::FindVar
+0x7100a674c0    battle::SetPointerVars47
+0x7100a67590    battle::GetPointerVars47
+0x7100a67630    battle::SetPointerVars23
+0x7100a67700    battle::GetPointerVars23
+0x7100a677a0    battle::CallHandlers
+0x7100a67990    battle::ShouldSkip
+
+# battle/calc.cpp (roadmap phase 5, step 3: the battle's arithmetic)
+0x71009cfac0    battle::BaseDamage
+0x71009cfb00    battle::ApplyEffectiveness
+0x71009cfb90    battle::Random
+0x71009cfc10    battle::MulRatio
+0x71009cfed0    battle::MaxHpFraction
+0x71009cff00    battle::AccuracyAfterStages
+0x71009cff40    battle::RollCritical
+0x71009d01e0    battle::WeatherRatio
+0x71009d00e0    battle::IsStatusCondition
+0x71009d0250    battle::IsSunny
+0x71009d0290    battle::MakeConditionData
+0x71009d03d0    battle::RollHitCount
+0x71009d04b0    battle::RollPercent
+
+# battle/damage.cpp (roadmap phase 5, step 3: a move's damage)
+0x7100a016d0    battle::CalcDamage
+0x7100a03c30    battle::CalcPower
+0x7100a03d50    battle::CalcAttack
+0x7100a03f10    battle::CalcDefense
+0x7100a04170    battle::CalcStabRatio
+
+# battle/hit.cpp (roadmap phase 5, step 3: whether a move hits, and critical hits)
+0x71009fd1e0    battle::AlwaysHits
+0x71009fe7a0    battle::CheckHit
+0x71009fe9f0    battle::SkipsAccuracyCheck
+0x71009fea90    battle::CalcAccuracy
+0x7100a05de0    battle::CheckOneHitKo
+0x7100a09250    battle::CheckCritical
+
+# battle/before_move.cpp (roadmap phase 5, step 3: whether a Pokémon can use its move)
+0x71009ff990    battle::GetMoveFailReason
+0x71009ffdf0    battle::CureStatus
+0x71009ffeb0    battle::CountSleep
+0x71009fff60    battle::CheckThaw
+0x7100a00030    battle::CallMoveFailEvent
+0x7100a00190    battle::CheckConfusion
+0x7100a00420    battle::PutInLoveMessage
+
+# battle/status_damage.cpp (roadmap phase 5, step 3: a condition's damage at the end of a turn)
+0x7100a07f90    battle::StatusDamage
+
+# battle/condition_turn.cpp (roadmap phase 5, step 3: a condition's turn, in the conditions' file)
+0x7100a147b0    battle::EndOfTurnCondition
+
+# battle/battle_pokemon.cpp (roadmap phase 5, step 3: the battle Pokémon's file)
+0x71009e40b0    battle::BattlePokemon::GetConditionDamage
+
+# battle/add_condition.cpp (roadmap phase 5, step 3: whether a condition can be given)
+0x71009fdd30    battle::CanMoveGiveCondition
+0x71009ff450    battle::AddCondition
+0x7100a04cf0    battle::GiveMoveCondition
+0x71009fde60    battle::CheckConditionPrevented
+0x7100a04ef0    battle::IgnoresConditionImmunity
+0x7100a04fb0    battle::GetConditionImmunity
+0x7100a051f0    battle::PutConditionFailMessage
+0x7100a05360    battle::CallConditionImmunityEvent
+
+# battle/added_effect.cpp (roadmap phase 5, step 3: the chances of a move's added effects)
+0x7100a038a0    battle::GetFlinchChance
+0x7100a03240    battle::ApplyAddedEffect
+0x7100a03990    battle::ApplyFlinch
+0x7100a03a50    battle::RollFlinch
+0x7100a04b50    battle::RollMoveCondition
+0x7100a05600    battle::RollAddedEffect
+0x7100a05720    battle::GetMoveStatChange
+
+# battle/message.cpp (roadmap phase 5, step 3: putting a message made beforehand)
+0x71009fa760    battle::PutBattleMessage
+
+# battle/stat_change.cpp (roadmap phase 5, step 3: whether a stat stage can change)
+0x71009fa4b0    battle::ApplyStatStage
+0x7100a05830    battle::CanChangeStatStage
+0x7100a05a80    battle::ChangeStatStage
+0x7100a05c10    battle::IsStatChangeAllowed
+
+# battle/order.cpp (roadmap phase 5, step 3: the turn order)
+0x71009f3080    battle::OrderActions
+0x71009f4030    battle::CalcOrderKey
+0x71009f4190    battle::CalcSpeed
+
+# battle/order_key.cpp (roadmap phase 5, step 3: a turn order key)
+0x7100a50e80    battle::MakeOrderKey
+0x7100a50f30    battle::SetOrderBracket
+0x7100a50f40    battle::OrderKeyWithoutKind
+0x7100a50f50    battle::OrderKeyPriority
+
+# battle/turn.cpp (roadmap phase 5, step 3: the turn's loop)
+0x71009f10a0    battle::RunTurn
+0x71009f1340    battle::MakeActions
+0x71009f1530    battle::RunActions
+
+# battle/battle.h (the rest of the battle, not decompiled yet)
+0x71009d3d30    battle::Setup::GetUnk80Value
+0x71009da1f0    battle::Setup::HasRule
+0x71009dad10    battle::Setup::GetFriendship
+0x71009d7110    battle::Setup::GetUnk168
+0x71009e0de0    battle::PokemonList::Get
+0x71009e2f30    battle::BattlePokemon::GetId
+0x71009e3690    battle::BattlePokemon::GetValue
+0x71009e3b70    battle::BattlePokemon::GetOrderBracket
+0x71009e3b80    battle::BattlePokemon::SetOrderBracket
+0x71009e3cb0    battle::BattlePokemon::GetValueIgnoringStages
+0x71009e3970    battle::BattlePokemon::IsFainted
+0x71009e3da0    battle::BattlePokemon::HasCondition
+0x71009e3f70    battle::BattlePokemon::GetStatus
+0x71009e3fe0    battle::BattlePokemon::GetConditionParam
+0x71009e4020    battle::BattlePokemon::GetCondition
+0x71009e4180    battle::BattlePokemon::GetChoiceMove
+0x71009e49d0    battle::BattlePokemon::GetPp
+0x71009e4a00    battle::BattlePokemon::GetPpOfMove
+0x71009e4dc0    battle::BattlePokemon::FindMove
+0x71009e4e50    battle::BattlePokemon::GetTypes
+0x71009e4ef0    battle::BattlePokemon::HasType
+0x71009e5150    battle::BattlePokemon::GetValueForCritical
+0x71009e5390    battle::BattlePokemon::HasFlag
+0x71009e5c40    battle::BattlePokemon::SetFlag
+0x71009fe040    battle::ApplyMoveStatChanges
+0x71009fedf0    battle::SetCondition
+0x71009e5b00    battle::BattlePokemon::GetCriticalStage
+0x71009e5d70    battle::BattlePokemon::CureStatus
+0x71009e5f50    battle::BattlePokemon::CountSleepTurn
+0x71009e5ff0    battle::BattlePokemon::CureCondition
+0x71009e6080    battle::BattlePokemon::CountConfusionTurn
+0x71009e6e10    battle::BattlePokemon::GetLockedMove
+0x71009e54f0    battle::BattlePokemon::CanChangeStage
+0x71009e7940    battle::BattlePokemon::HasSubstitute
+0x71009f2d80    battle::IsSideOut
+0x71009e5680    battle::BattlePokemon::RaiseStage
+0x71009e3670    battle::BattlePokemon::GetSpecies
+0x71009e6b50    battle::BattlePokemon::ChangeForm
+0x7100a01d00    battle::CallItemReaction
+0x7100a05450    battle::StatusAdded
+0x7100a054f0    battle::UnnerveSuppressed
+0x7100a05580    battle::ConditionAdded
+0x7100a14ef0    battle::MakeConditionMessage
+0x7100a28c70    battle::AddAbilityHandlers
+0x7100a2a770    battle::RemoveAbilityHandlers
+0x71009e5760    battle::BattlePokemon::LowerStage
+0x71009e89f0    battle::RandomGenerator::Next
+0x7100a002d0    battle::ApplyIndirectDamage
+0x7100a095e0    battle::Flow::GetPokemon
+0x7100a0afc0    battle::Flow::NewRecord
+0x7100a0b020    battle::Flow::PushRecord
+0x7100a0a1e0    battle::Flow::HasFieldEffect
+0x7100a11d70    battle::ServerCommands::Put
+0x7100a12b40    battle::ServerCommands::PutMessage
+0x7100a14140    battle::PerishSongTurn
+0x7100a14210    battle::LeechSeedTurn
+0x7100a143a0    battle::IngrainTurn
+0x7100a14450    battle::BindTurn
+0x7100a14620    battle::AquaRingTurn
+0x7100a153c0    battle::ConditionTurnLimit
+0x7100a154d0    battle::ConditionFlag
+0x71009e4030    battle::BattlePokemon::GetConditionTurns
+0x71009e3e20    battle::BattlePokemon::IsAtFullHp
+0x7100a69110    battle::BattleMessage::Setup
+0x7100a69130    battle::BattleMessage::AddArg
+0x7100a09650    battle::Flow::PokemonAtPosition
+0x71009fa740    battle::Flow::PositionOf
+0x71009e3e60    battle::BattlePokemon::CanFight
+0x71009df260    battle::BattleParty::CountFighters
+0x71009e0db0    battle::PokemonList::GetParty
+0x71009d3dd0    battle::Setup::HasClient
+0x71009d7120    battle::Setup::SideOfClient
+0x71009d9b80    battle::Setup::HasSide
+0x71009e1fa0    battle::SideOfClientIn
+0x71009e1ef0    battle::HasSideIn
+0x71009f3510    battle::RunAction
+0x71009f36a0    battle::EndOfTurn
+0x7100a163c0    battle::FailureList::Add
+0x7100a150d0    battle::SetConditionDamageMessage
+0x7100a15200    battle::MakeConditionTurns
+0x7100a15250    battle::MakeConditionTied
+0x7100a152a0    battle::MakeConditionCounted
+0x7100a152d0    battle::MakeConditionTurnsTied
+0x7100a18fe0    battle::IsAbilityPermanent
+0x7100a15320    battle::IsBadPoison
+0x7100a15440    battle::ConditionValue
+0x7100a155d0    battle::ConditionCause
+0x7100a51270    battle::Action::GetMove
+0x7100a54dd0    battle::EndsWhenSideOut
+0x7100a681c0    battle::Field::GetWeather
+0x7100a685a0    battle::Field::HasEffect
+0x7100a687b0    battle::Field::IsImprisoned
+0x7100a690f0    battle::BattleMessage::Clear
+0x7100a69100    battle::BattleMessage::HasText
+0x7100a06e20    battle::PutMessageArgs
+0x7100a08d80    battle::PutMessageArgsWithValue
+0x7100a08e60    battle::PutPokemonMessageArgs
+0x7100a08f10    battle::PutPokemonMessageArgsWithValue
+0x7100a6a560    battle::PokemonSet::Get
+0x7100a6a6c0    battle::PokemonSet::Count
+0x7100a6b7a0    battle::Unk1798::IndexOf
+0x7100a6b820    battle::Unk1798::Check
+0x7100a68e80    battle::Unk2808::Save
+0x7100a68ee0    battle::Unk2808::Restore
+
+# moves/data.h (move data, not decompiled yet)
+0x710073c840    moves::GetMaxPp
+0x710073c950    moves::GetType
+0x710073caa0    moves::GetPriority
+0x710073cb10    moves::GetAccuracy
+0x710073cb80    moves::NeverMisses
+0x710073cd60    moves::GetCriticalStage
+0x710073c7d0    moves::HasFlag
+0x710073c9c0    moves::GetCategory
+0x710073ca30    moves::GetEffectKind
+0x710073cce0    moves::HasPower
+0x710073cc70    moves::GetFlinchChance
+0x710073ce20    moves::GetInflictCondition
+0x710073ce90    moves::GetInflictChance
+0x710073cf00    moves::GetInflictDuration
+0x710073d110    moves::GetStatChange
+0x710073d200    moves::GetStatChangeChance
+
+# the game's C++ runtime (not decompiled)
+0x71000001c0    __cxa_atexit                                # does nothing in this game
+
+# gfl/fs.h (gflib3's file system, not decompiled)
+0x71000093b0    gfl::fs::FileRequest::OnRead
+0x71000093d0    gfl::fs::FileRequest::OnUnk
+0x7100023c70    gfl::fs::File::RemoveRequest
+0x71000adc70    gfl::fs::ReadFile
+
+# gfl/object.h (gflib3's object base classes, not decompiled: the empty destructors are inline,
+# so ours stand in for the ones the vtables point to)
+0x7100002fd0    gfl::RefObject::~RefObject
+0x7100002fe0    gfl::RefObject::Destroy
+0x7100003030    gfl::RefObject::AddRef
+0x7100003050    gfl::RefObject::Release
+0x7100003080    non-virtual thunk to gfl::RefObject::AddRef
+0x71000030a0    non-virtual thunk to gfl::RefObject::Release
+0x71000030d0    gfl::Object::~Object
+0x71000030e0    gfl::Object::~Object [deleting]
+0x7100003a20    gfl::RefObject::~RefObject [deleting]
+0x7100003a30    non-virtual thunk to gfl::RefObject::~RefObject
+0x7100003a40    non-virtual thunk to gfl::RefObject::~RefObject [deleting]
 
 # gfl/str.h (Game Freak's text library, not decompiled yet)
+0x710003a420    gfl::str::StrBuf::StrBuf
 0x710003a840    gfl::str::StrBuf::GetPtr
 0x710003a8f0    gfl::str::StrBuf::SetStr
 0x710003aab0    gfl::str::StrNCopy
 0x710003abe0    gfl::str::StrEqual
+0x7100677b90    gfl::str::MsgData::MsgData
+0x71006782c0    gfl::str::MsgData::GetString
 
 # Data
 0x7100efd2e5    gfl::mem::g_assertBadAllocExpr              # boost::container's assertion strings
@@ -281,12 +1003,57 @@
 0x7100efd39a    gfl::mem::g_assertVectorFile
 0x7100efd402    gfl::mem::g_assertPopBackFunc
 0x7100f52eb8    pokemon::kHiddenPowerTypes
+0x7100f833f8    item::kBallItems
+0x7100f8342c    item::kMachineItems
+0x7100f834f4    item::kMachineMoves
+0x7100f835bc    item::kHmMoves
+0x7100f835ca    item::kBerries
+0x7100f8365c    item::kCandies
+0x7100f837e8    pokemon::personal::kNameBufferLength
+0x7100f837ec    pokemon::personal::kMiniorForms
+0x7100f83a78    pokemon::kKyuremMoves
 0x7100f83a90    pokemon::kBlockOrder
 0x7100f83da8    pokemon::kNatureModifiers
 0x7100f83e28    pokemon::kNatureFlavors
 0x7100f8401c    pokemon::kPlateTypes
 0x7100f840a4    pokemon::kMemoryTypes
+0x7101527000    __dso_handle
+0x7101527100    vtable for gfl::Object
+0x7101527268    vtable for gfl::RefObject
+0x7101527628    vtable for gfl::fs::FileRequest
+0x7101527758    vtable for gfl::fs::ReadRequest
+0x710159c5b0    vtable for item::Item
+0x710159c618    vtable for pokemon::personal::PersonalTable
+0x710159c638    vtable for pokemon::personal::LearnsetCache
+0x710159c658    vtable for pokemon::Party
+0x710159c718    vtable for pokemon::EvolutionChecker
+0x710159c788    vtable for pokemon::Pokemon
+0x710159c7f8    vtable for pokemon::PartyPokemon
+0x710159c868    vtable for pokemon::Accessor
 0x710160e388    gfl::mem::g_resourceStackSlot
+0x710163ea48    item::g_flags
+0x710163ea68    pokemon::personal::g_personalSource
+0x710163ea70    pokemon::personal::g_personalData
+0x710163ea90    pokemon::personal::g_nameBuffer
+0x710163ea98    pokemon::personal::g_unkCache
+0x710163eab8    pokemon::personal::g_personal
+0x710163ead8    pokemon::personal::g_growthPersonal
+0x710163eaf8    pokemon::personal::g_growth
+0x710163eb18    pokemon::personal::g_growthCache
+0x710163eb38    pokemon::personal::g_levelUpMoves
+0x710163eb58    pokemon::personal::g_noSpeciesMoves
+0x710163eb78    pokemon::personal::g_unkLearnset
+0x710163eb98    pokemon::personal::g_learnsetCache
+0x710163ebb8    pokemon::personal::g_evolutions
+0x710163ebd8    pokemon::personal::g_evolutionCache
+0x710163ebf8    pokemon::personal::g_megaCheck
+0x710163ec18    pokemon::personal::g_megaEvolutions
+0x710163ec38    pokemon::personal::g_megaCache
+0x710163ec58    pokemon::personal::g_pmsData
+0x710163ec78    pokemon::personal::g_speciesNames
+0x710163ecd0    pokemon::personal::g_learnsetSource
+0x710163ecd8    pokemon::g_scratchCore
+0x710163edc0    pokemon::g_scratchRecord
 0x710163eec4    pokemon::g_badEggCalc
 0x710163eee0    pokemon::g_badEggBlockA
 0x710163ef18    pokemon::g_badEggBlockB
@@ -297,3 +1064,10 @@
 0x710163f014    pokemon::g_discardBlockB
 0x710163f04c    pokemon::g_discardBlockC
 0x710163f084    pokemon::g_discardBlockD
+0x7101640d28    battle::g_random
+0x7101649560    battle::g_handlerSets
+0x710164d75c    battle::g_handlerSetsUsed
+0x710164d760    battle::g_eventDepth
+0x710164d768    battle::g_firstHandlerSet
+0x710164d770    battle::g_vars
+0x710164dd18    battle::g_freeHandlerSets

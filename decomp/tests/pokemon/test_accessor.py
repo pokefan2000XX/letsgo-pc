@@ -27,11 +27,10 @@ def each_state(t, rounds=4):
 def test_construct_destroy(t):
     obj = t.emu.alloc(b"\xcc" * 0x20)
     t.call(CTOR, obj)
-    t.check(t.emu.read(obj + 8, 0x12))
-    t.check(t.emu.read_u64(obj) != 0)
+    t.check(t.emu.read(obj, 0x20))          # the vtable is the original's (decomp/symbols.txt)
     t.call(DTOR, obj)
     t.call(DTOR_DELETING, obj)
-    t.check(t.emu.read(obj + 8, 0x12))
+    t.check(t.emu.read(obj, 0x20))
 
 
 def test_attach(t):

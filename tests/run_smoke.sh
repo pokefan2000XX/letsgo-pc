@@ -32,6 +32,20 @@ run "guest headers: musl + libc++ + nnsdk/nnware for AArch64" bash -c '
 
 run "emulator oracle: original FNV-1a function matches reference" bash -c 'python -P tests/smoke/emu_fnv.py | grep -q "^PASS"'
 
+run "scripts: tools/amx.py assembles and disassembles made-up scripts" bash -c 'python -P tests/smoke/amx_tool.py | grep -q "^PASS"'
+
+run "messages: tools/msg.py builds and dumps made-up message files" bash -c 'python -P tests/smoke/msg_tool.py | grep -q "^PASS"'
+
+run "flatbuffers: tools/flatbuf.py reads, builds and grows made-up tables" bash -c 'python -P tests/smoke/flatbuf_tool.py | grep -q "^PASS"'
+
+run "archives: tools/sarc.py writes, reads and changes a made-up SARC" bash -c 'python -P tests/smoke/sarc_tool.py | grep -q "^PASS"'
+
+run "layouts: tools/bflyt.py reads and changes a made-up layout and animation" bash -c 'python -P tests/smoke/bflyt_tool.py | grep -q "^PASS"'
+
+run "fonts: tools/font.py encodes and decodes made-up fonts" bash -c 'python -P tests/smoke/font_tool.py | grep -q "^PASS"'
+
+run "battle sequences: tools/bseq.py reads, dumps and builds a made-up sequence" bash -c 'python -P tests/smoke/bseq_tool.py | grep -q "^PASS"'
+
 # M1: the recompiled game boots headless and presents frames (needs a built runtime;
 # LETSGO_BUILD picks the build directory, default build/pc). Tests that run the game start from an
 # empty save folder of their own (first boot), so your save in save/ is never touched.
@@ -69,5 +83,11 @@ run "decomp: decompiled functions behave like the originals" bash -c '
   python -P decomp/tools/build.py > build/smoke/decomp.log 2>&1 || { cat build/smoke/decomp.log; exit 1; }
   python -P decomp/tools/difftest.py > build/smoke/difftest.log 2>&1
   tail -1 build/smoke/difftest.log | grep -q " 0 failed" || { cat build/smoke/difftest.log; exit 1; }'
+
+# Roadmap phase 1: mods replace and add files inside gfpak archives, a made-up one and three of the
+# game's, which must hold exactly what they should afterwards (needs modstest.exe in the build)
+run "mods folder: files replace and add to gfpak archives" bash -c '
+  python -P tools/check_mods.py > build/smoke/mods.log 2>&1 || { tail -5 build/smoke/mods.log; exit 1; }
+  grep -q "made-up archive: ok" build/smoke/mods.log'
 
 exit $fail

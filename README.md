@@ -2,14 +2,16 @@
 
 A native Windows port of **Pokémon: Let's Go, Pikachu!** (v1.0.2), built from
 your own dump. It starts as a static recompilation of the Switch code (ARM64 to
-C) running on a PC reimplementation of the Switch SDK, then gets decompiled
-into readable C++ one function at a time.
+C) running on a PC reimplementation of the Switch SDK, and it's the base for a
+ROM hack: the parts a hack needs get decompiled into readable C++, one function
+at a time.
 
 Nothing from the game is in this repository. `orig/` (extracted from your dump)
 and `toolchain/` are ignored by git.
 
 - [docs/PLAN.md](docs/PLAN.md): architecture, decisions and milestones
 - [docs/BINARY_NOTES.md](docs/BINARY_NOTES.md): what's in the binary
+- [docs/MODS.md](docs/MODS.md): mods, files that take the place of the game's
 
 ## Getting started (players)
 
@@ -32,13 +34,19 @@ from their own Switch:
    why, and offers its picker again.
 
 Everything it writes goes to `%APPDATA%\LetsGoPikachu\`: `config.ini` (the
-three paths; delete it to choose again), `save\` and `letsgo.log`. A fatal
+three paths; delete it to choose again), `save\`, `letsgo.log` and
+`shader_cache.bin` (the game's shaders, translated once and kept, so they
+never stutter again; delete it any time). A fatal
 error shows a message box that points at the log. `--base`, `--update` and
 `--keys` give the files on the command line instead. Paths given that way
 aren't saved to `config.ini` unless a picker had to correct one.
 
-Build it like the development exe (step 4 below), with
-`cmake --build build/pc --target LetsGoPikachu`. The exe is `build/pc/LetsGoPikachu.exe`.
+Mods go in `mods\` beside the exe or in `%APPDATA%\LetsGoPikachu\mods\`, one
+folder each with a `romfs\` inside, as for Ryujinx
+([docs/MODS.md](docs/MODS.md)).
+
+To build it, run `build-release.bat` (Setup step 4 below). The exe is
+`build/pc/LetsGoPikachu.exe`.
 
 ## Setup
 
@@ -58,7 +66,11 @@ Build it like the development exe (step 4 below), with
    | `codecs/` | opus 1.5.2, libogg 1.3.6, libvorbis 1.3.7 (downloads.xiph.org); libvpx 1.17.0 (github.com/webmproject/libvpx), VP9 decoder only, assembled with nasm 3.02 (nasm.us) | The game's Opus sound, the movies' VP9 picture and Vorbis sound. Built static by `tools/setup_codecs.sh` |
    | Python | cryptography, lz4, capstone, unicorn 2.1.4 | Extraction, analysis, ARM64 emulator oracle |
 
-   CMake and Ninja come from the Visual Studio Build Tools already on this PC.
+   Also needed, installed separately:
+   - Git for Windows, whose Git Bash runs the `.sh` scripts;
+   - Python 3.11 or newer on PATH;
+   - CMake and Ninja, either on PATH or from Visual Studio / its Build Tools with
+     "C++ CMake tools for Windows" (the batch files in step 4 find either).
 
 2. **Extract and analyze your dump.** The defaults are this PC's paths:
 
@@ -80,21 +92,48 @@ Build it like the development exe (step 4 below), with
    cmd //c "tools\\ghidra\\decompile.cmd orig\\decomp 0x7100004110"
    ```
 
-4. **Recompile and build.** The recompiler writes C for main and sdk to
-   `build/gen/` (derived from the game, never committed). The release build
-   compiles about 95,000 recompiled functions and takes a while the first time:
+4. **Build.** There are two executables. Both are built from the same code into
+   `build/pc`:
+
+   | Executable | Batch file | What it's for |
+   |---|---|---|
+   | `build/pc/letsgo.exe` | `build-dev.bat` | Development: a console window with the log. It runs the game extracted in `orig/` and has the test and debug options (step 5) |
+   | `build/pc/LetsGoPikachu.exe` | `build-release.bat` | Players: one file with no console window. It runs from the player's NSPs and keys (see Getting started) |
+
+   Double-click a batch file, or run it from a command prompt. Each one:
+   - checks that steps 1 and 2 are done;
+   - runs the recompiler the first time;
+   - configures `build/pc` the first time;
+   - builds only its own executable.
+
+   `--recomp` runs the recompiler again; do that after `recomp/` changes. The
+   first build compiles about 95,000 recompiled functions and takes a while.
+   After that, only what changed is rebuilt. Started from Explorer, the window
+   stays open until a key is pressed so you can read the result.
+
+   **Building by hand**, from Git Bash in the repository folder:
 
    ```bash
+   # 1. Recompile main and sdk to C in build/gen/ (again after recomp/ changes)
    python -P recomp/recomp.py main sdk
-   cmake -S . -B build/pc -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=cmake/host-x86_64.cmake
+   # 2. Configure build/pc (once, and again after step 1 adds or removes files)
+   cmake -S . -B build/pc -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$(cygpath -m "$PWD")/cmake/host-x86_64.cmake"
+   # 3. Build the development exe (build/pc/letsgo.exe), the release exe
+   #    (build/pc/LetsGoPikachu.exe), or both
    cmake --build build/pc --target letsgo
+   cmake --build build/pc --target LetsGoPikachu
    ```
 
-   `--target LetsGoPikachu` builds the player exe (see Getting started).
-   `-DLETSGO_CHECK_CALLS=ON` (used for `build/pc-check`) makes every call check
-   that callee-saved registers and `sp` survive it, which catches recompiler bugs.
-   The build also compiles the decompiled code in `decomp/` (see Decompiling below)
-   whenever it changes.
+   - `build/gen/` is derived from the game and never committed.
+   - Always give `--target`. A plain `cmake --build build/pc` builds everything:
+     both executables, `tools/shadertest` and `tools/modstest`.
+   - If CMake or Ninja aren't on PATH, use the copies Visual Studio installs under
+     `Common7/IDE/CommonExtensions/Microsoft/CMake/`, and add
+     `-DCMAKE_MAKE_PROGRAM=<path to ninja.exe>` to step 2.
+   - `-DLETSGO_CHECK_CALLS=ON` (used for `build/pc-check`) makes every call check
+     that callee-saved registers and `sp` survive it, which catches recompiler bugs.
+   - Either build also compiles the decompiled code in `decomp/` (see Decompiling
+     below) whenever it changes.
 
 5. **Run.** Double-click `build/pc/letsgo.exe`, or run it from a shell. It
    finds `orig/` next to the exe or up to two folders above it. Saves go to
@@ -113,6 +152,7 @@ Build it like the development exe (step 4 below), with
    | Option | Effect |
    |---|---|
    | `--orig <dir>` | Game files somewhere else |
+   | `--mods <dir>` | Mods from this folder, or the one mod in it ([docs/MODS.md](docs/MODS.md); default `mods/` beside the exe, then beside `orig/`) |
    | `--base <nsp> --update <nsp> --keys <file>` | Runs from the NSPs, as the player exe does, instead of `orig/`. Saves and `config.ini` then go to `%APPDATA%\LetsGoPikachu\` |
    | `--headless` | No window (tests, servers) |
    | `-v` | Verbose: file opens, thread starts, input queries |
@@ -135,9 +175,14 @@ Build it like the development exe (step 4 below), with
    | `LETSGO_AUDIO_WAV=x.wav` | Records each audio output stream: the game's to `x.wav`, the next one (a movie's) to `x-2.wav`, and so on |
    | `LETSGO_MUTE=1` | No sound |
    | `LETSGO_SAVE_DIR=dir` | Saves somewhere else (tests use their own, so your save is never touched) |
+   | `LETSGO_MODS=dir` | Mods from this folder, like `--mods`; `off` runs without mods |
    | `LETSGO_NO_DECOMP=all` | Runs the original code instead of every decompiled replacement; `=7100101b30,...` only for those functions (finds which replacement breaks something) |
    | `LETSGO_DECOMP_TRACE=1` | Logs the first call of each replaced function |
    | `LETSGO_TURBO[=S]` | Presents as fast as possible (for the first S seconds): logos, text and menus run many times faster in test runs; movies and sound keep real time |
+   | `LETSGO_PERF=1` | Logs every frame that took over 40 ms with what the time went to (shader builds, texture uploads), and frame-time statistics every 600 frames |
+   | `LETSGO_SHADER_CACHE=file` | Where translated shaders are kept between runs (default `cache/shader_cache.bin` beside `save/`; the player exe keeps it in `%APPDATA%\LetsGoPikachu\`), or `off` |
+   | `LETSGO_SHADER_WARMUP=0` | Doesn't create the cached shaders in the background at startup |
+   | `LETSGO_NO_VSYNC_LOCK=1` | Times frames by a 60 Hz clock even when the display runs at a multiple of 60 Hz (normally frames follow the display's own refresh) |
    | `LETSGO_CONTROL=file` | Drives a running game from lines appended to `file`: `A`, `SL_UP:1.5` (hold), `wait 2`, `shot out.png`, `turbo on`/`turbo off` |
    | `LETSGO_DIALOG_TEST=prefix` | Each text box saves a picture of itself to `prefix-N.png`, then answers itself (its initial text, or "Test"), so a windowed test runs hands-free |
    | `SDL_AUDIO_DRIVER=disk` | Makes a `--headless` run play through SDL's disk driver: silent, timed like a sound card, output in `SDL_AUDIO_DISK_OUTPUT_FILE` (default `sdlaudio.raw`) |
@@ -169,8 +214,9 @@ Build it like the development exe (step 4 below), with
 Decompiled code is readable C++ in `decomp/`, compiled for the Switch's CPU with the
 original's ABI and struct layouts, and recompiled together with the game. Each function
 replaces the original it was written for; everything else keeps running the recompiled
-original, so the game works at every step. The order of the work is the decomp roadmap in
-[docs/PLAN.md](docs/PLAN.md); [decomp/README.md](decomp/README.md) has the conventions.
+original, so the game works at every step. What gets decompiled, and when, follows the
+roadmap in [docs/PLAN.md](docs/PLAN.md); [decomp/README.md](decomp/README.md) has the
+conventions.
 
 | Path | Contents |
 |---|---|
@@ -186,7 +232,8 @@ no entry). The same file links everything the code calls or reads that isn't dec
 yet. Calls to the SDK (`memcpy`, `nn::` functions) need no entry: they go through main's
 own import stubs.
 
-**Building.** `cmake --build build/pc` runs `decomp/tools/build.py` whenever `decomp/`
+**Building.** Building either executable (`build-dev.bat`, or
+`cmake --build build/pc --target letsgo`) runs `decomp/tools/build.py` whenever `decomp/`
 changes. It compiles the code, links `build/decomp/patch.elf` at `0x7102000000`, and
 recompiles it into `build/gen/patch`. The recompiled originals are weak symbols, so a
 decompiled function overrides the original for every caller (direct calls, vtables,
@@ -197,7 +244,12 @@ in the emulator: once against the originals, once against the decompiled version
 must record the same results (`t.check(value)`) and make the same SDK calls. In the game,
 `LETSGO_NO_DECOMP` switches replacements back to the originals for comparison.
 
-**Reading the original.** `python -P tools/dis.py <address>` prints a function with the
+**Hooks and hacks.** A replacement can call the original it replaces through `ORIG_<address>`,
+so code can be added to a function without decompiling it ([decomp/README.md](decomp/README.md),
+Hooks). A hack in `hacks/<name>/` has its own code, tests and files for the game; `-DLETSGO_HACKS=<name>`
+builds its code into the executables ([hacks/README.md](hacks/README.md)).
+
+**Reading the original.** `python -P tools/disasm.py <address>` prints a function with the
 names of what it calls and the strings it uses; `python -P tools/refs.py <address>` lists
 who references an address (code and data, after `tools/refs.py build`); Ghidra's view is in
 `orig/ghidra/letsgo`. Their output comes from the game, so it stays in the terminal or `orig/`.
@@ -217,7 +269,7 @@ game is in it: `orig/`, `build/`, `toolchain/` and `save/` are ignored by git.
 
 | Path | Contents |
 |---|---|
-| `runtime/` | Loader, Horizon kernel subset, `nn::` service overrides (fs, hid, audio out and Opus, network, software keyboard, ...), the `movie::` library on a WebM parser, libvpx and libvorbis (`hle_movie.cpp`, `webm.cpp`), SDL window, input and sound (`platform.cpp`) |
+| `runtime/` | Loader, Horizon kernel subset, `nn::` service overrides (fs, hid, audio out and Opus, network, software keyboard, ...), the mods folder (`mods.cpp`: files that replace the game's, inside its gfpak archives too), the `movie::` library on a WebM parser, libvpx and libvorbis (`hle_movie.cpp`, `webm.cpp`), SDL window, input and sound (`platform.cpp`) |
 | `runtime/src/gpu/` | NVN on Vulkan (`nvn_vk.cpp`, `device.cpp`), texture layouts and formats (`texture.cpp`, `astc.cpp`), shader translators: NV_gpu_program5 assembly (`nvasm.cpp`) and Maxwell machine code (`maxwell.cpp`) to GLSL, glslang to SPIR-V (`spirv.cpp`) |
 
 **Decomp: readable source replacing the original**
@@ -225,6 +277,7 @@ game is in it: `orig/`, `build/`, `toolchain/` and `save/` are ignored by git.
 | Path | Contents |
 |---|---|
 | `decomp/` | Decompiled game code, its tests and its build tools (see Decompiling) |
+| `hacks/` | Hacks: new code and hooks built into the game (`-DLETSGO_HACKS`), and their files for the game, read as mods ([hacks/README.md](hacks/README.md)) |
 
 **Shared tools**
 
@@ -237,7 +290,7 @@ game is in it: `orig/`, `build/`, `toolchain/` and `save/` are ignored by git.
 | `tools/analyze.py` | Function list (from `.eh_frame`), import map, instruction census |
 | `tools/xrefs.py` | vtables, call graph, boot reachability |
 | `tools/strxref.py` | Which function references which string or source path |
-| `tools/refs.py`, `tools/dis.py` | Who references an address; a function's disassembly with names filled in |
+| `tools/refs.py`, `tools/disasm.py` | Who references an address; a function's disassembly with names filled in |
 | `tools/npdm.py` | Process metadata (main thread, services) |
 | `tools/ghidra/` | Headless import (`import.cmd`), function seeding, decompiled-C export |
 | `tools/emu/guest_emu.py` | Runs original functions under Unicorn with main at its real address: the test oracle for the recompiler and the decomp |
@@ -249,15 +302,20 @@ game is in it: `orig/`, `build/`, `toolchain/` and `save/` are ignored by git.
 | `tools/shader_census.py`, `tools/gfpak.py` | Census of the game's shaders and textures; dumps NVN control sections |
 | `tools/maxwell_ref.py`, `tools/maxwell_dis.py` | Maxwell opcode table and field layouts from Ryujinx (MIT); disassembler; generates `runtime/src/gpu/maxwell_ops.inc` |
 | `tools/shadertest/` | Translates and compiles every dumped program the way the runtime does |
+| `tools/modstest/`, `tools/check_mods.py` | The mods folder's archive patching run on a made-up archive and the game's own, and checked entry by entry |
+| `tools/amx.py`, `tools/msg.py`, `tools/flatbuf.py` | The field scripts to editable source and back, the messages to text and back, and FlatBuffers read, built and made longer without a schema compiler ([docs/SCRIPTS.md](docs/SCRIPTS.md)); the battle AI scripts' subcommands named ([docs/BATTLE_AI.md](docs/BATTLE_AI.md)) |
+| `tools/bseq.py` | The battle sequences (move animations) to JSON and back, each parameter typed as the game's code reads it ([docs/SEQUENCES.md](docs/SEQUENCES.md)) |
+| `tools/sarc.py`, `tools/bflyt.py`, `tools/font.py`, `tools/studio.py` | The menus' archives (SARC) read and written, their layouts' panes listed and changed, the game's fonts to OpenType and back, and letsgostudio's command line run from a hack's script ([docs/MENUS.md](docs/MENUS.md)) |
 
 **Build, tests and data**
 
 | Path | Contents |
 |---|---|
-| `CMakeLists.txt`, `cmake/host-x86_64.cmake` | The `letsgo` executable: runtime, recompiled code and the decomp module |
+| `build-dev.bat`, `build-release.bat` | Build `letsgo.exe` (development) or `LetsGoPikachu.exe` (release) into `build/pc`, through `tools/build_exe.cmd` (step 4) |
+| `CMakeLists.txt`, `cmake/host-x86_64.cmake` | The `letsgo` and `LetsGoPikachu` executables: runtime, recompiled code and the decomp module |
 | `cmake/guest-aarch64.cmake` | CMake toolchain for ARM64 guest (decomp) code |
 | `tests/` | `run_smoke.sh` and the smoke tests it runs |
-| `docs/` | The plan and roadmap (`PLAN.md`) and what's in the binary (`BINARY_NOTES.md`) |
+| `docs/` | The plan and roadmap (`PLAN.md`), what's in the binary (`BINARY_NOTES.md`) and mods (`MODS.md`) |
 | `data/` | Function, import and vtable databases, census, reachability. Addresses and names only, safe to commit |
 | `orig/` | Your extracted game (`exefs/`, `romfs/`, `elf/`, `analysis/`, `ghidra/`). Never committed |
 | `toolchain/` | Everything from step 1. Not committed |
@@ -275,3 +333,4 @@ game is in it: `orig/`, `build/`, `toolchain/` and `save/` are ignored by git.
 | shader translation | Every NVN program the game ships translates to GLSL and compiles to SPIR-V |
 | movie and sound | The title movie decodes and plays to its end, and both the game's sound (Opus) and the movie's (Vorbis) are audible (`audible.py` checks the recordings) |
 | decomp | The decompiled code builds, and every decompiled function behaves like its original in the emulator (`decomp/tools/difftest.py`) |
+| mods folder | Mods replace and add files inside a made-up gfpak and the game's own, which hold exactly what they should (`tools/check_mods.py`) |

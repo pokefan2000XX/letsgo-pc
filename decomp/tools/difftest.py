@@ -30,8 +30,10 @@ sys.path.insert(0, os.path.join(ROOT, "tools", "emu"))
 from guest_emu import GuestEmu  # noqa: E402
 
 PATCH = os.path.join(ROOT, "build", "decomp", "patch.elf")
-# Pure memory functions: whether the compiler calls them or inlines them is not a difference
-PURE = {"memcpy", "memmove", "memset", "memcmp", "strlen", "strcmp", "strncmp", "strcpy", "strncpy"}
+# nn::diag::detail::LogImpl: a hook's logging (the runtime writes it to letsgo.log), with no effect on the game
+LOG_IMPL = "_ZN2nn4diag6detail7LogImplERKNS0_11LogMetaDataEPKcz"
+# Pure memory functions: whether the compiler calls them or inlines them is not a difference. Nor is logging.
+PURE = {"memcpy", "memmove", "memset", "memcmp", "strlen", "strcmp", "strncmp", "strcpy", "strncpy", LOG_IMPL}
 REPLACES = os.path.join(ROOT, "build", "decomp", "replaces.json")
 
 
@@ -42,6 +44,7 @@ class Run:
         self.emu = emu
         self.rng = random.Random(seed)
         self.values = []
+        self.lines = []                # the test's line for each check
         self.called = set()            # originals the test called
         self._replaces = replaces
         self._decomp = use_decomp
@@ -53,12 +56,28 @@ class Run:
 
     def check(self, value):
         self.values.append(value)
+        self.lines.append(sys._getframe(1).f_lineno)
+
+
+def describe(a, b, path=""):
+    """Where two checked values first differ, briefly."""
+    if isinstance(a, (tuple, list)) and isinstance(b, (tuple, list)) and len(a) == len(b):
+        i = next(i for i in range(len(a)) if a[i] != b[i])
+        return describe(a[i], b[i], "%s[%d]" % (path, i))
+    if isinstance(a, bytes) and isinstance(b, bytes):
+        i = next((i for i in range(min(len(a), len(b))) if a[i] != b[i]), min(len(a), len(b)))
+        lo = i - i % 16
+        return "%s bytes differ at 0x%x (%d vs %d bytes): original %s, decompiled %s" % (
+            path or "value", i, len(a), len(b), a[lo:lo + 32].hex(" "), b[lo:lo + 32].hex(" "))
+    return "%s: original %r, decompiled %r" % (path or "value", a, b)
 
 
 def run_test(fn, replaces, use_decomp, setup):
     emu = GuestEmu(os.path.join(ROOT, "orig", "exefs", "main"))
+    emu.import_handlers[LOG_IMPL] = lambda e: None
     if use_decomp:
         emu.load_patch(PATCH)
+        emu.replacements = replaces      # fakes of originals fake their replacements too
     if setup:
         setup(emu)
     t = Run(emu, replaces, use_decomp, seed=fn.__name__)
@@ -69,13 +88,17 @@ def run_test(fn, replaces, use_decomp, setup):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("-k", default="", help="only tests whose name contains this")
+    ap.add_argument("--hack", action="append", default=[], help="also run hacks/NAME/tests (build.py --hack NAME first)")
     a = ap.parse_args()
     if not os.path.exists(PATCH):
         print("no decomp module (run decomp/tools/build.py)")
         return 1
     replaces = {int(k, 16): int(v, 16) for k, v in json.load(open(REPLACES)).items()}
     failed = ran = 0
-    for path in sorted(glob.glob(os.path.join(ROOT, "decomp", "tests", "**", "test_*.py"), recursive=True)):
+    tests = sorted(glob.glob(os.path.join(ROOT, "decomp", "tests", "**", "test_*.py"), recursive=True))
+    for hack in a.hack:
+        tests += sorted(glob.glob(os.path.join(ROOT, "hacks", hack, "tests", "**", "test_*.py"), recursive=True))
+    for path in tests:
         if os.path.dirname(path) not in sys.path:      # helpers next to the tests
             sys.path.insert(0, os.path.dirname(path))
         spec = importlib.util.spec_from_file_location(os.path.basename(path)[:-3], path)
@@ -98,9 +121,12 @@ def main():
             if orig.values != new.values:
                 k = next(i for i in range(max(len(orig.values), len(new.values)))
                          if i >= len(orig.values) or i >= len(new.values) or orig.values[i] != new.values[i])
-                print("FAIL  %s: check #%d: original %r, decompiled %r" % (
-                    name, k, orig.values[k] if k < len(orig.values) else "(none)",
-                    new.values[k] if k < len(new.values) else "(none)"))
+                if k < len(orig.values) and k < len(new.values):
+                    detail = describe(orig.values[k], new.values[k])
+                else:
+                    detail = "the %s run has fewer checks" % ("original" if k >= len(orig.values) else "decompiled")
+                line = (orig.lines if k < len(orig.lines) else new.lines)[k]
+                print("FAIL  %s: check #%d (line %d): %s" % (name, k, line, detail))
                 failed += 1
             elif orig_calls != new_calls:
                 print("FAIL  %s: SDK calls differ: original %s, decompiled %s" % (name, orig_calls[:20], new_calls[:20]))

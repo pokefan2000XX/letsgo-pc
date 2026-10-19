@@ -119,7 +119,8 @@ def test_tables(t):
 def test_bit_helpers(t):
     for _ in range(200):
         bits, value, index = t.rng.randrange(0x10000), t.rng.randrange(0x10000), t.rng.randrange(8)
+        word = t.rng.getrandbits(32)
         t.check(t.call(GET_PAIR, bits, index) & 0xFFFF)
         t.check(t.call(SET_PAIR, bits, index, value & 3) & 0xFFFF)
-        t.check(t.call(SET_HIGH, bits, value) & 0xFFFF)
-        t.check(t.call(SET_LOW, bits, value) & 0xFFFF)
+        t.check(t.call(SET_HIGH, word, value) & 0xFFFFFFFF)     # callers keep all 32 bits
+        t.check(t.call(SET_LOW, word, value) & 0xFFFFFFFF)
