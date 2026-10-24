@@ -52,6 +52,7 @@ bool mem_commit(uint64_t addr, uint64_t size);       // within a reserved region
 bool mem_written(uint64_t addr, uint64_t size);      // CPU writes since the last call (heap/alias); resets
 uint64_t mem_heap_set_size(uint64_t size);            // svcSetHeapSize; returns base or 0
 uint64_t mem_heap_size();
+uint64_t mem_readable(uint64_t addr);                 // bytes readable from addr on (0: none); for debug scans
 uint64_t mem_used();
 uint32_t mem_map_alias(uint64_t dst, uint64_t src, uint64_t size);    // svcMapMemory (move semantics)
 uint32_t mem_unmap_alias(uint64_t dst, uint64_t src, uint64_t size);
@@ -80,6 +81,20 @@ void register_overrides();                            // nn:: functions replaced
 rc_fn lookup_override(const std::string& sym);       // nullptr if none
 std::vector<std::string> override_names();
 void dispatch_init();
+void override_main(uint64_t addr, rc_fn fn);          // a main function replaced by host code (before dispatch_init)
+void dump_call_counts(const std::string& path);       // LETSGO_CALLS: indirect calls per main function since the last dump
+void watch_writes(uint64_t addr, double seconds);      // LETSGO_CONTROL watch: the guest functions writing 4 bytes there
+// ---- settings.ini (settings.cpp) -----------------------------------------------------------
+void settings_init(const std::string& file);
+std::string setting(const std::string& key);           // "" when the file doesn't have it
+void set_setting(const std::string& key, const std::string& value);   // written to the file
+void render_scale_init(bool headless);                 // LETSGO_SCALE, scale=, or the monitor's height
+int render_scale();                                    // screen-sized render targets are this many times the game's
+// ---- frame rate (framerate.cpp) ----------------------------------------------------------
+void framerate_init();                                // reads the choice; replaces the game's two period setters
+bool fps60();                                         // the game at 60 frames a second, not its 30
+bool fps60_odd_frame();                               // at 60, a frame the every-other-frame counts skip (input waits too)
+void toggle_fps60();                                  // Tab
 
 // ---- kernel (threads, sync, handles) -----------------------------------------------------
 struct KThread;

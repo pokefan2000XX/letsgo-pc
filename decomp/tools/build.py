@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build the decomp patch module and recompile it with the game.
 
-  python -P decomp/tools/build.py [--ninja PATH] [--hack NAME]...
+  python -P decomp/tools/build.py [--ninja PATH] [--hack NAME]... [--out DIR] [--gen DIR]
 
 1. Compiles decomp/src for the Switch's CPU (decomp/CMakeLists.txt, cmake/guest-aarch64.cmake)
    into build/decomp/libdecomp.a.
@@ -30,6 +30,10 @@ runs this whenever decomp/ changes.
 
 --hack NAME also builds hacks/NAME/code into the module, as decompiled code is (new code, and
 hooks that replace a function and call its original through ORIG_<address>).
+
+--out DIR builds it in DIR/decomp and DIR/gen/patch instead (main is still read from build/gen, or
+--gen), so two builds with different hacks don't overwrite one module (CMakeLists.txt's
+DECOMP_OUT_DIR).
 """
 import argparse
 import csv
@@ -44,6 +48,8 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 BIN = os.path.join(ROOT, "toolchain", "llvm-mingw", "bin")
 OUT = os.path.join(ROOT, "build", "decomp")
+PATCH_OUT = os.path.join(ROOT, "build", "gen")     # the recompiled module goes in PATCH_OUT/patch
+MAIN_OUT = os.path.join(ROOT, "build", "gen")      # where main was translated
 DEFAULT_NINJA = "C:/Program Files (x86)/Microsoft Visual Studio/18/BuildTools/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe"
 MAIN_BASE, SDK_BASE = 0x7100000000, 0x7180000000
 ADDR_NAME = re.compile(r"^(?:FUN|DAT|PTR|LAB)_(71[0-9a-fA-F]{8})$")
@@ -140,7 +146,14 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--ninja", default=os.environ.get("NINJA", DEFAULT_NINJA))
     ap.add_argument("--hack", action="append", default=[], help="also build hacks/NAME/code into the module")
+    ap.add_argument("--out", help="build the module in DIR/decomp and recompile it into DIR/gen/patch (default build/)")
+    ap.add_argument("--gen", help="where main was translated (default build/gen)")
     a = ap.parse_args()
+    global OUT, PATCH_OUT, MAIN_OUT
+    if a.out:
+        OUT, PATCH_OUT = os.path.join(a.out, "decomp"), os.path.join(a.out, "gen")
+    if a.gen:
+        MAIN_OUT = a.gen
     os.makedirs(OUT, exist_ok=True)
     extra = []
     for hack in a.hack:
@@ -153,7 +166,7 @@ def main():
     elf = os.path.join(OUT, "patch.elf")
     replaces_path = os.path.join(OUT, "replaces.json")
     recomp = [sys.executable, "-P", os.path.join(ROOT, "recomp", "recomp.py"), "patch",
-              "--out", os.path.join(ROOT, "build", "gen")]
+              "--out", PATCH_OUT, "--main-out", MAIN_OUT]
     if not srcs:                                     # nothing decompiled: an empty patch module
         for p in (elf, replaces_path):
             if os.path.exists(p):
@@ -397,7 +410,7 @@ def elf_read(path, addr, size):
 def touch_outputs():
     """recomp.py leaves unchanged files alone; the build still needs them newer than decomp/."""
     for f in ("f000.c", "table.c"):
-        p = os.path.join(ROOT, "build", "gen", "patch", f)
+        p = os.path.join(PATCH_OUT, "patch", f)
         if os.path.exists(p):
             os.utime(p)
 

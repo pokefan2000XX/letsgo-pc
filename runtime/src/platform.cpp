@@ -497,6 +497,7 @@ void platform_rumble(float low, float high) {
             if (e.type == SDL_EVENT_GAMEPAD_REMOVED) close_pad(e.gdevice.which);
             if (e.type == SDL_EVENT_KEY_DOWN && e.key.scancode == SDL_SCANCODE_F11 && !e.key.repeat)
                 SDL_SetWindowFullscreen(g_win, !(SDL_GetWindowFlags(g_win) & SDL_WINDOW_FULLSCREEN));
+            if (e.type == SDL_EVENT_KEY_DOWN && e.key.scancode == SDL_SCANCODE_TAB && !e.key.repeat) toggle_fps60();
         }
         update_input();
         apply_rumble();
@@ -511,9 +512,12 @@ void platform_rumble(float low, float high) {
             SDL_RenderPresent(g_ren);
         } else {
             char title[160];
-            snprintf(title, sizeof title, "Pok\xC3\xA9mon: Let's Go, Pikachu! (letsgo-pc) - %llu frames", (unsigned long long)nvn_frames());
+            snprintf(title, sizeof title, "Pok\xC3\xA9mon: Let's Go, Pikachu! (letsgo-pc) - %s (Tab) - %llu frames",
+                     fps60() ? "60 FPS" : "30 FPS", (unsigned long long)nvn_frames());
             static uint64_t last_title;
-            if (SDL_GetTicks() - last_title > 1000) {
+            static bool last_fps60;
+            if (SDL_GetTicks() - last_title > 1000 || last_fps60 != fps60()) {   // a switch shows at once
+                last_fps60 = fps60();
                 SDL_SetWindowTitle(g_win, title);
                 last_title = SDL_GetTicks();
             }

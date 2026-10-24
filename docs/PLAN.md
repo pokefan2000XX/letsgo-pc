@@ -1070,7 +1070,7 @@ descriptions.
 | M3 | Graphics (**done** 2026-10-15) | NVN on Vulkan, shader converter, texture deswizzle; title screen renders | Vulkan headers, glslang |
 | M4 | Audio + movies (**done** 2026-10-15) | nn::audio output (Wwise itself runs inside main), WebM, software keyboard | opus, libogg/libvorbis, libvpx (nasm to build it) |
 | M5 | Playable (started 2026-10-15) | Field, battle, menus and saves match Ryujinx | none |
-| M6 | PC features | Resolution, frame rate (the mod loader is roadmap phase 1) | none |
+| M6 | PC features (started 2026-10-23) | Resolution, frame rate (the mod loader is roadmap phase 1) | none |
 
 ## M1 results
 
@@ -1263,3 +1263,76 @@ descriptions.
     hasn't been tried beyond the tutorial throw.
   - The M3 carry-overs (compute dispatch, 3D textures, counters, aliasing,
     ASTC) remain.
+
+## M6 progress
+
+Started 2026-10-23 at the user's request.
+
+- **60 frames a second** (`runtime/src/framerate.cpp`). Tab switches it and
+  `settings.ini` beside the saves keeps it (`fps=60`; `LETSGO_FPS` for one run).
+  The game steps its world by a frame timer, so at 60 the timer's slots get the
+  60 Hz period and movement keeps its speed. What counts frames instead is held
+  to every other frame: the message printer (0x71001b09a0, only while it prints
+  or counts), every script's run (0x7100674d40: `Wait(n)` and the polls that
+  wait for things) and the screen fade's step (0x710011fe10). Battles run at
+  60 too (below).
+  A field character's move action (0x710021b5c0) steps it back along its
+  facing by a frame's worth (-2 running) while the run animation's root motion
+  takes it on by the clock, so at 60 the player ran at 331 units a second, not
+  391; those steps are halved at 60 (checked headless: 1163 against 1160 units
+  in a 3-second run, the camera the same). Found with the control file's
+  `watch` (a hardware write breakpoint: the writing functions, their callers
+  and each value written) and `trace` of several addresses at once.
+  At 60 the controller state the game sees changes only on the frames the
+  every-other-frame counts run, so a press is never first seen on a skipped
+  frame (with the battle's update stepped every other frame, a skipped first
+  frame lost an A press).
+  - **Battles at 60** (2026-10-24). The battle's update (0x7100a7cce0) runs
+    every frame, and its frame-counted parts every other frame: its sequences
+    (0x7100aa0bc0), its task groups (0x7100b0df10, each task's +0x38 given a
+    step of 1), its flow (0x7100a7cff0, 0x7100a7d140, 0x7100a7d9a0,
+    0x7100a7dd40, 0x7100a8e5a0) and its +0x420 and +0x4a8 (0x71000b8490,
+    0x7100aa3350), through strong `f<address>` definitions in
+    runtime/src/framerate.cpp (calls inside the same generated file reach
+    them too). The camera controller (0x7100ad6ba0) and the +0x488 list
+    (0x7100a9efe0, the models) step by the clock and run every frame. Checked
+    headless: the events of a move, a faint and the EXP messages within 0.1 s
+    of 30's; frame-to-frame motion even (the whole update every other frame
+    drew the camera and models at 30: every other frame the same); two
+    trainer battles in a modded save and Viridian Forest's Lass Brittany
+    played through without a crash. Earlier tries: the battle at 60 as it is played
+    its intro twice as fast; the sequences alone held back crashed at the
+    send-out (a camera command, 0x7100ae3630, found its object gone: the tasks
+    ran ahead); the sequence manager 0x710080f4e0 (via 0x71007d50c0) doesn't
+    run in battle. Found with gate switches and call counts per function
+    (`LETSGO_CALLS`, the control file's `calls`), move timings from shots
+    0.1 s apart, and `burst` frame differences.
+  - **Script lengths in frames** (2026-10-24): `EvCameraMove`, `EvCameraEnd`,
+    `EvCameraMoveOffset`, `EvCameraMoveOffsetLookAt` and the three
+    `StartTurnAround*_` commands take a length in frames (the camera moves by
+    1 / frames a frame), so at 60 a scripted opening's pans took 1.0 s
+    instead of 1.6 and the camera then sat waiting for the person walking in. framerate.cpp doubles that
+    argument (the handler's argument cells, x1 + 8 or + 0x18 or + 0x20) while
+    the command starts; checked headless: the pans 1.6 s and 0.7 s as at 30.
+    A length of 0 (most of the game's turns) and the forced move's own
+    16-frame turn are still twice as fast at 60.
+  - Turning counts frames: the facing closes a share of the angle left each
+    frame, so at 60 the player turns about twice as fast. Checked
+  headless with `LETSGO_CALLS` through a modded save's scripted opening and
+  first battle: every script poll the opening makes (`FadeWait_` 47 against 47,
+  `_Suspend`, `IsMsgWinEnd_`, `CheckActionCommandRunningState_` for turns and
+  walks) comes as often at 60 as at 30.
+- **Render scale** (`runtime/src/settings.cpp`, `gpu/nvn_vk.cpp`, `nvasm.h`).
+  `scale=auto` (the default: the monitor's height over 1080, rounded up), `1`
+  to `4`, or `LETSGO_SCALE`. Render targets the size of the screen, or a half,
+  quarter, ... of it, are made that many times as wide and high; the game
+  still sees its own sizes. Viewports, scissors, clears, copies and the
+  window's crop are scaled on the way to Vulkan. Shaders read
+  `gl_FragCoord` in the game's pixels (`fc_`), and `texelFetch`/`textureSize`
+  of a scaled texture take and give the game's texels (a push constant and a
+  bit per texture id in set 0, binding 5). Seen headless at 3840x2160 through
+  the bedroom; frames hold 33.3 ms at 30 and 16.7 ms at 60 at scale 2. The
+  1280x720 render-target family (docked mode makes it too) stays at scale 1.
+- **Test aids:** `LETSGO_CALLS` with the control file's `calls`,
+  `LETSGO_BACKTRACE`, `LETSGO_FILES`; readbacks use CPU-cached memory, so a
+  screenshot no longer holds the game (it took 0.4 s, 1.6 s at scale 2).

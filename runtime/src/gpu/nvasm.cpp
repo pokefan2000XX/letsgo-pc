@@ -103,6 +103,7 @@ struct Ctx {
     int indent = 1;
     int rep_depth = 0, rep_serial = 0;
     bool uses_pow = false;
+    bool uses_scale = false, uses_fc = false;         // the render scale's declarations; fc_
     std::string stmt;                                 // current statement, for errors
 
     void line(const std::string& s) { body << std::string((size_t)indent * 4, ' ') << s << "\n"; }
@@ -240,7 +241,8 @@ Src parse_src(Ctx& cx, std::string t, T use_type) {
             }
         } else if (name == "fragment.position") {
             s.base = Base::Float;
-            s.expr = "gl_FragCoord";
+            s.expr = "fc_";
+            cx.uses_scale = cx.uses_fc = true;
         } else if (name == "fragment.facing") {
             s.base = Base::Float;
             s.expr = "vec4(gl_FrontFacing ? 1.0 : -1.0)";
@@ -449,15 +451,20 @@ void emit_texture(Ctx& cx, const Op& op, const std::vector<std::string>& ops) {
     Dst d = parse_dst(cx, ops[0]);
     const std::string& name = op.name;
     std::string r;
+    // a scaled texture's size and texels in the game's coordinates (nvasm.h)
+    std::string k = "sk_(" + hx + " & 0xFFFFFu)";
     if (name == "TXQ") {
+        cx.uses_scale = true;
         cx.line("ivec4 l_ = " + load(cx, parse_src(cx, ops[1], T::S), T::S) + ";");
-        r = "uvec4(uvec2(textureSize(g_tex[" + ti + "], l_.x)), 0u, uint(textureQueryLevels(g_tex[" + ti + "])))";
+        r = "uvec4(uvec2(max(textureSize(g_tex[" + ti + "], l_.x) / " + k + ", ivec2(1))), 0u, uint(textureQueryLevels(g_tex[" + ti + "])))";
         store(cx, d, T::U, r, op.has("CC"));
         return;
     }
     if (name == "TXF") {
+        cx.uses_scale = true;
         cx.line("ivec4 t_ = " + load(cx, parse_src(cx, ops[1], T::S), T::S) + ";");
-        r = "texelFetch(" + tex + ", t_.xy, t_.w)";
+        cx.line("int k_ = " + k + ";");
+        r = "texelFetch(" + tex + ", t_.xy * k_" + (cx.stage == Stage::Fragment ? " + ph_(k_)" : "") + ", t_.w)";
         store(cx, d, rt, r, op.has("CC"));
         return;
     }
@@ -822,7 +829,9 @@ Result translate(const uint8_t* control, size_t size, const Options& opt) {
             }
         }
         if (cx.uses_pow) g << "float nv_pow(float x, float y) { return y == 0.0 ? 1.0 : exp2(y * log2(x)); }\n";
+        if (cx.uses_scale) g << scale_decls(cx.stage);
         g << "void main() {\n";
+        if (cx.uses_fc) g << kFragCoordLine;
         for (auto& r : cx.temps) g << "    uvec4 " << r << " = uvec4(0u);\n";
         for (auto& r : cx.longs) g << "    uvec2 " << r << "[4] = uvec2[4](uvec2(0u), uvec2(0u), uvec2(0u), uvec2(0u));\n";
         g << "    bvec4 ccNE = bvec4(false);\n";
@@ -839,6 +848,15 @@ Result translate(const uint8_t* control, size_t size, const Options& opt) {
         res.error = f.msg + (cx.stmt.empty() ? "" : "  [in: " + cx.stmt + "]");
     }
     return res;
+}
+
+std::string scale_decls(Stage stage) {
+    std::string s = "layout(push_constant) uniform PC_ { vec4 pc_; };\n"
+                    "layout(std430, set = 0, binding = 5) readonly buffer SC_ { uint g_scaled[]; };\n"
+                    "int sk_(uint i) { return (g_scaled[i >> 5u] >> (i & 31u) & 1u) != 0u ? int(pc_.y) : 1; }\n";
+    if (stage == Stage::Fragment)
+        s += "ivec2 ph_(int k) { return k > 1 && pc_.x < 1.0 ? ivec2(gl_FragCoord.xy) % k : ivec2(0); }\n";
+    return s;
 }
 
 }  // namespace nvasm

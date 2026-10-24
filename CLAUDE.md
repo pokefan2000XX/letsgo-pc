@@ -20,3 +20,4 @@
 - **Scripts:** `bash tools/prepare.sh` regenerates `orig/` and `data/` from the dump in about 2 minutes. `bash tests/run_smoke.sh` runs all smoke tests in about 15 s.
 - **Docs:** plan and decisions are in `docs/PLAN.md`; binary facts are in `docs/BINARY_NOTES.md`.
 - **Wording:** describe tool activity plainly. Ghidra "analyzing" is not "decompiling the game". The recompiler/decomp work starts only when the user says so.
+- **Content edits follow letsgostudio's hard rules** (`Desktop/letsgostudio/AGENTS.md`). Maps, rooms, models, data and scripts for a mod are made with the studio's tools and saved through its editing API. If the studio can't do something yet, add it there first, then use it. Don't hand-write a mod folder. Engine, decomp and hack source code is edited normally here.

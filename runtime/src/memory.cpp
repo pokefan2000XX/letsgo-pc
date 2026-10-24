@@ -120,6 +120,13 @@ uint64_t mem_heap_set_size(uint64_t size) {
 }
 
 uint64_t mem_heap_size() { return g_heap_size; }
+// how many bytes from addr on can be read (0 if none): for debug scans of the heap, which has holes
+uint64_t mem_readable(uint64_t addr) {
+    MEMORY_BASIC_INFORMATION mi;
+    if (!VirtualQuery((void*)addr, &mi, sizeof mi) || mi.State != MEM_COMMIT) return 0;
+    if (mi.Protect & (PAGE_NOACCESS | PAGE_GUARD)) return 0;
+    return (uint64_t)mi.BaseAddress + mi.RegionSize - addr;
+}
 uint64_t mem_used() { return g_used + g_heap_size; }
 
 // svcMapMemory: the source becomes inaccessible while the alias exists, so a

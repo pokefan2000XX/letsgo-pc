@@ -5,8 +5,11 @@
 // image is copied to its guest address at startup, and its functions replace the originals
 // they were written for unless LETSGO_NO_DECOMP turns them off.
 #include <windows.h>
+#include <tlhelp32.h>
 
 #include <algorithm>
+#include <atomic>
+#include <cstddef>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -351,6 +354,132 @@ static rc_fn* g_sdk_tab;
 static rc_fn* g_patch_tab;
 static uint64_t g_main_len, g_sdk_len, g_patch_len;
 static thread_local uint64_t t_bad_target;
+static std::vector<std::pair<uint64_t, rc_fn>> g_addr_overrides;   // main functions replaced by host code
+
+void override_main(uint64_t addr, rc_fn fn) { g_addr_overrides.push_back({addr, fn}); }
+
+// LETSGO_CALLS=1: counts the indirect calls (vtables, callbacks) of each main function, for finding which run while
+// something happens on screen (the control file's "calls out.tsv" writes the counts since the last one, the busiest first)
+static uint32_t* g_call_counts;
+
+// LETSGO_BACKTRACE=7100abc000,...: logs the guest call chain of the first three indirect calls of each of up to four main
+// functions (after LETSGO_BACKTRACE_AFTER seconds, if given), then runs the function: who calls a vtable method (which the
+// static call graph can't say)
+static uint64_t g_bt_addr[4];
+static int g_bt_left[4];
+static double g_bt_after;
+template <int N> static void bt_hook(Ctx* c) {
+    if (g_bt_left[N] > 0 && uptime() >= g_bt_after) {
+        g_bt_left[N]--;
+        log("backtrace of 0x%llx (x0 0x%llx x1 0x%llx x2 0x%llx x3 0x%llx):", (unsigned long long)g_bt_addr[N], (unsigned long long)c->x[0],
+            (unsigned long long)c->x[1], (unsigned long long)c->x[2], (unsigned long long)c->x[3]);
+        log_backtrace(c);
+    }
+    rc_lookup(kOriginalsBase + (g_bt_addr[N] - kMainBase))(c);
+}
+static void backtrace_init() {
+    const char* e = getenv("LETSGO_BACKTRACE");
+    if (const char* after = getenv("LETSGO_BACKTRACE_AFTER")) g_bt_after = atof(after);
+    static const rc_fn hooks[4] = {bt_hook<0>, bt_hook<1>, bt_hook<2>, bt_hook<3>};
+    for (int n = 0; e && *e && n < 4; n++) {
+        char* end;
+        g_bt_addr[n] = strtoull(e, &end, 16);
+        if (end == e) break;
+        g_bt_left[n] = 3;
+        override_main(g_bt_addr[n], hooks[n]);
+        e = *end ? end + 1 : end;
+    }
+}
+
+// LETSGO_CONTROL's watch: a hardware breakpoint on writes to the 4 bytes at a host address, in every thread but the caller's, for
+// a while; then each place that wrote them (the guest function, from where the debug trap comes, just after the write) with the
+// guest's return addresses there (its lr and two frames up) and how often, then the first writes in order with the value each left
+struct WatchHit { uint64_t rip, lr[3]; uint32_t hits; };
+static WatchHit g_watch[256];
+static int g_watch_used;
+static std::pair<uint64_t, float> g_watch_seq[240];
+static int g_watch_seq_used;
+static uint64_t g_watch_addr;
+static std::mutex g_watch_lock;
+
+static LONG CALLBACK watch_trap(EXCEPTION_POINTERS* e) {
+    if (e->ExceptionRecord->ExceptionCode != EXCEPTION_SINGLE_STEP || !(e->ContextRecord->Dr6 & 1)) return EXCEPTION_CONTINUE_SEARCH;
+    WatchHit h{(uint64_t)e->ExceptionRecord->ExceptionAddress, {}, 0};
+    if (Ctx* c = current_ctx()) {
+        h.lr[0] = c->x[30];
+        uint64_t fp = c->x[29];
+        for (int i = 1; i < 3 && fp && !(fp & 7) && mem_query(fp).type == kMemStack; i++) {
+            h.lr[i] = *(uint64_t*)(fp + 8);
+            uint64_t next = *(uint64_t*)fp;
+            if (next <= fp) break;
+            fp = next;
+        }
+    }
+    std::lock_guard<std::mutex> lk(g_watch_lock);
+    if (g_watch_seq_used < 240) g_watch_seq[g_watch_seq_used++] = {h.rip, *(const float*)(uintptr_t)g_watch_addr};
+    int i = 0;
+    while (i < g_watch_used && memcmp(&g_watch[i], &h, offsetof(WatchHit, hits)) != 0) i++;
+    if (i == g_watch_used && g_watch_used < 256) g_watch[g_watch_used++] = h;
+    if (i < 256) g_watch[i].hits++;
+    e->ContextRecord->Dr6 = 0;
+    return EXCEPTION_CONTINUE_EXECUTION;
+}
+
+static void set_watch(uint64_t addr) {
+    HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+    THREADENTRY32 te{};
+    te.dwSize = sizeof te;
+    for (BOOL ok = Thread32First(snap, &te); ok; ok = Thread32Next(snap, &te)) {
+        if (te.th32OwnerProcessID != GetCurrentProcessId() || te.th32ThreadID == GetCurrentThreadId()) continue;
+        HANDLE t = OpenThread(THREAD_GET_CONTEXT | THREAD_SET_CONTEXT | THREAD_SUSPEND_RESUME, FALSE, te.th32ThreadID);
+        if (!t) continue;
+        SuspendThread(t);
+        CONTEXT c{};
+        c.ContextFlags = CONTEXT_DEBUG_REGISTERS;
+        if (GetThreadContext(t, &c)) {
+            c.Dr0 = addr;
+            c.Dr7 = addr ? 1 | 1u << 16 | 3u << 18 : 0;   // breakpoint 0 on, on writes, 4 bytes
+            SetThreadContext(t, &c);
+        }
+        ResumeThread(t);
+        CloseHandle(t);
+    }
+    CloseHandle(snap);
+}
+
+void watch_writes(uint64_t addr, double seconds) {
+    {
+        std::lock_guard<std::mutex> lk(g_watch_lock);
+        g_watch_used = g_watch_seq_used = 0;
+        g_watch_addr = addr;
+    }
+    PVOID handler = AddVectoredExceptionHandler(1, watch_trap);
+    set_watch(addr);
+    Sleep((DWORD)(seconds * 1000));
+    set_watch(0);
+    RemoveVectoredExceptionHandler(handler);
+    std::lock_guard<std::mutex> lk(g_watch_lock);
+    for (int i = 0; i < g_watch_used; i++) {
+        auto& h = g_watch[i];
+        log("control: watch 0x%llx written in 0x%llx, from %s < %s < %s, %u times", (unsigned long long)addr, (unsigned long long)guest_of_host(h.rip),
+            describe(h.lr[0]).c_str(), describe(h.lr[1]).c_str(), describe(h.lr[2]).c_str(), h.hits);
+    }
+    for (int i = 0; i < g_watch_seq_used; i++)
+        log("control: watch write %d in 0x%llx: %.3f", i, (unsigned long long)guest_of_host(g_watch_seq[i].first), g_watch_seq[i].second);
+}
+
+void dump_call_counts(const std::string& path) {
+    if (!g_call_counts) { log("calls: LETSGO_CALLS isn't set"); return; }
+    std::vector<std::pair<uint32_t, uint64_t>> hot;
+    for (uint64_t o = 0; o < g_main_len; o++)
+        if (uint32_t n = g_call_counts[o]) { hot.push_back({n, kMainBase + o * 4}); g_call_counts[o] = 0; }
+    std::sort(hot.rbegin(), hot.rend());
+    if (FILE* f = fopen(path.c_str(), "wb")) {
+        for (auto& [n, a] : hot) fprintf(f, "%llx\t%u\n", (unsigned long long)a, n);
+        fclose(f);
+    }
+    log("calls: %zu functions written to %s", hot.size(), path.c_str());
+}
 
 static void bad_target(Ctx* c) {
     log_backtrace(c);
@@ -385,6 +514,8 @@ void dispatch_init() {
     g_sdk_len = (g_modules[1].text_end - kSdkBase) / 4;
     g_main_tab = (rc_fn*)calloc(g_main_len, sizeof(rc_fn));
     g_sdk_tab = (rc_fn*)calloc(g_sdk_len, sizeof(rc_fn));
+    if (getenv("LETSGO_CALLS")) g_call_counts = (uint32_t*)calloc(g_main_len, sizeof(uint32_t));
+    backtrace_init();
     for (uint32_t i = 0; i < rc_main_nfuncs; i++) g_main_tab[(rc_main_funcs[i].addr - kMainBase) / 4] = rc_main_funcs[i].fn;
     for (uint32_t i = 0; i < rc_sdk_nfuncs; i++) g_sdk_tab[(rc_sdk_funcs[i].addr - kSdkBase) / 4] = rc_sdk_funcs[i].fn;
     if (rc_patch_size) {
@@ -404,6 +535,11 @@ void dispatch_init() {
         if (a >= kMainBase && a < g_modules[0].text_end) { g_main_tab[(a - kMainBase) / 4] = f; n_hooked++; }
         else if (a >= kSdkBase && a < g_modules[1].text_end) { g_sdk_tab[(a - kSdkBase) / 4] = f; n_hooked++; }
     }
+    // and main functions without a name, by address (framerate.cpp's): indirect calls only, so these are
+    // functions the game calls through vtables
+    for (auto& [a, f] : g_addr_overrides)
+        if (a >= kMainBase && a < g_modules[0].text_end && g_main_tab[(a - kMainBase) / 4]) { g_main_tab[(a - kMainBase) / 4] = f; n_hooked++; }
+        else log("warning: no main function at 0x%llx to replace", (unsigned long long)a);
     log("dispatch: %u main + %u sdk functions, %d replaced by overrides", rc_main_nfuncs, rc_sdk_nfuncs, n_hooked);
 }
 
@@ -412,7 +548,10 @@ void dispatch_init() {
 extern "C" rc_fn rc_lookup(uint64_t t) {
     using namespace rt;
     uint64_t o = (t - kMainBase) >> 2;
-    if (o < g_main_len && !(t & 3) && g_main_tab[o]) return g_main_tab[o];
+    if (o < g_main_len && !(t & 3) && g_main_tab[o]) {
+        if (g_call_counts) g_call_counts[o]++;
+        return g_main_tab[o];
+    }
     o = (t - kSdkBase) >> 2;
     if (o < g_sdk_len && !(t & 3) && g_sdk_tab[o]) return g_sdk_tab[o];
     o = (t - rc_patch_base) >> 2;

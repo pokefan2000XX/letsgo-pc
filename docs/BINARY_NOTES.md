@@ -212,3 +212,49 @@ the style of Android's MediaExtractor and MediaCodec).
   is upmixed to stereo). It uses 16 buffers of 0x2000 bytes (0x8000 above two
   channels); in its accumulating mode it fills each to 0x1000 bytes (0x3000).
   The decoder output buffer it passes is the same size as one of those buffers.
+
+## Boot and title (found for hacks/quick-boot)
+
+- **Boot:** `0x710000e420` runs every frame, its step at +0x68. Step 0 makes the
+  controller procedure (constructor `0x710004e2d0(this, mode)`) in mode 1, always
+  ask; mode 0 asks only when the connected controllers need it. Step 6 makes the
+  title procedure (logo, then the title demo) and step 7 waits for it.
+- **Procedures:** `0x710013a780` updates a manager's procedures every frame
+  (`0x710013a160` runs one: vtable +0x38 init, +0x48 update, +0x50 end).
+- **Layouts:** a layout's phase at +0x80 (1 opening, 2 active, 3 closing). The
+  opening `0x7100126cf0` waits (+0x84 = 1) for the layout's opening animations;
+  the active phase calls vtable +0xa0 every frame. The GAME FREAK logo (class
+  `0x710152eb50`, `bin/app/title_pbgf`) is all opening; its +0xa0
+  (`0x7100073d80`) ends it with scene event 0 (+0x260: id +0xc).
+- **Layout animations:** a player keeps 0x40-byte slots at +0x258 (count +0x278):
+  start `0x7100663dd0(player, index, flag)`, last frame
+  `0x7100664170(player, index)`, set frame `0x7100663e90(frame, player, index)`.
+- **Demos:** the loader `0x71001ddb70` (demo +0x220 is its core, the core's
+  sequence at +0x98) runs every command once, which makes a track per command
+  (`0x7100210880(seq, -1, 1)`). The core's clock (+0x680, from -1) goes up 2 a
+  frame (`0x71001f1d20`); each track (`0x71001f5550`) catches up through every
+  frame it hasn't had. The seek `0x71001efdd0` sets the clock and +0x692, which
+  makes tracks jump without starting or ending what's on the way. Demo commands'
+  parameter sizes: `0x7100f4c810` (the battle's are at `0x7100f97e30`).
+- **Title demo** (`bin/demo/sequence/sd9010_title.bseq`, 3480 frames): the
+  opening to frame 564, then "Press the A Button" (layout `anime_btn_loop`, and
+  commands 66/67 at 564-3399). The logo's `anime_in` starts at frame 25 and
+  runs on the layout's clock (270 frames). The title's music
+  (`Play_BGM_opening`) starts at 250.
+
+## Battle camera (found 2026-10-23)
+
+- **The default shot:** `0x7100a7e290(battle, eye, target)` gives the camera a
+  battle settles on once the player's Pokémon is out (the send-out sequence
+  `ee420` ends by moving there with command 38) and comes back to: an eye and a
+  target from a table kept by the two Pokémon's size classes (the Pokémon
+  config's field 7, `PokemonConfig.SizeClass`; 4 x 4 for single battles,
+  another for double), the same for every Pokémon of a class. The battle's
+  other cameras start from the Pokémon's points and grow with its camera scale
+  (1 + (field 9 / 100 - 1) / 2), so a Pokémon given bigger sizes is framed by
+  them but fills this one; a hook can move the eye and target out about the
+  Pokémon after the original runs.
+- **A battle Pokémon's view** (set up by `0x7100a9aa50`; the player's is the
+  battle's view slot 0, `battle+0x448`): species +0x1c4 and form +0x1c8, as the
+  battle's poke_data looks them up; its place is +0xb0 plus +0xf0
+  (`0x7100a96d90` adds the two vectors).

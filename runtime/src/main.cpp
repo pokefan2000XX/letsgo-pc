@@ -200,6 +200,9 @@ int main(int argc, char** argv) {
     mem_init();
     timeBeginPeriod(1);                                   // 1 ms sleep granularity for frame and audio pacing
     load_modules(orig);
+    settings_init((std::filesystem::path(fsx::g_save).parent_path() / "settings.ini").string());   // beside the saves
+    render_scale_init(headless);
+    framerate_init();
     dispatch_init();
     if (!press.empty()) hid::start_input_script(press);
     if (const char* ctl = getenv("LETSGO_CONTROL")) hid::start_control_file(ctl);

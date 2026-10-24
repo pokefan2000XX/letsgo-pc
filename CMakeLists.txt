@@ -27,7 +27,9 @@ find_program(PYTHON_EXE NAMES python python3 REQUIRED)
 file(GLOB_RECURSE DECOMP_INPUTS CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/decomp/src/*" "${CMAKE_SOURCE_DIR}/decomp/include/*")
 # A hack's code (hacks/<name>/code) is built into the same module, for the hacks named here
 # (-DLETSGO_HACKS=name;other). Its files for the game go in a mods/ folder (runtime/src/mods.cpp).
-set(LETSGO_HACKS "" CACHE STRING "hacks whose code is built into the decomp module (hacks/<name>/code)")
+# A new build directory (build-dev.bat, build-release.bat) starts with these.
+set(LETSGO_HACKS "new-script-command;wild-battles;quick-boot;smooth-moves" CACHE STRING
+    "hacks whose code is built into the decomp module (hacks/<name>/code)")
 set(DECOMP_HACK_ARGS)
 foreach(hack ${LETSGO_HACKS})
   list(APPEND DECOMP_HACK_ARGS --hack "${hack}")
@@ -35,9 +37,13 @@ foreach(hack ${LETSGO_HACKS})
   list(APPEND DECOMP_INPUTS ${HACK_INPUTS})
 endforeach()
 file(CONFIGURE OUTPUT "${CMAKE_BINARY_DIR}/decomp_hacks.txt" CONTENT "${LETSGO_HACKS}\n")   # rebuilds when the list changes
-set(GEN_PATCH "${GEN_DIR}/patch/f000.c" "${GEN_DIR}/patch/table.c")
+# The module is built in <DECOMP_OUT_DIR>/decomp and <DECOMP_OUT_DIR>/gen/patch. A second build of this tree
+# with other hacks gives it a folder of its own, or the two builds take turns overwriting one module.
+set(DECOMP_OUT_DIR "${CMAKE_SOURCE_DIR}/build" CACHE PATH "where the decomp module is built (<dir>/decomp, <dir>/gen/patch)")
+set(GEN_PATCH "${DECOMP_OUT_DIR}/gen/patch/f000.c" "${DECOMP_OUT_DIR}/gen/patch/table.c")
 add_custom_command(OUTPUT ${GEN_PATCH}
-  COMMAND "${PYTHON_EXE}" -P "${CMAKE_SOURCE_DIR}/decomp/tools/build.py" --ninja "${CMAKE_MAKE_PROGRAM}" ${DECOMP_HACK_ARGS}
+  COMMAND "${PYTHON_EXE}" -P "${CMAKE_SOURCE_DIR}/decomp/tools/build.py" --ninja "${CMAKE_MAKE_PROGRAM}"
+          --out "${DECOMP_OUT_DIR}" --gen "${GEN_DIR}" ${DECOMP_HACK_ARGS}
   DEPENDS ${DECOMP_INPUTS} "${CMAKE_SOURCE_DIR}/decomp/symbols.txt" "${CMAKE_SOURCE_DIR}/decomp/patch.ld" "${CMAKE_BINARY_DIR}/decomp_hacks.txt"
           "${CMAKE_SOURCE_DIR}/decomp/CMakeLists.txt" "${CMAKE_SOURCE_DIR}/decomp/tools/build.py"
           "${CMAKE_SOURCE_DIR}/recomp/recomp.py" "${CMAKE_SOURCE_DIR}/recomp/emit.py" "${GEN_DIR}/main/table.c"
@@ -76,7 +82,7 @@ target_link_options(modstest PRIVATE -static)
 # The runtime (the PC side of the game), built into both executables
 set(RUNTIME_SOURCES
   runtime/src/main.cpp runtime/src/log.cpp runtime/src/perf.cpp runtime/src/memory.cpp runtime/src/kernel.cpp runtime/src/loader.cpp
-  runtime/src/nx.cpp runtime/src/setup.cpp runtime/src/mods.cpp
+  runtime/src/nx.cpp runtime/src/setup.cpp runtime/src/mods.cpp runtime/src/settings.cpp runtime/src/framerate.cpp
   runtime/src/hle.cpp runtime/src/hle_sys.cpp runtime/src/hle_hid.cpp runtime/src/hle_audio.cpp runtime/src/hle_net.cpp
   runtime/src/hle_movie.cpp runtime/src/hle_applet.cpp runtime/src/webm.cpp runtime/src/nvn.cpp runtime/src/platform.cpp
   runtime/src/gpu/device.cpp runtime/src/gpu/texture.cpp runtime/src/gpu/astc.cpp runtime/src/gpu/nvn_vk.cpp

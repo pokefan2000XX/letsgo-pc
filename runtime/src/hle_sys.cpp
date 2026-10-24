@@ -372,8 +372,13 @@ static uint64_t lang_code(const char* s) {
     memcpy(&v, s, strlen(s) < 8 ? strlen(s) : 8);
     return v;
 }
-static void oe_GetOperationMode(Ctx* c) { c->x[0] = 0; }          // Handheld
-static void oe_GetPerformanceMode(Ctx* c) { c->x[0] = 0; }        // Normal
+// Docked (Console), so the game renders at 1920x1080 as it does on a TV; LETSGO_HANDHELD=1 gives the handheld's 1280x720
+static bool handheld() {
+    static const bool h = getenv("LETSGO_HANDHELD") != nullptr;
+    return h;
+}
+static void oe_GetOperationMode(Ctx* c) { c->x[0] = handheld() ? 0 : 1; }      // Handheld / Console
+static void oe_GetPerformanceMode(Ctx* c) { c->x[0] = handheld() ? 0 : 1; }    // Normal / Boost
 static void oe_GetDesiredLanguage(Ctx* c) { c->x[0] = lang_code("en-US"); }
 static void oe_GetCurrentFocusState(Ctx* c) { c->x[0] = 1; }      // InFocus
 static void oe_TryPopNotificationMessage(Ctx* c) { c->x[0] = 0; }

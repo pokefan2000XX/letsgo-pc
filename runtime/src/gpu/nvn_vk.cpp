@@ -13,6 +13,7 @@
 #include <atomic>
 #include <cmath>
 #include <cstring>
+#include <filesystem>
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -102,6 +103,7 @@ struct Texture {
     const FormatInfo* fi = nullptr;
     uint32_t nvn_format = 0;
     uint32_t w = 1, h = 1, d = 1, levels = 1, layers = 1, target = 1, samples = 1, flags = 0;
+    uint32_t scale = 1;                       // the image is this many times the game's size (the render scale)
     uint64_t addr = 0;
     bool cpu_visible = false;
     bool watched = false;                     // in a CPU-writable pool: re-uploaded when the CPU writes it
@@ -109,9 +111,27 @@ struct Texture {
     VkImageAspectFlags aspect = VK_IMAGE_ASPECT_COLOR_BIT;
     std::mutex lock;
     std::unordered_map<uint64_t, VkImageView> views;
+    uint32_t pw() const { return w * scale; }  // the image's own size
+    uint32_t ph() const { return h * scale; }
 };
 
 std::mutex g_desc_lock;
+
+// The render scale (rt::render_scale, settings.cpp). Render targets the size of the game's screen, or a
+// half, quarter, ... of it, are made `g_scale` times as wide and high, so the game draws more pixels than
+// its own 1920x1080 (1280x720 handheld). Everything the game sees keeps its sizes: textures report the
+// game's, viewports, scissors, copies and the window's crop are scaled on the way to Vulkan, and shaders
+// work in the game's pixels (nvasm.h).
+uint32_t g_scale = 1;
+bool screen_sized(const GTexB& b) {
+    uint32_t sw = getenv("LETSGO_HANDHELD") ? 1280 : 1920, sh = getenv("LETSGO_HANDHELD") ? 720 : 1080;
+    if (g_scale <= 1 || !(b.flags & (0x1 | 0x8)) || (b.target != 1 && b.target != 5 && b.target != 7)) return false;
+    for (uint32_t k = 0; k <= 4; k++) {
+        uint32_t m = (1u << k) - 1;
+        if ((b.w == sw >> k || b.w == (sw + m) >> k) && (b.h == sh >> k || b.h == (sh + m) >> k)) return true;
+    }
+    return false;
+}
 
 // textures the CPU may write directly (glyph caches and the like): checked before every submission
 std::mutex g_watch_lock;
@@ -253,6 +273,7 @@ Texture* create_texture(const GTexB& b) {
     t->levels = std::max(1u, b.levels);
     t->samples = std::max(1u, b.samples);
     t->flags = b.flags;
+    t->scale = screen_sized(b) ? g_scale : 1;
     t->aspect = aspect_of(*t->fi);
     GPool* pool = G<GPool>(b.pool);
     t->addr = (pool ? pool->mem : 0) + b.offset;
@@ -263,7 +284,7 @@ Texture* create_texture(const GTexB& b) {
     VkImageCreateInfo ci{VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
     ci.imageType = is3d ? VK_IMAGE_TYPE_3D : VK_IMAGE_TYPE_2D;
     ci.format = t->fi->image;
-    ci.extent = {t->w, t->h, t->d};
+    ci.extent = {t->pw(), t->ph(), t->d};
     ci.mipLevels = t->levels;
     ci.arrayLayers = t->layers;
     ci.samples = (VkSampleCountFlagBits)(t->samples >= 8 ? 8 : t->samples >= 4 ? 4 : t->samples >= 2 ? 2 : 1);
@@ -287,9 +308,9 @@ Texture* create_texture(const GTexB& b) {
     bool up = pool && !(b.flags & (0x1 | 0x8));
     static std::atomic<int> nlog{0};
     bool movie_tex = ((t->w == 1920 && t->h == 1080) || (t->w == 960 && t->h == 540)) && t->fi->bpb <= 2;
-    if (getenv("LETSGO_TEX_LOG") && (nlog++ < 400 || movie_tex))
-        log("gpu: texture %p %ux%ux%u %s target %u levels %u flags 0x%x pool flags 0x%x addr 0x%llx upload %d", (void*)t, t->w, t->h,
-            t->layers, t->fi->name, b.target, t->levels, b.flags, pool ? pool->flags : 0, (unsigned long long)t->addr, up);
+    if (getenv("LETSGO_TEX_LOG") && (nlog++ < 400 || movie_tex || (b.flags & (0x1 | 0x8))))
+        log("gpu: texture %p %ux%ux%u %s target %u levels %u flags 0x%x pool flags 0x%x addr 0x%llx upload %d scale %u", (void*)t, t->w,
+            t->h, t->layers, t->fi->name, b.target, t->levels, b.flags, pool ? pool->flags : 0, (unsigned long long)t->addr, up, t->scale);
     if (up) {
         upload_from_guest(t);
         if (t->cpu_visible && t->layout.total) {
@@ -408,6 +429,7 @@ void write_texture_descriptor(uint32_t id, Texture* t, const GView* v) {
     }
     std::lock_guard<std::mutex> lk(g_desc_lock);
     vk::vkUpdateDescriptorSets(g.dev, (uint32_t)n, w, 0, nullptr);
+    set_texture_scaled(id, t->scale > 1);
 }
 
 void write_sampler_descriptor(uint32_t id, VkSampler s) {
@@ -492,7 +514,10 @@ struct Exec {
     int ncolor = 0;
     RT depth;
     bool rt_dirty = true, rendering = false;
-    uint32_t rt_w = 1, rt_h = 1;
+    uint32_t rt_w = 1, rt_h = 1;               // the images' size (the render area)
+    uint32_t rt_scale = 1;                     // their scale: the game's viewports, scissors and clears are multiplied by it
+    float pushed[4] = {};                      // the push constants (kPushConstants) set in this command buffer
+    bool pushed_valid = false;
     VkSampleCountFlagBits rt_samples = VK_SAMPLE_COUNT_1_BIT;
     int active_colors = 0;
     // program and resources
@@ -544,6 +569,7 @@ struct Exec {
         rendering = false;
         rt_dirty = true;
         set0_bound = false;
+        pushed_valid = false;
         bound_vs = bound_fs = VK_NULL_HANDLE;
     }
     void end_rendering() {
@@ -568,6 +594,13 @@ void Exec::ensure_rendering() {
     uint32_t w = 0x7FFFFFFF, h = 0x7FFFFFFF;
     int n = 0;
     rt_samples = VK_SAMPLE_COUNT_1_BIT;
+    uint32_t scale = 0;
+    auto take_scale = [&](const Texture* t) {
+        static std::atomic<int> nlog{0};
+        if (scale && scale != t->scale && nlog++ < 10)
+            log("gpu: render targets of different scales together (%ux%u at %u, others at %u)", t->w, t->h, t->scale, scale);
+        if (!scale) scale = t->scale;
+    };
     for (int i = 0; i < ncolor; i++) {
         ca[i] = {VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
         ca[i].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
@@ -576,9 +609,10 @@ void Exec::ensure_rendering() {
         if (Texture* t = color[i].tex) {
             uint32_t lv = 0;
             ca[i].imageView = get_view(t, &color[i].view, true, &lv);
-            w = std::min(w, std::max(1u, t->w >> lv));
-            h = std::min(h, std::max(1u, t->h >> lv));
+            w = std::min(w, std::max(1u, t->pw() >> lv));
+            h = std::min(h, std::max(1u, t->ph() >> lv));
             rt_samples = (VkSampleCountFlagBits)std::max<uint32_t>(1, t->samples);
+            take_scale(t);
         }
         n = i + 1;
     }
@@ -587,9 +621,10 @@ void Exec::ensure_rendering() {
     if (Texture* t = depth.tex) {
         uint32_t lv = 0;
         VkImageView iv = get_view(t, &depth.view, true, &lv);
-        w = std::min(w, std::max(1u, t->w >> lv));
-        h = std::min(h, std::max(1u, t->h >> lv));
+        w = std::min(w, std::max(1u, t->pw() >> lv));
+        h = std::min(h, std::max(1u, t->ph() >> lv));
         rt_samples = (VkSampleCountFlagBits)std::max<uint32_t>(1, t->samples);
+        take_scale(t);
         for (auto* a : {&da, &sa}) {
             a->imageView = iv;
             a->imageLayout = VK_IMAGE_LAYOUT_GENERAL;
@@ -605,6 +640,7 @@ void Exec::ensure_rendering() {
     }
     rt_w = w;
     rt_h = h;
+    rt_scale = std::max(1u, scale);
     active_colors = n;
     VkRenderingInfo ri{VK_STRUCTURE_TYPE_RENDERING_INFO};
     ri.renderArea = {{0, 0}, {w, h}};
@@ -671,12 +707,14 @@ void Exec::set_dynamic_state(uint32_t prim) {
     int n = std::max(nvp, nsc);
     VkViewport vps[16];
     VkRect2D scs[16];
+    const float fs = (float)rt_scale;
+    const int64_t s = rt_scale;
     for (int i = 0; i < n; i++) {
-        vps[i] = {vp[i][0], vp[i][1], vp[i][2], vp[i][3], dr[i][0], dr[i][1]};
+        vps[i] = {vp[i][0] * fs, vp[i][1] * fs, vp[i][2] * fs, vp[i][3] * fs, dr[i][0], dr[i][1]};
         if (vps[i].width <= 0) vps[i].width = (float)rt_w;
         if (vps[i].height == 0) vps[i].height = (float)rt_h;
-        int64_t x0 = std::max<int64_t>(0, sc[i][0]), y0 = std::max<int64_t>(0, sc[i][1]);
-        int64_t x1 = std::min<int64_t>((int64_t)sc[i][0] + sc[i][2], rt_w), y1 = std::min<int64_t>((int64_t)sc[i][1] + sc[i][3], rt_h);
+        int64_t x0 = std::max<int64_t>(0, sc[i][0] * s), y0 = std::max<int64_t>(0, sc[i][1] * s);
+        int64_t x1 = std::min<int64_t>(((int64_t)sc[i][0] + sc[i][2]) * s, rt_w), y1 = std::min<int64_t>(((int64_t)sc[i][1] + sc[i][3]) * s, rt_h);
         scs[i] = {{(int32_t)std::min<int64_t>(x0, rt_w), (int32_t)std::min<int64_t>(y0, rt_h)},
                   {(uint32_t)std::max<int64_t>(0, x1 - x0), (uint32_t)std::max<int64_t>(0, y1 - y0)}};
     }
@@ -719,7 +757,7 @@ void Exec::set_dynamic_state(uint32_t prim) {
     vk::vkCmdSetStencilReference(cb, VK_STENCIL_FACE_BACK_BIT, stencil_ref[1]);
     vk::vkCmdSetPrimitiveTopology(cb, topology_of(prim));
     vk::vkCmdSetPrimitiveRestartEnable(cb, VK_FALSE);
-    vk::vkCmdSetLineWidth(cb, std::max(1.0f, std::min(line_width, g.props.limits.lineWidthRange[1])));
+    vk::vkCmdSetLineWidth(cb, std::max(1.0f, std::min(line_width * fs, g.props.limits.lineWidthRange[1])));
     vk::vkCmdSetBlendConstants(cb, blend_color);
     vk::vkCmdSetLogicOpEnableEXT(cb, VK_FALSE);
     if (active_colors) {
@@ -936,6 +974,12 @@ void Exec::draw_setup(uint32_t prim) {
         bound_fs = fs;
     }
     set_dynamic_state(prim);
+    float pc[4] = {1.0f / (float)rt_scale, (float)g_scale, 0, 0};
+    if (!pushed_valid || memcmp(pc, pushed, sizeof pc)) {
+        vk::vkCmdPushConstants(cb, g.layout, kPushConstants.stageFlags, 0, sizeof pc, pc);
+        memcpy(pushed, pc, sizeof pc);
+        pushed_valid = true;
+    }
     push_descriptors(0, vprog->st[0].refl);
     if (fprog && fprog->st[1].present) push_descriptors(1, fprog->st[1].refl);
     set_vertex_input(vprog->st[0].refl);
@@ -990,8 +1034,10 @@ void draw_arrays(Exec& ex, uint32_t prim, int first, int count, int base_instanc
 
 // clear rectangle: the scissor of viewport 0 inside the render area
 VkClearRect clear_rect(Exec& ex) {
-    int64_t x0 = std::max<int64_t>(0, ex.sc[0][0]), y0 = std::max<int64_t>(0, ex.sc[0][1]);
-    int64_t x1 = std::min<int64_t>((int64_t)ex.sc[0][0] + ex.sc[0][2], ex.rt_w), y1 = std::min<int64_t>((int64_t)ex.sc[0][1] + ex.sc[0][3], ex.rt_h);
+    const int64_t s = ex.rt_scale;
+    int64_t x0 = std::max<int64_t>(0, ex.sc[0][0] * s), y0 = std::max<int64_t>(0, ex.sc[0][1] * s);
+    int64_t x1 = std::min<int64_t>(((int64_t)ex.sc[0][0] + ex.sc[0][2]) * s, ex.rt_w);
+    int64_t y1 = std::min<int64_t>(((int64_t)ex.sc[0][1] + ex.sc[0][3]) * s, ex.rt_h);
     VkClearRect r{};
     r.rect = {{(int32_t)x0, (int32_t)y0}, {(uint32_t)std::max<int64_t>(0, x1 - x0), (uint32_t)std::max<int64_t>(0, y1 - y0)}};
     r.layerCount = 1;
@@ -1041,8 +1087,8 @@ bool read_rgba8(Texture* t, std::vector<uint8_t>& rgba) {
     default: return false;
     }
     if (t->aspect != VK_IMAGE_ASPECT_COLOR_BIT || t->samples > 1) return false;
-    uint32_t w = t->w, h = t->h;
-    Staging st = staging_alloc((VkDeviceSize)w * h * bpp);
+    uint32_t w = t->pw(), h = t->ph();
+    Staging st = staging_alloc((VkDeviceSize)w * h * bpp, true);
     {
         std::lock_guard<std::recursive_mutex> lk(g.queue_lock);
         Cmd c = begin_cmd();
@@ -1116,7 +1162,7 @@ void capture_if_requested(Texture* t, int32_t x, int32_t y, uint32_t w, uint32_t
     // rgba is in display order (row 0 = the texture's last row)
     std::vector<uint8_t> crop((size_t)w * h * 4);
     for (uint32_t r = 0; r < h; r++)
-        memcpy(crop.data() + (size_t)r * w * 4, rgba.data() + ((size_t)(t->h - (uint32_t)y - h + r) * t->w + (uint32_t)x) * 4, (size_t)w * 4);
+        memcpy(crop.data() + (size_t)r * w * 4, rgba.data() + ((size_t)(t->ph() - (uint32_t)y - h + r) * t->pw() + (uint32_t)x) * 4, (size_t)w * 4);
     // writing the PNG takes longer than a frame, so it happens on a thread of its own: the game doesn't slow down while
     // a test takes shots
     std::thread([path, w, h, crop = std::move(crop)] { rt::platform_save_png(path, w, h, crop.data()); }).detach();
@@ -1178,9 +1224,9 @@ bool save_dds(Texture* t, uint32_t layer, const std::string& path) {
     uint32_t dxgi = dxgi_of(t->fi->image);
     if (!dxgi) return false;
     uint32_t bpb = (dxgi == 71 || dxgi == 72 || dxgi == 80 || dxgi == 81) ? 8 : 16;
-    uint32_t w = t->w, h = t->h, bw = (w + 3) / 4, bh = (h + 3) / 4;
+    uint32_t w = t->pw(), h = t->ph(), bw = (w + 3) / 4, bh = (h + 3) / 4;
     VkDeviceSize size = (VkDeviceSize)bw * bh * bpb;
-    Staging st = staging_alloc(size);
+    Staging st = staging_alloc(size, true);
     {
         std::lock_guard<std::recursive_mutex> lk(g.queue_lock);
         Cmd c = begin_cmd();
@@ -1236,11 +1282,9 @@ void dump_frame(Texture* presented) {
     if (rt::nvn_frames() != g_dump_frame) return;
     const char* d = getenv("LETSGO_DUMP_DIR");
     std::string dir = d ? d : "build/frame";
-    CreateDirectoryA(dir.c_str(), nullptr);
-    if (g_dump_multi) {
-        dir += "/" + std::to_string(g_dump_frame);
-        CreateDirectoryA(dir.c_str(), nullptr);
-    }
+    if (g_dump_multi) dir += "/" + std::to_string(g_dump_frame);
+    std::error_code ec;
+    std::filesystem::create_directories(dir, ec);
     bool seen = false;
     for (auto& [t, n] : g_dump_rts) seen |= t == presented;
     if (!seen) g_dump_rts.push_back({presented, 0});
@@ -1248,9 +1292,9 @@ void dump_frame(Texture* presented) {
     for (auto& [t, n] : g_dump_rts) {
         std::vector<uint8_t> rgba;
         char name[160];
-        snprintf(name, sizeof name, "%s/%02d_%ux%u_%s_%ddraws%s.png", dir.c_str(), k++, t->w, t->h, t->fi->name, n,
+        snprintf(name, sizeof name, "%s/%02d_%ux%u_%s_%ddraws%s.png", dir.c_str(), k++, t->pw(), t->ph(), t->fi->name, n,
                  t == presented ? "_presented" : "");
-        if (read_rgba8(t, rgba)) rt::platform_save_png(name, t->w, t->h, rgba.data());
+        if (read_rgba8(t, rgba)) rt::platform_save_png(name, t->pw(), t->ph(), rgba.data());
         else log("gpu: frame dump: %s texture not converted", t->fi->name);
     }
     for (uint32_t id : g_dump_tex_ids) {
@@ -1262,10 +1306,10 @@ void dump_frame(Texture* presented) {
         }
         if (!t) continue;
         char name[160];
-        snprintf(name, sizeof name, "%s/tex_%u_%ux%u_%s", dir.c_str(), id, t->w, t->h, t->fi->name);
+        snprintf(name, sizeof name, "%s/tex_%u_%ux%u_%s", dir.c_str(), id, t->pw(), t->ph(), t->fi->name);
         std::vector<uint8_t> rgba;
         if (dxgi_of(t->fi->image)) save_dds(t, 0, std::string(name) + ".dds");
-        else if (read_rgba8(t, rgba)) rt::platform_save_png(std::string(name) + ".png", t->w, t->h, rgba.data());
+        else if (read_rgba8(t, rgba)) rt::platform_save_png(std::string(name) + ".png", t->pw(), t->ph(), rgba.data());
     }
     g_dump_tex_ids.clear();
     if (FILE* f = fopen((dir + "/draws.txt").c_str(), "w")) {
@@ -1313,6 +1357,7 @@ P(DeviceInitialize) {
         if (g_dump_frame != ~0ull) shaders_keep_glsl();
         g_ready = init();
         if (!g_ready) rt::fatal("Vulkan could not be initialized (see letsgo.log). Run with --no-gpu for the logging-only renderer.");
+        g_scale = (uint32_t)rt::render_scale();
         // sampler 0 until the game registers its own: texel-fetch handles carry no sampler
         GSmpB b{};
         b.min = b.mag = 1;
@@ -1424,6 +1469,11 @@ P(TextureWriteTexels) {
     const GView* v = G<GView>(c->x[1]);
     const int32_t* reg = G<int32_t>(c->x[2]);
     if (!t || !reg) return;
+    if (t->scale > 1) {
+        static std::atomic<int> n{0};
+        if (n++ < 5) log("gpu: texel write into a %ux%u texture at the render scale skipped", t->w, t->h);
+        return;
+    }
     uint32_t level = v && (v->set & V_LEVELS) ? v->base_level : 0;
     uint32_t w = (uint32_t)reg[3], h = (uint32_t)reg[4], d = std::max(1, reg[5]);
     const FormatInfo& f = *t->fi;
@@ -2057,6 +2107,12 @@ P(CommandBufferCopyBufferToTexture) {
     if (getenv("LETSGO_TEX_LOG") && nlog++ < 400)
         log("gpu: copy buffer 0x%llx -> texture %p (%s) region %d,%d,%d %dx%dx%d", (unsigned long long)src, (void*)t, t->fi->name,
             reg[0], reg[1], reg[2], reg[3], reg[4], reg[5]);
+    if (t->scale > 1) {
+        // the game's texels for an image at the render scale: not done (no copy of the game's needs it so far)
+        static std::atomic<int> n{0};
+        if (n++ < 5) log("gpu: buffer copy into a %ux%u texture at the render scale skipped", t->w, t->h);
+        return;
+    }
     std::vector<int32_t> rv(reg, reg + 6);
     record(c, [=](Exec& ex) {
         ex.end_rendering();
@@ -2100,26 +2156,30 @@ P(CommandBufferCopyTextureToTexture) {
         ex.end_rendering();
         uint32_t sl = (sv.set & V_LEVELS) ? sv.base_level : 0, dl = (dv.set & V_LEVELS) ? dv.base_level : 0;
         uint32_t slay = (sv.set & V_LAYERS) ? sv.base_layer : 0, dlay = (dv.set & V_LAYERS) ? dv.base_layer : 0;
-        bool same = sr[3] == dr[3] && sr[4] == dr[4] && s->fi->image == d->fi->image && !(flags & 0x1C);
+        // each rectangle in its image's pixels (the render scale); a copy between different scales is a blit
+        int32_t ss = (int32_t)s->scale, ds = (int32_t)d->scale;
+        int32_t sx = sr[0] * ss, sy = sr[1] * ss, sw = sr[3] * ss, sh = sr[4] * ss;
+        int32_t dx = dr[0] * ds, dy = dr[1] * ds, dw = dr[3] * ds, dh = dr[4] * ds;
+        bool same = sw == dw && sh == dh && s->fi->image == d->fi->image && !(flags & 0x1C);
         if (same) {
             VkImageCopy r{};
             r.srcSubresource = {s->aspect, sl, slay, 1};
             r.dstSubresource = {d->aspect, dl, dlay, 1};
-            r.srcOffset = {sr[0], sr[1], 0};
-            r.dstOffset = {dr[0], dr[1], 0};
-            r.extent = {(uint32_t)sr[3], (uint32_t)sr[4], 1};
+            r.srcOffset = {sx, sy, 0};
+            r.dstOffset = {dx, dy, 0};
+            r.extent = {(uint32_t)sw, (uint32_t)sh, 1};
             vk::vkCmdCopyImage(ex.cb, s->image, VK_IMAGE_LAYOUT_GENERAL, d->image, VK_IMAGE_LAYOUT_GENERAL, 1, &r);
         } else {
             VkImageBlit b{};
             b.srcSubresource = {s->aspect, sl, slay, 1};
             b.dstSubresource = {d->aspect, dl, dlay, 1};
-            b.srcOffsets[0] = {sr[0], sr[1], 0};
-            b.srcOffsets[1] = {sr[0] + sr[3], sr[1] + sr[4], 1};
-            b.dstOffsets[0] = {dr[0], dr[1], 0};
-            b.dstOffsets[1] = {dr[0] + dr[3], dr[1] + dr[4], 1};
+            b.srcOffsets[0] = {sx, sy, 0};
+            b.srcOffsets[1] = {sx + sw, sy + sh, 1};
+            b.dstOffsets[0] = {dx, dy, 0};
+            b.dstOffsets[1] = {dx + dw, dy + dh, 1};
             if (flags & 4) std::swap(b.dstOffsets[0].x, b.dstOffsets[1].x);
             if (flags & 8) std::swap(b.dstOffsets[0].y, b.dstOffsets[1].y);
-            VkFilter filt = ((flags & 1) && s->aspect == VK_IMAGE_ASPECT_COLOR_BIT) ? VK_FILTER_LINEAR : VK_FILTER_NEAREST;
+            VkFilter filt = ((flags & 1) || ss > ds) && s->aspect == VK_IMAGE_ASPECT_COLOR_BIT ? VK_FILTER_LINEAR : VK_FILTER_NEAREST;
             vk::vkCmdBlitImage(ex.cb, s->image, VK_IMAGE_LAYOUT_GENERAL, d->image, VK_IMAGE_LAYOUT_GENERAL, 1, &b, filt);
         }
     });
@@ -2220,10 +2280,10 @@ P(QueuePresentTexture) {
     GTex* gt = idx < w->count ? G<GTex>(w->tex[idx]) : nullptr;
     if (gt && gt->host) {
         Texture* t = gt->host;
-        int32_t x = 0, y = 0, cw = (int32_t)t->w, ch = (int32_t)t->h;
+        int32_t s = (int32_t)t->scale, x = 0, y = 0, cw = (int32_t)t->pw(), ch = (int32_t)t->ph();
         if (w->crop[2] > 0 && w->crop[3] > 0) {
-            x = std::clamp(w->crop[0], 0, cw - 1), y = std::clamp(w->crop[1], 0, ch - 1);
-            cw = std::min(w->crop[2], cw - x), ch = std::min(w->crop[3], ch - y);
+            x = std::clamp(w->crop[0] * s, 0, cw - 1), y = std::clamp(w->crop[1] * s, 0, ch - 1);
+            cw = std::min(w->crop[2] * s, cw - x), ch = std::min(w->crop[3] * s, ch - y);
         }
         capture_if_requested(t, x, y, (uint32_t)cw, (uint32_t)ch);
         if (g_dump_frame != ~0ull) dump_frame(t);

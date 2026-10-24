@@ -15,6 +15,9 @@ namespace gpu {
 
 constexpr uint32_t kMaxTextures = 65536;      // bindless array sizes (NVN pool ids index them)
 constexpr uint32_t kMaxSamplers = 4096;
+// every shader's push constants (the pipeline layout's and each shader object's): vec4 pc_, x the factor
+// taking gl_FragCoord to the game's pixels (1 / the render targets' scale), y the render scale
+constexpr VkPushConstantRange kPushConstants{VK_SHADER_STAGE_ALL, 0, 16};
 
 struct Alloc {
     VkDeviceMemory mem = VK_NULL_HANDLE;
@@ -74,7 +77,7 @@ struct Staging {
     Alloc mem;
     uint8_t* ptr = nullptr;
 };
-Staging staging_alloc(VkDeviceSize size);
+Staging staging_alloc(VkDeviceSize size, bool readback = false);   // readback: CPU-cached memory, for the CPU to read
 void staging_free(const Staging& s);       // safe to call from a deferred op: frees after that submission
 
 // per-draw scratch for the command buffer being recorded (caller holds g.queue_lock): host-visible,
@@ -104,6 +107,9 @@ void retire(uint64_t after, std::function<void()> fn);
 // device address (0 without buffer device address) for unbound storage buffers
 VkBuffer zero_buffer();
 uint64_t zero_address();
+// texture pool id `id` is made at the render scale (set 0's binding 5, which shaders read for
+// texelFetch and textureSize)
+void set_texture_scaled(uint32_t id, bool scaled);
 
 // a full pipeline barrier (all writes visible to all later reads); NVN barriers map to it
 void full_barrier(VkCommandBuffer cb);

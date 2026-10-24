@@ -325,7 +325,7 @@ Scratch scratch(VkDeviceSize size, VkDeviceSize align) {
     }
 }
 
-Staging staging_alloc(VkDeviceSize size) {
+Staging staging_alloc(VkDeviceSize size, bool readback) {
     Staging s;
     VkBufferCreateInfo bi{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
     bi.size = std::max<VkDeviceSize>(size, 16);
@@ -333,7 +333,11 @@ Staging staging_alloc(VkDeviceSize size) {
     VK_CHECK(vk::vkCreateBuffer(g.dev, &bi, nullptr, &s.buf));
     VkMemoryRequirements req;
     vk::vkGetBufferMemoryRequirements(g.dev, s.buf, &req);
-    s.mem = alloc_memory(req, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    // the CPU reads a readback: cached memory (uncached, write-combined memory reads at some 20 MB/s, which made a
+    // screenshot hold the game for 0.4 s, 1.6 s at render scale 2)
+    VkMemoryPropertyFlags want = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+    if (readback && memory_type(req.memoryTypeBits, want | VK_MEMORY_PROPERTY_HOST_CACHED_BIT) != ~0u) want |= VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
+    s.mem = alloc_memory(req, want);
     VK_CHECK(vk::vkBindBufferMemory(g.dev, s.buf, s.mem.mem, s.mem.offset));
     s.ptr = s.mem.ptr;
     return s;
@@ -354,6 +358,8 @@ std::vector<std::function<void(VkCommandBuffer)>> g_deferred;
 std::deque<std::pair<uint64_t, std::function<void()>>> g_retire;
 VkBuffer g_zero;
 uint64_t g_zero_addr;
+VkBuffer g_scaled_buf;
+uint32_t* g_scaled_bits;
 
 void run_retirements() {
     std::vector<std::function<void()>> ready;
@@ -381,6 +387,13 @@ void retire(uint64_t after, std::function<void()> fn) {
 
 VkBuffer zero_buffer() { return g_zero; }
 uint64_t zero_address() { return g_zero_addr; }
+
+void set_texture_scaled(uint32_t id, bool scaled) {
+    if (!g_scaled_bits || id >= kMaxTextures) return;
+    uint32_t bit = 1u << (id & 31);
+    if (scaled) __atomic_fetch_or(&g_scaled_bits[id >> 5], bit, __ATOMIC_RELAXED);
+    else __atomic_fetch_and(&g_scaled_bits[id >> 5], ~bit, __ATOMIC_RELAXED);
+}
 
 // ---- submission -----------------------------------------------------------------------------------
 namespace {
@@ -582,6 +595,52 @@ void image_barrier(VkCommandBuffer cb, VkImage img, VkImageLayout from, VkImageL
     di.pImageMemoryBarriers = &b;
     vk::vkCmdPipelineBarrier2(cb, &di);
 }
+
+// A picture more than twice the window's size (the render scale's, in a small window) is halved first, level by
+// level of this image, each exactly 2:1 so a texel is the average of four: one bilinear blit across 3:1 or more
+// samples only some of the picture's pixels, which shimmers.
+struct Halves {
+    VkImage image = VK_NULL_HANDLE;
+    Alloc mem;
+    uint32_t w = 0, h = 0, levels = 0;
+    bool srgb = false;
+} g_halves;
+
+void ensure_halves(VkCommandBuffer cb, uint32_t w, uint32_t h, uint32_t levels, bool srgb) {
+    Halves& v = g_halves;
+    if (v.image && v.w == w && v.h == h && v.levels == levels && v.srgb == srgb) return;
+    if (v.image) {
+        wait_value(g.submitted);                          // the window changed size: the old one may still be read
+        vk::vkDestroyImage(g.dev, v.image, nullptr);
+        free_memory(v.mem);
+    }
+    VkImageCreateInfo ci{VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
+    ci.imageType = VK_IMAGE_TYPE_2D;
+    ci.format = srgb ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM;
+    ci.extent = {w, h, 1};
+    ci.mipLevels = levels;
+    ci.arrayLayers = 1;
+    ci.samples = VK_SAMPLE_COUNT_1_BIT;
+    ci.tiling = VK_IMAGE_TILING_OPTIMAL;
+    ci.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    VK_CHECK(vk::vkCreateImage(g.dev, &ci, nullptr, &v.image));
+    VkMemoryRequirements req;
+    vk::vkGetImageMemoryRequirements(g.dev, v.image, &req);
+    v.mem = alloc_memory(req, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    VK_CHECK(vk::vkBindImageMemory(g.dev, v.image, v.mem.mem, v.mem.offset));
+    v.w = w, v.h = h, v.levels = levels, v.srgb = srgb;
+    VkImageMemoryBarrier2 b{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2};
+    b.srcStageMask = b.dstStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
+    b.dstAccessMask = VK_ACCESS_2_MEMORY_READ_BIT | VK_ACCESS_2_MEMORY_WRITE_BIT;
+    b.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    b.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+    b.image = v.image;
+    b.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, levels, 0, 1};
+    VkDependencyInfo di{VK_STRUCTURE_TYPE_DEPENDENCY_INFO};
+    di.imageMemoryBarrierCount = 1;
+    di.pImageMemoryBarriers = &b;
+    vk::vkCmdPipelineBarrier2(cb, &di);
+}
 }  // namespace
 
 void present(VkImage image, bool srgb, int32_t x, int32_t y, uint32_t w, uint32_t h, bool flip_y) {
@@ -611,6 +670,29 @@ void present(VkImage image, bool srgb, int32_t x, int32_t y, uint32_t w, uint32_
     blit.dstOffsets[0] = {dx, dy, 0};
     blit.dstOffsets[1] = {dx + dw, dy + dh, 1};
     full_barrier(c.cb);
+    uint32_t halvings = 0;
+    while (halvings < 4 && (w >> (halvings + 1)) >= (uint32_t)std::max(dw, 1) && (h >> (halvings + 1)) >= (uint32_t)std::max(dh, 1)) halvings++;
+    if (halvings) {
+        ensure_halves(c.cb, w / 2, h / 2, halvings, srgb);
+        for (uint32_t i = 0; i < halvings; i++) {
+            VkImageBlit b = blit;                         // the first halving takes the picture (and its flip)
+            if (i) {
+                b.srcSubresource.mipLevel = i - 1;
+                b.srcOffsets[0] = {0, 0, 0};
+                b.srcOffsets[1] = {(int32_t)(w >> i), (int32_t)(h >> i), 1};
+            }
+            b.dstSubresource.mipLevel = i;
+            b.dstOffsets[0] = {0, 0, 0};
+            b.dstOffsets[1] = {(int32_t)(w >> (i + 1)), (int32_t)(h >> (i + 1)), 1};
+            vk::vkCmdBlitImage(c.cb, i ? g_halves.image : image, VK_IMAGE_LAYOUT_GENERAL, g_halves.image, VK_IMAGE_LAYOUT_GENERAL, 1, &b,
+                               VK_FILTER_LINEAR);
+            full_barrier(c.cb);
+        }
+        image = g_halves.image;
+        blit.srcSubresource.mipLevel = halvings - 1;
+        blit.srcOffsets[0] = {0, 0, 0};
+        blit.srcOffsets[1] = {(int32_t)(w >> halvings), (int32_t)(h >> halvings), 1};
+    }
     vk::vkCmdBlitImage(c.cb, image, VK_IMAGE_LAYOUT_GENERAL, dst, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, VK_FILTER_LINEAR);
     image_barrier(c.cb, dst, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
     submit_cmd(c, acq, g_render_done[idx]);
@@ -809,9 +891,10 @@ bool init() {
     VK_CHECK(vk::vkCreateSemaphore(g.dev, &sci, nullptr, &g.timeline));
     // descriptor layouts: set 0 bindless (textures by NVN pool id), set 1 pushed per draw
     {
-        // 0..2 texture2D (float, uint, int), 3 samplers, 4 texture2DArray (every texture as an array view)
-        VkDescriptorSetLayoutBinding b[5] = {};
-        VkDescriptorBindingFlags bf[5];
+        // 0..2 texture2D (float, uint, int), 3 samplers, 4 texture2DArray (every texture as an array view),
+        // 5 a storage buffer of a bit per texture id: 1 when it's made at the render scale (scaled_bits)
+        VkDescriptorSetLayoutBinding b[6] = {};
+        VkDescriptorBindingFlags bf[6];
         for (int i = 0; i < 5; i++) {
             b[i].binding = (uint32_t)i;
             b[i].descriptorType = i == 3 ? VK_DESCRIPTOR_TYPE_SAMPLER : VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
@@ -820,19 +903,22 @@ bool init() {
             bf[i] = VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT |
                     (f12.descriptorBindingUpdateUnusedWhilePending ? VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT : 0);
         }
+        b[5] = {5, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_ALL, nullptr};
+        bf[5] = 0;
         VkDescriptorSetLayoutBindingFlagsCreateInfo fi{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO};
-        fi.bindingCount = 5;
+        fi.bindingCount = 6;
         fi.pBindingFlags = bf;
         VkDescriptorSetLayoutCreateInfo li{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO, &fi};
         li.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
-        li.bindingCount = 5;
+        li.bindingCount = 6;
         li.pBindings = b;
         VK_CHECK(vk::vkCreateDescriptorSetLayout(g.dev, &li, nullptr, &g.set0_layout));
-        VkDescriptorPoolSize ps[2] = {{VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 4 * kMaxTextures}, {VK_DESCRIPTOR_TYPE_SAMPLER, kMaxSamplers}};
+        VkDescriptorPoolSize ps[3] = {{VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 4 * kMaxTextures}, {VK_DESCRIPTOR_TYPE_SAMPLER, kMaxSamplers},
+                                      {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1}};
         VkDescriptorPoolCreateInfo pi{VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
         pi.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
         pi.maxSets = 1;
-        pi.poolSizeCount = 2;
+        pi.poolSizeCount = 3;
         pi.pPoolSizes = ps;
         VK_CHECK(vk::vkCreateDescriptorPool(g.dev, &pi, nullptr, &g.dpool));
         VkDescriptorSetAllocateInfo ai{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
@@ -857,7 +943,30 @@ bool init() {
         VkPipelineLayoutCreateInfo pli{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
         pli.setLayoutCount = 2;
         pli.pSetLayouts = sets;
+        pli.pushConstantRangeCount = 1;
+        pli.pPushConstantRanges = &kPushConstants;
         VK_CHECK(vk::vkCreatePipelineLayout(g.dev, &pli, nullptr, &g.layout));
+    }
+    {
+        // the scaled textures' bits, host-visible: TexturePoolRegisterTexture sets them as it writes the descriptor
+        VkBufferCreateInfo bi{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
+        bi.size = kMaxTextures / 8;
+        bi.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+        VK_CHECK(vk::vkCreateBuffer(g.dev, &bi, nullptr, &g_scaled_buf));
+        VkMemoryRequirements req;
+        vk::vkGetBufferMemoryRequirements(g.dev, g_scaled_buf, &req);
+        Alloc a = alloc_memory(req, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+        VK_CHECK(vk::vkBindBufferMemory(g.dev, g_scaled_buf, a.mem, a.offset));
+        g_scaled_bits = (uint32_t*)a.ptr;
+        memset(g_scaled_bits, 0, kMaxTextures / 8);
+        VkDescriptorBufferInfo dbi{g_scaled_buf, 0, VK_WHOLE_SIZE};
+        VkWriteDescriptorSet w{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
+        w.dstSet = g.set0;
+        w.dstBinding = 5;
+        w.descriptorCount = 1;
+        w.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+        w.pBufferInfo = &dbi;
+        vk::vkUpdateDescriptorSets(g.dev, 1, &w, 0, nullptr);
     }
     ring_init();
     {

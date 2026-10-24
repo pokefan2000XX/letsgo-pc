@@ -284,6 +284,8 @@ void build(ShaderBuild& b) {
     VkDescriptorSetLayout sets[2] = {g.set0_layout, g.set1_layout};
     ci.setLayoutCount = 2;
     ci.pSetLayouts = sets;
+    ci.pushConstantRangeCount = 1;
+    ci.pPushConstantRanges = &kPushConstants;
     VkShaderEXT sh = VK_NULL_HANDLE;
     VkResult res;
     {

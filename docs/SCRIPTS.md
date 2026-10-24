@@ -251,6 +251,17 @@ Pawn 3.3's AMX, built with 64-bit cells:
   6 of the first, as short as possible (pawncc's rule). The game expands it into the memory
   image (`hea - cod` bytes of code and data), followed by the heap and the stack
   (`stp - hea`, 0x2000 bytes in every script).
+- **Memory.** A script is loaded into an allocation of `stp` bytes (0x71006749b0 asks the VM's
+  allocator for it and aborts when it gets none; `tools/amx.py info` shows `stp`). A zone's
+  script and its `init_` script stay loaded while the player is in the zone, in a pool too small
+  for much more than the game's own (seen headless 2026-10-24 with bigger scripts in Pallet's
+  zones: `town001` at 42 KB with its init at 11 KB, Oak's lab at 44 + 9 KB and the bedroom at
+  55 + 9 KB each aborted as the zone loaded; 29 + 11, 28 + 9 and 19 + 9 load). The game keeps its
+  story scenes in scripts of their own (Pallet's triggers start `main_event_0030` and
+  `main_event_0120`), loaded only when the event runs, in a pool that takes far bigger ones (the
+  game's own run to 66 KB, `main_event_8060`, and 83 KB, `kisekae_shop`; scenes of 47 KB load):
+  the event table names the script, whatever it is called, so a mod's big scenes go in scripts
+  of their own too.
 - **Opcodes.** The interpreter (0x7100670710, never decompiled) has 215: Pawn 3.3's 0-137,
   push2-push5, load.both, load.s.both, const, const.s, icall, iretn, iswitch, icasetbl, 51
   packed forms (the operand in the opcode cell's high 32 bits) and sysreq.d, sysreq.nd. It

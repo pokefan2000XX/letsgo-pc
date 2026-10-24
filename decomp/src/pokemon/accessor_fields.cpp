@@ -6,6 +6,13 @@
 #include "pokemon/ids.h"
 #include "pokemon/personal.h"
 
+// The form the game sees of a record. This default is the record's own, so GetForm is the original; a hack can define
+// HackSeenForm to change it (a form read as another, say). Its definition replaces this weak one.
+extern "C" __attribute__((weak)) u8 HackSeenForm(u16 species, u8 form) {
+    (void)species;
+    return form;
+}
+
 namespace pokemon {
 
 // Party stats: nothing without them
@@ -54,7 +61,7 @@ u32 Accessor::GetPid() { Access access(this); return A().pid; }  // 0x710072dac0
 u8 Accessor::GetNature() { Access access(this); return A().nature; }  // 0x710072d600
 bool Accessor::IsFatefulEncounter() { Access access(this); return A().genderForm & 1; }  // 0x710072d290
 u8 Accessor::GetGender() { Access access(this); return (A().genderForm >> 1) & 3; }  // 0x710072d3c0
-u8 Accessor::GetForm() { Access access(this); return A().genderForm >> 3; }  // 0x710072d4e0
+u8 Accessor::GetForm() { Access access(this); return HackSeenForm(A().species, A().genderForm >> 3); }  // 0x710072d4e0
 u8 Accessor::GetEvHp() { Access access(this); return A().ev[0]; }  // 0x710072b4c0
 u8 Accessor::GetEvAttack() { Access access(this); return A().ev[1]; }  // 0x710072b5f0
 u8 Accessor::GetEvDefense() { Access access(this); return A().ev[2]; }  // 0x710072b720

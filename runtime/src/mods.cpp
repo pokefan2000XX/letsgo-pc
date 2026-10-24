@@ -375,6 +375,12 @@ void init(const fs::path& root) {
 }
 
 const fs::path* file(const std::string& rel, bool opened) {
+    static const bool trace = getenv("LETSGO_FILES") != nullptr;   // every file the game opens, the first time
+    if (trace && opened) {
+        static std::unordered_set<std::string> seen;
+        std::lock_guard<std::mutex> lk(g_lock);
+        if (seen.insert(rel).second) log("file: %s", rel.c_str());
+    }
     auto it = g_files.find(rel);
     if (it == g_files.end()) return nullptr;
     if (opened) {

@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <atomic>
 #include <chrono>
+#include <cmath>
 #include <cstdlib>
 #include <mutex>
 #include <thread>
@@ -79,15 +80,23 @@ static uint64_t g_samples = 0;                            // samples taken
 static std::chrono::steady_clock::time_point g_last_sample;
 static std::mutex g_hist_lock;
 
-// takes a sample if the period has passed (g_hist_lock held); returns how many are kept
+// takes a sample if the period has passed (g_hist_lock held); returns how many are kept. At 60 frames a second, on the
+// frames the game's every-other-frame counts skip (framerate.cpp) the input stays as it was, so a press starts (and ends) on
+// a frame they run in and none of them misses it
 static int sample_now() {
     auto now = std::chrono::steady_clock::now();
     if (!g_samples || now - g_last_sample >= std::chrono::milliseconds(4)) {
         InputState in = current_input();
         Sample& s = g_hist[g_samples % kHistory];
+        if (g_samples && fps60_odd_frame()) {
+            const Sample& was = g_hist[(g_samples - 1) % kHistory];
+            s.buttons = was.buttons;
+            s.l[0] = was.l[0], s.l[1] = was.l[1], s.r[0] = was.r[0], s.r[1] = was.r[1];
+        } else {
+            s.buttons = in.buttons | stick_buttons(in.stick_l, in.stick_r);
+            s.l[0] = in.stick_l[0], s.l[1] = in.stick_l[1], s.r[0] = in.stick_r[0], s.r[1] = in.stick_r[1];
+        }
         s.number = ++g_samples;
-        s.buttons = in.buttons | stick_buttons(in.stick_l, in.stick_r);
-        s.l[0] = in.stick_l[0], s.l[1] = in.stick_l[1], s.r[0] = in.stick_r[0], s.r[1] = in.stick_r[1];
         g_last_sample = now;
     }
     return (int)std::min<uint64_t>(g_samples, kHistory);
@@ -260,7 +269,13 @@ void start_input_script(const std::string& spec) {
 //   A, SL_UP:1.5      tap a button / push a stick (for HOLD seconds)
 //   wait 2            pause the script
 //   shot out.png      save the next presented frame
+//   burst 8 out       save the next 8 presented frames, one after another (out_01.png ...)
+//   scan 1930 0 920   log where the heap holds those three floats in a row (a position, say)
+//   trace 0x...,0x... 120   log the three floats at each address once a presented frame, for 120 frames (alongside
+//                     what comes next, so a stick pushed after it is traced)
+//   watch 0x... 3     for 3 seconds (alongside what comes next), which guest functions write the 4 bytes at an address
 //   turbo on|off      present as fast as possible, or at the normal rate
+//   calls out.tsv     with LETSGO_CALLS=1, each main function's indirect calls since the last "calls"
 void start_control_file(const std::string& path) {
     std::thread([path] {
         size_t done = 0;
@@ -288,8 +303,71 @@ void start_control_file(const std::string& path) {
                     char when[32];
                     snprintf(when, sizeof when, "@%.3f", uptime());
                     platform_screenshot(line.substr(5) + when);
+                } else if (line.rfind("burst ", 0) == 0 && line.find(' ', 6) != std::string::npos) {
+                    int n = atoi(line.c_str() + 6);
+                    std::string prefix = line.substr(line.find(' ', 6) + 1), spec;
+                    uint64_t from = nvn_frames();
+                    for (int k = 1; k <= n; k++) {
+                        char one[32];
+                        snprintf(one, sizeof one, "_%02d.png@f%llu", k, (unsigned long long)(from + k));
+                        spec += (k > 1 ? "," : "") + prefix + one;
+                    }
+                    platform_screenshot(spec);
+                } else if (line.rfind("scan ", 0) == 0) {
+                    // three floats in a row; a * matches any value there ("scan 6657.6 * 188.64")
+                    float want[3] = {};
+                    bool any[3] = {};
+                    char word[3][32] = {};
+                    sscanf(line.c_str() + 5, "%31s %31s %31s", word[0], word[1], word[2]);
+                    for (int k = 0; k < 3; k++) any[k] = word[k][0] == '*', want[k] = (float)atof(word[k]);
+                    auto near = [&](const float* q) {
+                        for (int k = 0; k < 3; k++)
+                            if (!any[k] && !(std::fabs(q[k] - want[k]) < 0.01f)) return false;
+                        return true;
+                    };
+                    size_t found = 0;
+                    // the heap's readable stretches only (it has holes the game unmapped)
+                    for (uint64_t a = kHeapBase, end = kHeapBase + mem_heap_size(); a < end && found < 64;) {
+                        uint64_t span = mem_readable(a);
+                        if (!span) { a = (a | 0xfff) + 1; continue; }
+                        span = std::min(span, end - a);
+                        const float* p = (const float*)(uintptr_t)a;
+                        for (size_t i = 0, n = (size_t)(span / 4); i + 2 < n && found < 64; i++)
+                            if (near(p + i))
+                                log("control: scan %s at 0x%llx", line.c_str() + 5, (unsigned long long)(uintptr_t)(p + i)), found++;
+                        a += span;
+                    }
+                    log("control: scan found %zu", found);
+                } else if (line.rfind("trace ", 0) == 0) {
+                    std::vector<const float*> at;
+                    for (const char* s = line.c_str() + 6; *s && *s != ' ';) {
+                        char* end;
+                        at.push_back((const float*)(uintptr_t)strtoull(s, &end, 0));
+                        s = *end == ',' ? end + 1 : end;
+                    }
+                    int frames = atoi(line.c_str() + line.rfind(' ') + 1);
+                    std::thread([at, frames] {
+                        for (uint64_t f = nvn_frames(), end = f + (uint64_t)frames; f < end;) {
+                            uint64_t now = nvn_frames();
+                            if (now == f) { std::this_thread::sleep_for(std::chrono::microseconds(500)); continue; }
+                            f = now;
+                            std::string row;
+                            for (const float* p : at) {
+                                char one[64];
+                                snprintf(one, sizeof one, " | %.3f %.3f %.3f", p[0], p[1], p[2]);
+                                row += one;
+                            }
+                            log("control: trace frame %llu%s", (unsigned long long)f, row.c_str());
+                        }
+                    }).detach();
+                } else if (line.rfind("watch ", 0) == 0) {
+                    uint64_t addr = strtoull(line.c_str() + 6, nullptr, 0);
+                    double seconds = atof(line.c_str() + line.rfind(' ') + 1);
+                    std::thread([addr, seconds] { watch_writes(addr, seconds); }).detach();
                 } else if (line.rfind("wait ", 0) == 0) {
                     std::this_thread::sleep_for(std::chrono::duration<double>(atof(line.c_str() + 5)));
+                } else if (line.rfind("calls ", 0) == 0) {
+                    dump_call_counts(line.substr(6));
                 } else if (line == "turbo on" || line == "turbo off") {
                     nvn_set_turbo(line == "turbo on");
                     log("control: %s", line.c_str());

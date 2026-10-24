@@ -41,6 +41,13 @@ error shows a message box that points at the log. `--base`, `--update` and
 `--keys` give the files on the command line instead. Paths given that way
 aren't saved to `config.ini` unless a picker had to correct one.
 
+`settings.ini` beside the saves keeps two choices. `fps=60` runs the game at 60 frames a
+second instead of its own 30 (Tab switches it while playing; text, scripts and screen fades
+keep the game's pace, battles included). `scale=` is the picture's size: the game's
+screen-sized render targets are made that many times as wide and high, so a big or maximized
+window shows a sharp picture. `auto`, the default, picks the monitor's height over the game's
+1080, rounded up (2 on a 1440p or 4K monitor); `1` to `4` set it.
+
 Mods go in `mods\` beside the exe or in `%APPDATA%\LetsGoPikachu\mods\`, one
 folder each with a `romfs\` inside, as for Ryujinx
 ([docs/MODS.md](docs/MODS.md)).
@@ -183,7 +190,13 @@ To build it, run `build-release.bat` (Setup step 4 below). The exe is
    | `LETSGO_SHADER_CACHE=file` | Where translated shaders are kept between runs (default `cache/shader_cache.bin` beside `save/`; the player exe keeps it in `%APPDATA%\LetsGoPikachu\`), or `off` |
    | `LETSGO_SHADER_WARMUP=0` | Doesn't create the cached shaders in the background at startup |
    | `LETSGO_NO_VSYNC_LOCK=1` | Times frames by a 60 Hz clock even when the display runs at a multiple of 60 Hz (normally frames follow the display's own refresh) |
-   | `LETSGO_CONTROL=file` | Drives a running game from lines appended to `file`: `A`, `SL_UP:1.5` (hold), `wait 2`, `shot out.png`, `turbo on`/`turbo off` |
+   | `LETSGO_CONTROL=file` | Drives a running game from lines appended to `file`: `A`, `SL_UP:1.5` (hold), `wait 2`, `shot out.png`, `turbo on`/`turbo off`, `calls out.tsv` (with `LETSGO_CALLS`) |
+   | `LETSGO_FPS=60` or `30` | The frame rate for this run, not kept in `settings.ini` |
+   | `LETSGO_SCALE=N` | The render scale for this run (`settings.ini`'s `scale=`; a `--headless` run is 1 without it) |
+   | `LETSGO_HANDHELD=1` | The game in handheld mode (1280x720) instead of docked (1920x1080) |
+   | `LETSGO_CALLS=1` | Counts the indirect calls of each main function; the control file's `calls out.tsv` writes them (busiest first) and starts again |
+   | `LETSGO_BACKTRACE=addr[,...]` | Logs the first calls of those main functions with x0 to x3 and the call chain (`LETSGO_BACKTRACE_AFTER=S`: only after S seconds) |
+   | `LETSGO_FILES=1` | Logs each game file the first time it's opened |
    | `LETSGO_DIALOG_TEST=prefix` | Each text box saves a picture of itself to `prefix-N.png`, then answers itself (its initial text, or "Test"), so a windowed test runs hands-free |
    | `SDL_AUDIO_DRIVER=disk` | Makes a `--headless` run play through SDL's disk driver: silent, timed like a sound card, output in `SDL_AUDIO_DISK_OUTPUT_FILE` (default `sdlaudio.raw`) |
 
@@ -203,6 +216,7 @@ To build it, run `build-release.bat` (Setup step 4 below). The exe is
    | Right stick | Numpad 8 4 2 6 | Right stick |
    | Stick clicks | F / G | Stick clicks |
    | Fullscreen | F11 | |
+   | 60 frames a second on or off (kept in `settings.ini`) | Tab | |
 
 6. **Smoke tests:** `bash tests/run_smoke.sh`. The boot, shader and movie tests use
    `build/pc` (set `LETSGO_BUILD` to use another build). The shader test reads
@@ -247,7 +261,8 @@ must record the same results (`t.check(value)`) and make the same SDK calls. In 
 **Hooks and hacks.** A replacement can call the original it replaces through `ORIG_<address>`,
 so code can be added to a function without decompiling it ([decomp/README.md](decomp/README.md),
 Hooks). A hack in `hacks/<name>/` has its own code, tests and files for the game; `-DLETSGO_HACKS=<name>`
-builds its code into the executables ([hacks/README.md](hacks/README.md)).
+builds its code into the executables ([hacks/README.md](hacks/README.md)). build-dev.bat and
+build-release.bat build `new-script-command`, `wild-battles`, `quick-boot` and `smooth-moves` in.
 
 **Reading the original.** `python -P tools/disasm.py <address>` prints a function with the
 names of what it calls and the strings it uses; `python -P tools/refs.py <address>` lists

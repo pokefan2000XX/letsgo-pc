@@ -2,7 +2,7 @@
 """Static recompiler driver: translate every function of a module to C.
 
   python -P recomp/recomp.py main sdk [--out build/gen] [--per-file 40000]
-  python -P recomp/recomp.py patch --patch-elf build/decomp/patch.elf --replaces build/decomp/replaces.json
+  python -P recomp/recomp.py patch --patch-elf build/decomp/patch.elf --replaces build/decomp/replaces.json [--main-out DIR]
 
 Writes <out>/<mod>/fNNN.c (functions, split by instruction count),
 <out>/<mod>/table.c (guest address -> host function), and <out>/<mod>/report.json
@@ -442,6 +442,7 @@ def main():
     ap.add_argument("--per-file", type=int, default=40000)
     ap.add_argument("--patch-elf", help="the decomp patch module (for the module 'patch')")
     ap.add_argument("--replaces", help="JSON {original address: replacement address} (for the module 'patch')")
+    ap.add_argument("--main-out", help="where main was translated, when not --out (for the module 'patch')")
     a = ap.parse_args()
     for mod in a.modules:
         if mod == "patch":
@@ -449,7 +450,7 @@ def main():
             replaces = {}
             if a.replaces and os.path.exists(a.replaces):
                 replaces = {int(k, 16): int(v, 16) for k, v in json.load(open(a.replaces)).items()}
-            main_starts = main_function_starts(a.out)
+            main_starts = main_function_starts(a.main_out or a.out)
             if not main_starts:
                 raise SystemExit("patch: translate main first (build/gen/main/table.c)")
             if src is None:

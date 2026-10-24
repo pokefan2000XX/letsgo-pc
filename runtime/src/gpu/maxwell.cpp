@@ -96,6 +96,7 @@ struct Cx {
     uint32_t preds = 0;
     bool flow = false, ssy = false, cc = false, const_array = false, ldg = false, point_size = false;
     bool bfe = false, tex_array = false;
+    bool uses_scale = false, uses_fc = false;   // the render scale's declarations; fc_ (nvasm.h)
     nvasm::Reflection refl;
     std::string where;                       // the instruction being translated, for errors
 
@@ -234,7 +235,10 @@ int interp(Cx& cx, int i) {
 
 std::string fragment_input(Cx& cx, uint32_t at, bool multiply) {
     if (cx.stage != Stage::Fragment) fail("IPA outside a fragment program");
-    if (at >= 0x70 && at < 0x80) return std::string("gl_FragCoord.") + comp((int)(at - 0x70) / 4);
+    if (at >= 0x70 && at < 0x80) {
+        cx.uses_scale = cx.uses_fc = true;
+        return std::string("fc_.") + comp((int)(at - 0x70) / 4);
+    }
     if (at >= 0x80 && at < 0x280) {
         int i = (int)(at - 0x80) >> 4;
         cx.refl.inputs |= 1u << i;
@@ -325,9 +329,10 @@ std::string sample(Cx& cx, int tid, bool array, const std::string& x, const std:
                       tex + ", g_smp[" + si + "])";
     std::string uv = "vec2(" + x + ", " + y + ")";
     if (!offs.empty()) {
-        // a texel offset moves the sample point by whole texels of level 0
-        cx.line("vec2 o_ = vec2(bitfieldExtract(int(" + offs + "), 0, 4), bitfieldExtract(int(" + offs + "), 4, 4)) / vec2(textureSize(" +
-                tex + ", 0)" + (array ? ".xy" : "") + ");");
+        // a texel offset moves the sample point by whole texels of level 0 (the game's, for a scaled texture)
+        cx.uses_scale = true;
+        cx.line("vec2 o_ = vec2(bitfieldExtract(int(" + offs + "), 0, 4), bitfieldExtract(int(" + offs + "), 4, 4)) / vec2(max(textureSize(" +
+                tex + ", 0)" + (array ? ".xy" : "") + " / sk_(h_ & 0xFFFFFu), ivec2(1)));");
         uv = "(" + uv + " + o_)";
     }
     std::string l = array ? "float(" + layer + " & 0xFFFFu)" : "";
@@ -886,7 +891,9 @@ nvasm::Result translate(const uint8_t* control, size_t control_size, const uint8
                  " return bitfieldExtract(v, int(p), int(min(l, 32u - p))); }\n"
                  "uint bfe_s(uint v, uint f) { uint p = f & 0xFFu, l = (f >> 8u) & 0xFFu; if (l == 0u) return 0u;"
                  " if (p >= 32u) return uint(int(v) >> 31); return uint(bitfieldExtract(int(v), int(p), int(min(l, 32u - p)))); }\n";
+        if (cx.uses_scale) g << nvasm::scale_decls(cx.stage);
         g << "void main() {\n";
+        if (cx.uses_fc) g << nvasm::kFragCoordLine;
         for (int r : cx.regs) g << "    uint R" << r << " = 0u;\n";
         for (int p = 0; p < 7; p++)
             if (cx.preds & (1u << p)) g << "    bool P" << p << " = false;\n";
