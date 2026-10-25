@@ -1314,10 +1314,29 @@ Started 2026-10-23 at the user's request.
     instead of 1.6 and the camera then sat waiting for the person walking in. framerate.cpp doubles that
     argument (the handler's argument cells, x1 + 8 or + 0x18 or + 0x20) while
     the command starts; checked headless: the pans 1.6 s and 0.7 s as at 30.
-    A length of 0 (most of the game's turns) and the forced move's own
-    16-frame turn are still twice as fast at 60.
-  - Turning counts frames: the facing closes a share of the angle left each
-    frame, so at 60 the player turns about twice as fast. Checked
+    A length of 0 (most of the game's turns) is still twice as fast at 60.
+  - **Halts at 60 fixed** (2026-10-24). Walking to the bedroom's stairs (the
+    scene where the rival comes up) and going back into the lab with Oak
+    stopped at 60 until Tab. The every-other-frame gate was one parity for
+    all: odd frames skipped. The game resumes some scripts and fades itself
+    after a wait of its own (every 2, 4 or 20 frames, from two threads), and
+    one that started on an odd frame landed on odd frames every time and
+    never ran. Now each object is gated on its own (`skip()`): one called
+    every frame runs on the even frames, one called after a gap (or for the
+    first time) always runs, and a second call in the same frame repeats
+    that frame's answer. Checked headless: the stairs scene starts and plays
+    through at 60, its lines at 30's pace.
+  - **Turning** (2026-10-24). The move action turns its character half the
+    angle left each frame (0x710020b6b0, a quaternion slerp, called at
+    0x710021bbdc with 0.5), so at 60 the player turned twice as fast. A
+    strong `f710020b6b0` in framerate.cpp gives that one call (its return
+    address) 1 - sqrt(1/2) at 60, so two frames turn as far as one at 30;
+    checked headless: the facing at each time the same as 30's to 0.01
+    degree. StartForceMove_'s command (0x71002dbec0) counts frames too: its
+    turns on the spot are 16 frames (+0xe8) of 1/16 each (+0xe0), and a walk
+    at a given speed steps +0xb0 a frame for +0xe8 frames; at 60 the steps
+    are halved and the count held every other frame.
+  Checked
   headless with `LETSGO_CALLS` through a modded save's scripted opening and
   first battle: every script poll the opening makes (`FadeWait_` 47 against 47,
   `_Suspend`, `IsMsgWinEnd_`, `CheckActionCommandRunningState_` for turns and
@@ -1333,6 +1352,11 @@ Started 2026-10-23 at the user's request.
   bit per texture id in set 0, binding 5). Seen headless at 3840x2160 through
   the bedroom; frames hold 33.3 ms at 30 and 16.7 ms at 60 at scale 2. The
   1280x720 render-target family (docked mode makes it too) stays at scale 1.
+  A scaled texture the CPU fills (buffer copies, texel writes: the movie's
+  pictures) gets a game-sized copy that is filled instead and stretched onto
+  it; skipping those writes showed the first-boot Pikachu movie as a green
+  screen at scale 2 (2026-10-24).
 - **Test aids:** `LETSGO_CALLS` with the control file's `calls`,
-  `LETSGO_BACKTRACE`, `LETSGO_FILES`; readbacks use CPU-cached memory, so a
+  `LETSGO_BACKTRACE`, `LETSGO_FILES`; the control file's `peek`, `slow`,
+  `fps` and `frames`; readbacks use CPU-cached memory, so a
   screenshot no longer holds the game (it took 0.4 s, 1.6 s at scale 2).

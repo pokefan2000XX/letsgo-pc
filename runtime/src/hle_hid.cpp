@@ -276,6 +276,10 @@ void start_input_script(const std::string& spec) {
 //   watch 0x... 3     for 3 seconds (alongside what comes next), which guest functions write the 4 bytes at an address
 //   turbo on|off      present as fast as possible, or at the normal rate
 //   calls out.tsv     with LETSGO_CALLS=1, each main function's indirect calls since the last "calls"
+//   peek 0x...,0x... 64   log that many bytes at each address as 64-bit words (up to 512)
+//   slow 30           every present takes 30 ms longer, as on a slow GPU (0 ends it)
+//   fps 60, fps 30    switch the frame rate, as Tab does
+//   frames            log how many frames have been presented and how many the game has begun
 void start_control_file(const std::string& path) {
     std::thread([path] {
         size_t done = 0;
@@ -371,6 +375,28 @@ void start_control_file(const std::string& path) {
                 } else if (line == "turbo on" || line == "turbo off") {
                     nvn_set_turbo(line == "turbo on");
                     log("control: %s", line.c_str());
+                } else if (line.rfind("peek ", 0) == 0) {
+                    size_t bytes = std::min<size_t>(strtoull(line.c_str() + line.rfind(' ') + 1, nullptr, 0), 512);
+                    for (const char* s = line.c_str() + 5; *s && *s != ' ';) {
+                        char* end;
+                        uint64_t a = strtoull(s, &end, 0) & ~7ull;
+                        s = *end == ',' ? end + 1 : end;
+                        std::string row;
+                        for (size_t o = 0; o < bytes && mem_readable(a + o) >= 8; o += 8) {
+                            char one[24];
+                            snprintf(one, sizeof one, " %016llx", (unsigned long long)*(const uint64_t*)(uintptr_t)(a + o));
+                            row += one;
+                        }
+                        log("control: peek 0x%llx:%s", (unsigned long long)a, row.c_str());
+                    }
+                } else if (line.rfind("slow ", 0) == 0) {
+                    nvn_set_slow(atoi(line.c_str() + 5));
+                    log("control: %s", line.c_str());
+                } else if (line == "fps 60" || line == "fps 30") {
+                    if (fps60() != (line == "fps 60")) toggle_fps60();
+                } else if (line == "frames") {
+                    log("control: frames presented %llu, begun %llu", (unsigned long long)nvn_frames(),
+                        (unsigned long long)fps60_frame());
                 } else {
                     size_t colon = line.find(':');
                     int bit = button_bit(line.substr(0, colon));

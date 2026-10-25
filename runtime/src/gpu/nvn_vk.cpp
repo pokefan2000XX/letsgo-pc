@@ -104,6 +104,8 @@ struct Texture {
     uint32_t nvn_format = 0;
     uint32_t w = 1, h = 1, d = 1, levels = 1, layers = 1, target = 1, samples = 1, flags = 0;
     uint32_t scale = 1;                       // the image is this many times the game's size (the render scale)
+    VkImage unscaled = VK_NULL_HANDLE;        // at the render scale: the game's size, where buffer copies land first
+    Alloc unscaled_mem;
     uint64_t addr = 0;
     bool cpu_visible = false;
     bool watched = false;                     // in a CPU-writable pool: re-uploaded when the CPU writes it
@@ -350,9 +352,57 @@ void destroy_texture(Texture* t) {
             for (auto& [k, v] : t->views) vk::vkDestroyImageView(g.dev, v, nullptr);
             vk::vkDestroyImage(g.dev, t->image, nullptr);
             free_memory(t->mem);
+            if (t->unscaled) {
+                vk::vkDestroyImage(g.dev, t->unscaled, nullptr);
+                free_memory(t->unscaled_mem);
+            }
             delete t;
         });
     });
+}
+
+// A texture at the render scale: an image of the game's size beside it, made the first time the game copies its own texels in
+// (a movie's frames, 2026-10-25: 1920x1080 and 960x540, so made at the scale, were green). The copy goes there and is
+// stretched into the texture.
+VkImage unscaled_image(Texture* t) {
+    std::lock_guard<std::mutex> lk(t->lock);
+    if (t->unscaled) return t->unscaled;
+    VkImageCreateInfo ci{VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
+    ci.imageType = VK_IMAGE_TYPE_2D;
+    ci.format = t->fi->image;
+    ci.extent = {t->w, t->h, 1};
+    ci.mipLevels = 1;
+    ci.arrayLayers = 1;
+    ci.samples = VK_SAMPLE_COUNT_1_BIT;
+    ci.tiling = VK_IMAGE_TILING_OPTIMAL;
+    ci.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    ci.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    VK_CHECK(vk::vkCreateImage(g.dev, &ci, nullptr, &t->unscaled));
+    VkMemoryRequirements req;
+    vk::vkGetImageMemoryRequirements(g.dev, t->unscaled, &req);
+    t->unscaled_mem = alloc_memory(req, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    VK_CHECK(vk::vkBindImageMemory(g.dev, t->unscaled, t->unscaled_mem.mem, t->unscaled_mem.offset));
+    VkImage img = t->unscaled;
+    VkImageAspectFlags asp = t->aspect;
+    defer([img, asp](VkCommandBuffer cb) { transition_general(cb, img, asp); });
+    return img;
+}
+// a rectangle of the game-sized image stretched into the texture at the render scale, after what wrote it
+void stretch_unscaled(VkCommandBuffer cb, Texture* t, int32_t x, int32_t y, uint32_t w, uint32_t h) {
+    full_barrier(cb);
+    int32_t s = (int32_t)t->scale;
+    VkImageBlit b{};
+    b.srcSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
+    b.dstSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
+    b.srcOffsets[0] = {x, y, 0};
+    b.srcOffsets[1] = {x + (int32_t)w, y + (int32_t)h, 1};
+    b.dstOffsets[0] = {x * s, y * s, 0};
+    b.dstOffsets[1] = {(x + (int32_t)w) * s, (y + (int32_t)h) * s, 1};
+    vk::vkCmdBlitImage(cb, t->unscaled, VK_IMAGE_LAYOUT_GENERAL, t->image, VK_IMAGE_LAYOUT_GENERAL, 1, &b, VK_FILTER_LINEAR);
+}
+// whether a copy of the game's into a texture at the render scale can go through its game-sized image: a 2D texture's first level
+bool unscaled_copy_ok(const Texture* t, uint32_t level, int32_t layer, int32_t depth) {
+    return t->target != 2 && level == 0 && layer == 0 && depth <= 1 && t->aspect == VK_IMAGE_ASPECT_COLOR_BIT;
 }
 
 // ---- samplers ----------------------------------------------------------------------------------------
@@ -1469,12 +1519,13 @@ P(TextureWriteTexels) {
     const GView* v = G<GView>(c->x[1]);
     const int32_t* reg = G<int32_t>(c->x[2]);
     if (!t || !reg) return;
-    if (t->scale > 1) {
+    uint32_t level = v && (v->set & V_LEVELS) ? v->base_level : 0;
+    // at the render scale through the game-sized image beside the texture, as CopyBufferToTexture does
+    if (t->scale > 1 && !unscaled_copy_ok(t, level, reg[2], reg[5])) {
         static std::atomic<int> n{0};
         if (n++ < 5) log("gpu: texel write into a %ux%u texture at the render scale skipped", t->w, t->h);
         return;
     }
-    uint32_t level = v && (v->set & V_LEVELS) ? v->base_level : 0;
     uint32_t w = (uint32_t)reg[3], h = (uint32_t)reg[4], d = std::max(1, reg[5]);
     const FormatInfo& f = *t->fi;
     uint64_t bytes = (uint64_t)((w + f.bw - 1) / f.bw) * ((h + f.bh - 1) / f.bh) * f.bpb * d;
@@ -1486,9 +1537,10 @@ P(TextureWriteTexels) {
     bc.imageSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, level, t->target == 2 ? 0u : (uint32_t)reg[2], t->target == 2 ? 1u : (uint32_t)d};
     bc.imageOffset = {reg[0], reg[1], t->target == 2 ? reg[2] : 0};
     bc.imageExtent = {w, h, t->target == 2 ? (uint32_t)d : 1u};
-    VkImage img = t->image;
-    defer([st, img, bc](VkCommandBuffer cb) {
+    VkImage img = t->scale > 1 ? unscaled_image(t) : t->image;
+    defer([st, img, bc, t](VkCommandBuffer cb) {
         vk::vkCmdCopyBufferToImage(cb, st.buf, img, VK_IMAGE_LAYOUT_GENERAL, 1, &bc);
+        if (img != t->image) stretch_unscaled(cb, t, bc.imageOffset.x, bc.imageOffset.y, bc.imageExtent.width, bc.imageExtent.height);
         staging_free(st);
     });
 }
@@ -2107,11 +2159,16 @@ P(CommandBufferCopyBufferToTexture) {
     if (getenv("LETSGO_TEX_LOG") && nlog++ < 400)
         log("gpu: copy buffer 0x%llx -> texture %p (%s) region %d,%d,%d %dx%dx%d", (unsigned long long)src, (void*)t, t->fi->name,
             reg[0], reg[1], reg[2], reg[3], reg[4], reg[5]);
+    // at the render scale the texels go into the game-sized image beside the texture, then are stretched into it (a 2D
+    // texture's first level: the only kind made at the scale that the game copies into)
+    VkImage into = t->image;
     if (t->scale > 1) {
-        // the game's texels for an image at the render scale: not done (no copy of the game's needs it so far)
-        static std::atomic<int> n{0};
-        if (n++ < 5) log("gpu: buffer copy into a %ux%u texture at the render scale skipped", t->w, t->h);
-        return;
+        if (!unscaled_copy_ok(t, (v.set & V_LEVELS) ? v.base_level : 0, reg[2], reg[5])) {
+            static std::atomic<int> n{0};
+            if (n++ < 5) log("gpu: buffer copy into a %ux%u texture at the render scale skipped", t->w, t->h);
+            return;
+        }
+        into = unscaled_image(t);
     }
     std::vector<int32_t> rv(reg, reg + 6);
     record(c, [=](Exec& ex) {
@@ -2119,6 +2176,9 @@ P(CommandBufferCopyBufferToTexture) {
         const FormatInfo& f = *t->fi;
         uint32_t lv = (v.set & V_LEVELS) ? v.base_level : 0;
         uint32_t w = (uint32_t)rv[3], h = (uint32_t)rv[4], d = (uint32_t)std::max(1, rv[5]);
+        auto stretch = [&] {
+            if (into != t->image) stretch_unscaled(ex.cb, t, rv[0], rv[1], w, h);
+        };
         VkBufferImageCopy bc{};
         bc.imageSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, lv, t->target == 2 ? 0u : (uint32_t)rv[2], t->target == 2 ? 1u : d};
         bc.imageOffset = {rv[0], rv[1], t->target == 2 ? rv[2] : 0};
@@ -2131,13 +2191,15 @@ P(CommandBufferCopyBufferToTexture) {
             Scratch s = scratch(conv.size(), 16);
             memcpy(s.ptr, conv.data(), conv.size());
             bc.bufferOffset = s.offset;
-            vk::vkCmdCopyBufferToImage(ex.cb, s.buf, t->image, VK_IMAGE_LAYOUT_GENERAL, 1, &bc);
+            vk::vkCmdCopyBufferToImage(ex.cb, s.buf, into, VK_IMAGE_LAYOUT_GENERAL, 1, &bc);
+            stretch();
             return;
         }
         const HostBuffer* hb = host_buffer(src, bytes);
         if (!hb) return;
         bc.bufferOffset = src - hb->base;
-        vk::vkCmdCopyBufferToImage(ex.cb, hb->buf, t->image, VK_IMAGE_LAYOUT_GENERAL, 1, &bc);
+        vk::vkCmdCopyBufferToImage(ex.cb, hb->buf, into, VK_IMAGE_LAYOUT_GENERAL, 1, &bc);
+        stretch();
     });
 }
 // CopyTextureToTexture(src, srcView, srcRegion, dst, dstView, dstRegion, flags)

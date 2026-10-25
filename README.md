@@ -33,8 +33,8 @@ Works:
 - Keyboard and gamepads, with rumble; F11 for fullscreen
 - **60 FPS** (new in v0.3.0): Tab while
   playing (or `fps=60` in `settings.ini`) runs the game at 60 frames a second instead of
-  its own 30. Walking, text, scripts, camera moves, screen fades and battles keep the
-  game's own pace; only turning on the spot is still quicker than at 30.
+  its own 30. Walking, turning, text, scripts, camera moves, screen fades and battles keep
+  the game's own pace.
 - **A sharper picture** (also new in v0.3.0): `scale=` in `settings.ini` renders the
   game that many times as wide and high. `auto`, the default, picks 2 on a 1440p or 4K
   monitor.

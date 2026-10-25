@@ -95,6 +95,8 @@ void framerate_init();                                // reads the choice; repla
 bool fps60();                                         // the game at 60 frames a second, not its 30
 bool fps60_odd_frame();                               // at 60, a frame the every-other-frame counts skip (input waits too)
 void toggle_fps60();                                  // Tab
+uint64_t fps60_frame();                               // the frames the game has begun (the every-other-frame counts' clock)
+void framerate_presented();                           // at each present: checks a frame was begun since the last
 
 // ---- kernel (threads, sync, handles) -----------------------------------------------------
 struct KThread;
@@ -128,6 +130,7 @@ void keyboard_script(const std::string& spec);         // --keyboard: answers fo
 void platform_screenshot(const std::string& spec);  // --screenshot FILE.png@SECONDS
 uint64_t nvn_frames();                                // frames the game has presented
 void nvn_set_turbo(bool on);                          // present as fast as possible (tests)
+void nvn_set_slow(int ms);                            // every present takes ms longer, as on a slow GPU (tests)
 extern bool g_gpu;                                    // Vulkan renderer (default) or logging-only NVN
 void* platform_hwnd();                                // the game window (HWND), null when headless
 // a --screenshot that is due now: its path (and the request is consumed)

@@ -228,6 +228,7 @@ static bool turbo_now() {
     int t = g_turbo.load();
     return t < 0 ? uptime() < until : t == 1;
 }
+static std::atomic<int> g_slow_ms{0};                     // tests: every present takes this much longer (a slow GPU)
 // times in QueryPerformanceCounter ticks (the compositor's clock too)
 static int64_t qpc() {
     LARGE_INTEGER t;
@@ -315,7 +316,9 @@ static void pace(uint32_t interval) {
 // then counting and a periodic log line (frame_done)
 void frame_pace(uint64_t interval) { pace((uint32_t)interval); }
 void frame_done() {
+    if (int ms = g_slow_ms.load()) std::this_thread::sleep_for(std::chrono::milliseconds(ms));
     perf::frame();
+    framerate_presented();
     uint64_t n = ++g_frames;
     if (n <= 5 || (n % 300) == 0) log("nvn: *** frame %llu presented ***", (unsigned long long)n);
 }
@@ -348,6 +351,7 @@ void set_proc(const char* name, rc_fn fn) {
 
 uint64_t nvn_frames() { return nvn::g_frames; }
 void nvn_set_turbo(bool on) { nvn::g_turbo = on ? 1 : 0; }
+void nvn_set_slow(int ms) { nvn::g_slow_ms = ms; }
 
 void register_nvn_overrides(void (*reg)(const char*, rc_fn)) {
     using namespace nvn;

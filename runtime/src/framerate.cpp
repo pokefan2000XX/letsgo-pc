@@ -18,11 +18,14 @@
 // button) run every frame. Scripts count frames too: a script's Wait(n) is n sleeps of a frame each, and
 // its polls (FadeWait_, IsMsgWinEnd_, ...) come once a frame, so at 60 a script runs (0x7100674d40, every
 // script's run through the vtables) only every other frame, and so does a screen fade's step (0x710011fe10,
-// FadeOut_'s and FadeIn_'s frame counts and every menu's fades). A field character's move action (vtable 0x7101542790)
+// FadeOut_'s and FadeIn_'s frame counts and every menu's fades), each object on its own (skip() below: one the game
+// itself calls only now and then always runs). A field character's move action (vtable 0x7101542790)
 // steps it along its facing by a frame's worth (+0x6c and +0x70 walking, +0x74 and +0x78 running: -0.5, -2, -2 and -3.5) and
 // its walk or run animation's root motion takes it on by the clock, so at 60 those steps are halved (without that the player
-// ran at 331 units a second, not 391). At 60 the input the game sees changes only on the frames those every-other-frame
-// counts run (hle_hid.cpp), so a press's first frame is never one they skip. Event camera moves and scripted turns take
+// ran at 331 units a second, not 391), and it turns the character half the way to the stick's facing a frame, which at
+// 60 goes 1 - sqrt(1/2) of the way (f710020b6b0 below). StartForceMove_'s turns and walks count frames too (force_move).
+// At 60 the input the game sees changes only on the frames those every-other-frame counts run (hle_hid.cpp), so a
+// press's first frame is never one they skip. Event camera moves and scripted turns take
 // their length in frames (EvCameraMove's 1 / frames a frame, StartTurnAround_'s frames at its command's +0x9c), so at 60
 // those lengths are doubled as the command starts: as long as at 30 (the opening's pans took 1.0 s, not 1.6), still
 // moving every frame.
@@ -41,6 +44,9 @@
 //
 // The choice is kept in settings.ini beside the saves (LETSGO_FPS=60 or 30 sets it for one run).
 #include <atomic>
+#include <cmath>
+#include <mutex>
+#include <unordered_map>
 #include <cstdlib>
 #include <string>
 
@@ -58,6 +64,7 @@ constexpr uint64_t kScriptRun = 0x7100674d40;        // a script's run, or its g
 constexpr uint64_t kFadeUpdate = 0x710011fe10;       // a screen fade's update (its vtable +0x28), once a frame
 constexpr uint64_t kFadeUpdateEnd = 0x7100120370;    // the update's last part, which it ends in (timed by the clock)
 constexpr uint64_t kMoveAction = 0x710021b5c0;       // a field character's move action's update (its vtable +0x38), once a frame
+constexpr uint64_t kForceMove = 0x71002dbec0;        // StartForceMove_'s command's update (through its vtable), once a frame
 // script commands that take a length in frames (the handler's x1 points at its argument cells, 8 bytes each from +8)
 struct FramesArg {
     uint64_t handler;
@@ -109,11 +116,38 @@ void display_period(Ctx* c) { set_slot(c->x[0], 0); }
 
 void call_original(uint64_t addr, Ctx* c) { rc_lookup(kOriginalsBase + (addr - kMainBase))(c); }
 
+// At 60, whether a once-a-frame count skips this call of an object's update (a script, a fade, a message window). One
+// the game calls every frame runs in every other frame (the even ones, when input changes, hle_hid.cpp), as often as it's
+// called in them. One it calls after a gap runs whatever the frame: a script it resumes after a wait of its own, every 2,
+// 4 or 20 frames, would otherwise land on odd frames every time from an odd start and never run again (the bedroom's
+// stairs and the lab's door stopped like that until Tab, 2026-10-24). Scripts are run from two threads.
+struct Call {
+    uint64_t frame;
+    bool ran;
+};
+std::mutex g_calls_lock;
+std::unordered_map<uint64_t, Call> g_calls;
+
+bool skip(uint64_t object) {
+    if (!at60()) return false;
+    uint64_t f = g_frame;
+    std::lock_guard<std::mutex> lk(g_calls_lock);
+    auto it = g_calls.find(object);
+    bool ran = it == g_calls.end() ? true                          // its first call
+             : it->second.frame == f ? it->second.ran              // called again in the same frame
+             : f - it->second.frame == 1 ? !(f & 1)                // called every frame: the even ones
+             : true;                                               // called after a gap
+    g_calls[object] = {f, ran};
+    if (g_calls.size() > 4096)                                     // objects gone a while (their memory may be reused)
+        for (auto i = g_calls.begin(); i != g_calls.end();) i = f - i->second.frame > 600 ? g_calls.erase(i) : std::next(i);
+    return !ran;
+}
+
 // at 60, printing and counting frames only every other frame (returning 1, "going on", as those states do)
 void message_update(Ctx* c) {
     uint64_t w = c->x[0];
     bool counting = m32(w + 0xa8) == 4 || m32(w + 0x1a4) != 0 || (m32(w + 0xa8) == 0 && m32(w + 0x90) == 2);
-    if (gate() && counting) {
+    if (counting && skip(w)) {
         c->x[0] = 1;
         return;
     }
@@ -123,7 +157,7 @@ void message_update(Ctx* c) {
 // at 60, a script runs (or goes on after a wait) only every other frame; the frames between answer
 // 12, "sleeping", as a waiting script does, and it goes on the next frame
 void script_run(Ctx* c) {
-    if (gate()) {
+    if (skip(c->x[0])) {
         c->x[0] = 12;
         return;
     }
@@ -133,7 +167,7 @@ void script_run(Ctx* c) {
 // at 60, a fade's frames (+0x2a8 counting up to its length, +0x2ac) and colour steps come every other
 // frame; the update's last part runs every frame
 void fade_update(Ctx* c) {
-    call_original(gate() ? kFadeUpdateEnd : kFadeUpdate, c);
+    call_original(skip(c->x[0]) ? kFadeUpdateEnd : kFadeUpdate, c);
 }
 
 // at 60, a move action's steps (a frame's worth each) halved while it updates; a step it sets itself is kept
@@ -149,6 +183,35 @@ void move_action(Ctx* c) {
     call_original(kMoveAction, c);
     for (int i = 0; i < 4; i++)
         if (step[i] == half[i]) step[i] = was[i];
+}
+
+// At 60, StartForceMove_'s command counted in frames: its turns on the spot are 16 frames (+0xe8, counted down) that
+// each turn 1/16 more of the way (+0xe0, added to +0xe4), and a walk at a given speed steps +0xb0 a frame for +0xe8
+// frames. Those steps are halved while it updates and the count held every other frame, so a turn or walk takes as
+// long as at 30 and still moves every frame (checked headless: the bedroom scene's turn 32 frames of 1/32). A count it
+// sets or a step it works out itself is kept.
+void force_move(Ctx* c) {
+    uint64_t m = c->x[0];
+    if (!at60()) return call_original(kForceMove, c);
+    // the steps as bits (a walk by root motion leaves NaN there)
+    uint32_t* step[4] = {&m32(m + 0xe0), &m32(m + 0xb0), &m32(m + 0xb4), &m32(m + 0xb8)};
+    uint32_t was[4], half[4];
+    for (int i = 0; i < 4; i++) {
+        float f;
+        was[i] = *step[i];
+        memcpy(&f, &was[i], 4);
+        f *= 0.5f;
+        memcpy(&half[i], &f, 4);
+        *step[i] = half[i];
+    }
+    int32_t* count = (int32_t*)(uintptr_t)(m + 0xe8);
+    int32_t held = *count + 1;
+    bool hold = skip(m) && *count > 0;
+    if (hold) *count = held;
+    call_original(kForceMove, c);
+    for (int i = 0; i < 4; i++)
+        if (*step[i] == half[i]) *step[i] = was[i];
+    if (hold && *count == held) *count = held - 1;   // not counted this frame
 }
 
 // at 60, a script command's length in frames doubled while it starts, so a camera move or a turn takes as long as at 30
@@ -186,6 +249,7 @@ void framerate_init() {
     override_main(kScriptRun, script_run);
     override_main(kFadeUpdate, fade_update);
     override_main(kMoveAction, move_action);
+    override_main(kForceMove, force_move);
     override_main(kFramesArgs[0].handler, frames_arg<0>);
     override_main(kFramesArgs[1].handler, frames_arg<1>);
     override_main(kFramesArgs[2].handler, frames_arg<2>);
@@ -198,6 +262,17 @@ void framerate_init() {
 
 bool fps60() { return g_fps60; }
 bool fps60_odd_frame() { return gate(); }
+uint64_t fps60_frame() { return g_frame; }
+
+// a present with no frame begun since the last one: the every-other-frame counts' clock stood still (logged)
+void framerate_presented() {
+    static uint64_t last = ~0ull, still = 0;
+    uint64_t now = g_frame;
+    if (now == last && (++still <= 20 || still % 300 == 0))
+        log("frame rate: presented without a new frame (%llu so far, frame %llu)", (unsigned long long)still,
+            (unsigned long long)now);
+    last = now;
+}
 
 void toggle_fps60() {
     g_fps60 = !g_fps60;
@@ -224,3 +299,13 @@ RT_BATTLE_COUNTED(7100a7d140)
 RT_BATTLE_COUNTED(7100a7d9a0)
 RT_BATTLE_COUNTED(7100a7dd40)
 RT_BATTLE_COUNTED(7100a8e5a0)
+
+// A rotation turned toward another by a share of the angle between (x0 toward x1 by s0, the result in q0). The move
+// action (0x710021b5c0) turns its character by half the angle left each frame, so at 60 that turn takes 1 - sqrt(1/2)
+// of it: two frames turn as far as one at 30 (checked headless: the same facing at the same times). Its other callers
+// (StartForceMove_'s turn, by the share done so far) keep theirs.
+extern "C" void o710020b6b0(Ctx* c);
+extern "C" void f710020b6b0(Ctx* c) {
+    if (c->x[30] == 0x710021bbe0ull && rt::fps60()) c->v[0].f[0] = 1.0f - sqrtf(1.0f - c->v[0].f[0]);
+    o710020b6b0(c);
+}
