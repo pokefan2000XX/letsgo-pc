@@ -162,21 +162,25 @@ and `toolchain/` are ignored by git.
 - [docs/BINARY_NOTES.md](docs/BINARY_NOTES.md): what's in the binary
 - [docs/MODS.md](docs/MODS.md): mods, files that take the place of the game's
 
-`build-dev.bat` builds the development `letsgo.exe` (Setup, step 4), with the hacks named in
-[hacks/README.md](hacks/README.md). The players' `LetsGoPikachu.exe` is on the releases page.
+On a new clone, double-click `build-dev.bat`. It sets up `toolchain/` (Setup, step 1), asks for
+your NSPs and keys once and extracts the game into `orig/` (step 2), and builds the development
+`letsgo.exe` (step 4) with the hacks named in [hacks/README.md](hacks/README.md). It needs only Git
+for Windows and Python 3.11 or newer on PATH. The players' `LetsGoPikachu.exe` is on the releases page.
 
 ### Setup
 
 1. **Toolchain:** `bash tools/setup_toolchain.sh` downloads everything into
-   `toolchain/`, pinned and hash-checked, and installs the Python packages with `pip --user`:
+   `toolchain/`, pinned and hash-checked, and installs the Python packages with `pip --user`.
+   `build-dev.bat` runs it whenever `toolchain/` is missing something the build uses:
 
    | Tool | Version / source | Purpose |
    |---|---|---|
    | `llvm-mingw/` | 20261006 (clang 23.1.3), github.com/mstorsjo/llvm-mingw | Host build with the Itanium C++ ABI, ARM64 guest code, objdump/readelf/cxxfilt |
-   | `ghidra/` | 12.1.4, github.com/NationalSecurityAgency/ghidra | Decompiler and analysis database. Uses the installed JDK 21 (`support/launch.properties`) |
+   | `ghidra/` | 12.1.4, github.com/NationalSecurityAgency/ghidra | Decompiler and analysis database (step 3), only with `--ghidra`. Uses a JDK 21: `$JDK`, `$JAVA_HOME` or Eclipse Adoptium's (`support/launch.properties`) |
+   | `cmake/`, `ninja/` | CMake 4.4.2 (github.com/Kitware/CMake), Ninja 1.13.2 (github.com/ninja-build/ninja) | Only when there are none on PATH or in Visual Studio |
    | `guest-sysroot/` | musl 1.2.6 headers (musl.libc.org) + guest libc++ config | C/C++ standard headers for ARM64 decomp code (`tools/make_guest_sysroot.py`) |
    | `nnsdk/`, `nnware/` | open-ead, pinned commits | Nintendo SDK, NVN, nn::gfx and NintendoWare declarations. No license: local use only, never copied into this repo |
-   | `nnheaders/` | open-ead, frozen | Predecessor of nnsdk/nnware, kept for reference |
+   | `nnheaders/` | open-ead, frozen | Predecessor of nnsdk/nnware, and the SDK headers the decomp's guest code builds with |
    | `SDL3-static/` | 3.4.18 source, github.com/libsdl-org/SDL, built static | Window, keyboard, gamepads, rumble, sound. Linked into the exe, so there's no `SDL3.dll` |
    | `src/Vulkan-Headers-*` | vulkan-sdk-1.4.363.0, github.com/KhronosGroup/Vulkan-Headers | Vulkan API headers (the loader `vulkan-1.dll` comes with the GPU driver) |
    | `glslang/` | 16.6.0, github.com/KhronosGroup/glslang, built static without the optimizer | GLSL → SPIR-V for translated shaders |
@@ -185,17 +189,22 @@ and `toolchain/` are ignored by git.
 
    Also needed, installed separately:
    - Git for Windows, whose Git Bash runs the `.sh` scripts;
-   - Python 3.11 or newer on PATH;
-   - CMake and Ninja, either on PATH or from Visual Studio / its Build Tools with
-     "C++ CMake tools for Windows" (the batch files in step 4 find either).
+   - Python 3.11 or newer on PATH.
 
-2. **Extract and analyze your dump**, from the three files under Requirements:
+   CMake and Ninja come from PATH or from Visual Studio / its Build Tools ("C++ CMake tools
+   for Windows"), else the pinned copies above are downloaded.
+
+2. **Extract and analyze your dump**, from the three files under Requirements.
+   `build-dev.bat` does this the first time: it opens three file pickers, as the player's exe
+   does (`LETSGO_BASE`, `LETSGO_UPDATE` and `LETSGO_KEYS` give the files without them). By hand:
 
    ```bash
    bash tools/prepare.sh "BASE.nsp" "UPDATE.nsp" "prod.keys"
    ```
 
-3. **Ghidra project** (`orig/ghidra/letsgo`). Takes several minutes per module:
+3. **Ghidra project** (`orig/ghidra/letsgo`), for reading and decompiling the game's code; the
+   build doesn't need it. Set up Ghidra with `bash tools/setup_toolchain.sh --ghidra`, then
+   import each module, which takes several minutes:
 
    ```bash
    cmd //c "tools\\ghidra\\import.cmd main"
@@ -214,7 +223,7 @@ and `toolchain/` are ignored by git.
    debug options (step 5).
 
    Double-click it, or run it from a command prompt. It:
-   - checks that steps 1 and 2 are done;
+   - does steps 1 and 2 when they aren't done;
    - runs the recompiler the first time;
    - configures `build/pc` the first time;
    - builds `letsgo.exe`.
@@ -241,7 +250,8 @@ and `toolchain/` are ignored by git.
    - Always give `--target`. A plain `cmake --build build/pc` builds everything:
      both executables, `tools/shadertest` and `tools/modstest`.
    - If CMake or Ninja aren't on PATH, use the copies Visual Studio installs under
-     `Common7/IDE/CommonExtensions/Microsoft/CMake/`, and add
+     `Common7/IDE/CommonExtensions/Microsoft/CMake/` (or `toolchain/cmake/bin/` and
+     `toolchain/ninja/`), and add
      `-DCMAKE_MAKE_PROGRAM=<path to ninja.exe>` to step 2.
    - `-DLETSGO_CHECK_CALLS=ON` (used for `build/pc-check`) makes every call check
      that callee-saved registers and `sp` survive it, which catches recompiler bugs.
@@ -407,7 +417,7 @@ game is in it: `orig/`, `build/`, `toolchain/` and `save/` are ignored by git.
 | Path | Contents |
 |---|---|
 | `tools/setup_toolchain.sh`, `tools/setup_codecs.sh` | Download and build the toolchain (step 1) |
-| `tools/prepare.sh` | Extracts and analyzes your dump into `orig/` and `data/` (step 2) |
+| `tools/prepare.sh`, `tools/prepare_dump.ps1` | Extracts and analyzes your dump into `orig/` and `data/` (step 2); the second asks for the files first, for `build-dev.bat` |
 | `tools/nxextract.py` | NSP → ExeFS + RomFS with the update applied (BKTR), checked against the IVFC hash tree |
 | `tools/nso2elf.py` | NSO → ELF with rebuilt sections, for LLVM tools, Ghidra and the recompiler |
 | `tools/analyze.py` | Function list (from `.eh_frame`), import map, instruction census |

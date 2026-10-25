@@ -3,7 +3,7 @@
 #   opus 1.5.2         the game's sound (Wwise streams are the Switch's hardware Opus)
 #   libogg + libvorbis the title movies' audio (Vorbis)
 #   libvpx 1.17.0      the title movies' picture (VP9 decoder only), with nasm for its x86 code
-# Called by tools/setup_toolchain.sh; safe to rerun (finished parts are skipped).
+# Called by tools/setup_toolchain.sh, which sets $CMAKE and $NINJA; safe to rerun (finished parts are skipped).
 #
 #   bash tools/setup_codecs.sh
 set -euo pipefail
@@ -12,7 +12,8 @@ mkdir -p toolchain/downloads toolchain/src
 DL=toolchain/downloads
 SRC=toolchain/src
 OUT="$(cygpath -m "$PWD")/toolchain/codecs"
-NINJA=${NINJA:-"C:/Program Files (x86)/Microsoft Visual Studio/18/BuildTools/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe"}
+CMAKE=${CMAKE:-cmake}
+NINJA=${NINJA:-$(cygpath -m "$(command -v ninja)")}
 export PATH="$PWD/toolchain/llvm-mingw/bin:$PWD/toolchain/nasm:$PATH"
 
 fetch() {  # url file sha256
@@ -41,11 +42,13 @@ done
 cm() {  # name source-dir extra-cmake-args...
   local name=$1 src=$2
   shift 2
-  cmake -S "$src" -B "build/$name" -G Ninja -DCMAKE_MAKE_PROGRAM="$NINJA" \
+  echo "building $name"
+  "$CMAKE" -S "$src" -B "build/$name" -G Ninja -DCMAKE_MAKE_PROGRAM="$NINJA" \
         -DCMAKE_TOOLCHAIN_FILE="$(cygpath -m "$PWD")/cmake/host-x86_64.cmake" -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF \
-        -DCMAKE_INSTALL_PREFIX="$OUT" -DCMAKE_PREFIX_PATH="$OUT" "$@" > "build/$name.log"
-  cmake --build "build/$name" >> "build/$name.log" && cmake --install "build/$name" >> "build/$name.log"
+        -DCMAKE_INSTALL_PREFIX="$OUT" -DCMAKE_PREFIX_PATH="$OUT" "$@" > "build/$name.log" 2>&1 \
+    && "$CMAKE" --build "build/$name" >> "build/$name.log" 2>&1 && "$CMAKE" --install "build/$name" >> "build/$name.log" 2>&1 \
+    || { echo "building $name failed: see build/$name.log" >&2; return 1; }
 }
 mkdir -p build
 [ -f toolchain/codecs/lib/libogg.a ] || cm libogg "$SRC/libogg-1.3.6" -DINSTALL_DOCS=OFF
@@ -54,6 +57,7 @@ mkdir -p build
 
 # libvpx: its own configure + make (GNU make ships with llvm-mingw as mingw32-make)
 if [ ! -f toolchain/codecs/lib/libvpx.a ]; then
+  echo "building libvpx"
   rm -rf build/libvpx && mkdir -p build/libvpx
   (
     cd build/libvpx

@@ -1,3 +1,5 @@
 # cmd needs CRLF line endings in batch files (labels can break with LF)
 *.bat text eol=crlf
 *.cmd text eol=crlf
+# Git Bash needs LF line endings in shell scripts (a CR breaks every line)
+*.sh text eol=lf
