@@ -42,7 +42,7 @@ file(CONFIGURE OUTPUT "${CMAKE_BINARY_DIR}/decomp_hacks.txt" CONTENT "${LETSGO_H
 set(DECOMP_OUT_DIR "${CMAKE_SOURCE_DIR}/build" CACHE PATH "where the decomp module is built (<dir>/decomp, <dir>/gen/patch)")
 set(GEN_PATCH "${DECOMP_OUT_DIR}/gen/patch/f000.c" "${DECOMP_OUT_DIR}/gen/patch/table.c")
 add_custom_command(OUTPUT ${GEN_PATCH}
-  COMMAND "${PYTHON_EXE}" -P "${CMAKE_SOURCE_DIR}/decomp/tools/build.py" --ninja "${CMAKE_MAKE_PROGRAM}"
+  COMMAND "${PYTHON_EXE}" -P "${CMAKE_SOURCE_DIR}/decomp/tools/build.py" --ninja "${CMAKE_MAKE_PROGRAM}" --cmake "${CMAKE_COMMAND}"
           --out "${DECOMP_OUT_DIR}" --gen "${GEN_DIR}" ${DECOMP_HACK_ARGS}
   DEPENDS ${DECOMP_INPUTS} "${CMAKE_SOURCE_DIR}/decomp/symbols.txt" "${CMAKE_SOURCE_DIR}/decomp/patch.ld" "${CMAKE_BINARY_DIR}/decomp_hacks.txt"
           "${CMAKE_SOURCE_DIR}/decomp/CMakeLists.txt" "${CMAKE_SOURCE_DIR}/decomp/tools/build.py"

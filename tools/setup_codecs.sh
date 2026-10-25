@@ -55,7 +55,10 @@ mkdir -p build
 [ -f toolchain/codecs/lib/libvorbis.a ] || cm libvorbis "$SRC/libvorbis-1.3.7"
 [ -f toolchain/codecs/lib/libopus.a ] || cm opus "$SRC/opus-1.5.2" -DOPUS_BUILD_PROGRAMS=OFF -DOPUS_BUILD_TESTING=OFF
 
-# libvpx: its own configure + make (GNU make ships with llvm-mingw as mingw32-make)
+# libvpx: its own configure + make (GNU make ships with llvm-mingw as mingw32-make). Its makefiles
+# can't take a path with a space, so make calls itself by name (MAKE=, found on PATH), the source
+# is reached by a relative path, and the library and the decoder's headers are copied in by hand
+# instead of make install.
 if [ ! -f toolchain/codecs/lib/libvpx.a ]; then
   echo "building libvpx"
   rm -rf build/libvpx && mkdir -p build/libvpx
@@ -63,13 +66,17 @@ if [ ! -f toolchain/codecs/lib/libvpx.a ]; then
     cd build/libvpx
     CC=x86_64-w64-mingw32-clang CXX=x86_64-w64-mingw32-clang++ LD=x86_64-w64-mingw32-clang AR=llvm-ar \
     NM=llvm-nm STRIP=llvm-strip AS=nasm \
-      ../../toolchain/src/libvpx-1.17.0/configure --target=x86_64-win64-gcc --as=nasm --prefix="$OUT" \
+      ../../toolchain/src/libvpx-1.17.0/configure --target=x86_64-win64-gcc --as=nasm \
         --disable-examples --disable-tools --disable-docs --disable-unit-tests --disable-install-bins \
         --disable-vp8 --disable-vp9-encoder --enable-vp9-decoder --enable-static --disable-shared \
         --enable-runtime-cpu-detect > ../libvpx.log
-    mingw32-make -j"$(nproc)" >> ../libvpx.log 2>&1
-    mingw32-make install >> ../libvpx.log 2>&1
-  )
+    mingw32-make MAKE=mingw32-make -j"$(nproc)" >> ../libvpx.log 2>&1
+  ) || { echo "building libvpx failed: see build/libvpx.log" >&2; exit 1; }
+  mkdir -p toolchain/codecs/include/vpx toolchain/codecs/lib
+  for h in vp8.h vp8dx.h vpx_codec.h vpx_decoder.h vpx_frame_buffer.h vpx_image.h vpx_integer.h; do
+    cp "$SRC/libvpx-1.17.0/vpx/$h" toolchain/codecs/include/vpx/
+  done
+  cp build/libvpx/libvpx.a toolchain/codecs/lib/
 fi
 ls toolchain/codecs/lib
 echo "codecs ready"

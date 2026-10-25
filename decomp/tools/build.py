@@ -50,7 +50,17 @@ BIN = os.path.join(ROOT, "toolchain", "llvm-mingw", "bin")
 OUT = os.path.join(ROOT, "build", "decomp")
 PATCH_OUT = os.path.join(ROOT, "build", "gen")     # the recompiled module goes in PATCH_OUT/patch
 MAIN_OUT = os.path.join(ROOT, "build", "gen")      # where main was translated
-DEFAULT_NINJA = "C:/Program Files (x86)/Microsoft Visual Studio/18/BuildTools/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe"
+VS_CMAKE = "C:/Program Files (x86)/Microsoft Visual Studio/18/BuildTools/Common7/IDE/CommonExtensions/Microsoft/CMake"
+
+
+def find_tool(env, name, *places):
+    """$env, else name on PATH, else the first of places that exists (toolchain/'s copy, then Visual Studio's)."""
+    return os.environ.get(env) or shutil.which(name) or next((p for p in places if os.path.exists(p)), name)
+
+
+DEFAULT_CMAKE = find_tool("CMAKE", "cmake", os.path.join(ROOT, "toolchain", "cmake", "bin", "cmake.exe"),
+                          VS_CMAKE + "/CMake/bin/cmake.exe")
+DEFAULT_NINJA = find_tool("NINJA", "ninja", os.path.join(ROOT, "toolchain", "ninja", "ninja.exe"), VS_CMAKE + "/Ninja/ninja.exe")
 MAIN_BASE, SDK_BASE = 0x7100000000, 0x7180000000
 ADDR_NAME = re.compile(r"^(?:FUN|DAT|PTR|LAB)_(71[0-9a-fA-F]{8})$")
 ORIG_NAME = re.compile(r"^ORIG_(71[0-9a-fA-F]{8})$")
@@ -144,7 +154,8 @@ def read_symbols_txt():
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--ninja", default=os.environ.get("NINJA", DEFAULT_NINJA))
+    ap.add_argument("--ninja", default=DEFAULT_NINJA)
+    ap.add_argument("--cmake", default=DEFAULT_CMAKE)
     ap.add_argument("--hack", action="append", default=[], help="also build hacks/NAME/code into the module")
     ap.add_argument("--out", help="build the module in DIR/decomp and recompile it into DIR/gen/patch (default build/)")
     ap.add_argument("--gen", help="where main was translated (default build/gen)")
@@ -178,10 +189,10 @@ def main():
     # 1. compile
     cfg = os.path.join(OUT, "cmake")
     # configured every time: the hacks built in can change between builds
-    run(["cmake", "-S", os.path.join(ROOT, "decomp"), "-B", cfg, "-G", "Ninja", "-DCMAKE_MAKE_PROGRAM=" + a.ninja,
+    run([a.cmake, "-S", os.path.join(ROOT, "decomp"), "-B", cfg, "-G", "Ninja", "-DCMAKE_MAKE_PROGRAM=" + a.ninja,
          "-DCMAKE_TOOLCHAIN_FILE=" + os.path.join(ROOT, "cmake", "guest-aarch64.cmake").replace("\\", "/"),
          "-DCMAKE_BUILD_TYPE=Release", "-DDECOMP_EXTRA_DIRS=" + ";".join(extra)])
-    run(["cmake", "--build", cfg])
+    run([a.cmake, "--build", cfg])
     lib = os.path.join(cfg, "libdecomp.a")
 
     # 2. resolve

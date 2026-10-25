@@ -540,14 +540,12 @@ static std::vector<uint8_t> first_font_of(const std::vector<uint8_t>& f) {
 // Windows' own fonts for the same scripts, so nothing of the console's is needed.
 static std::vector<uint8_t> system_font(uint32_t type) {
     std::vector<uint8_t> data;
-    if (!g_game) {
-        std::string path = fsx::g_orig + "/fonts/" + std::to_string(type) + ".ttf";
-        FILE* f = fopen(path.c_str(), "rb");
-        if (!f) fatal("shared font %u missing (%s): run tools/extract_fonts.py", type, path.c_str());
+    std::string extracted = fsx::g_orig + "/fonts/" + std::to_string(type) + ".ttf";   // tools/extract_fonts.py
+    if (FILE* f = g_game ? nullptr : fopen(extracted.c_str(), "rb")) {
         fseek(f, 0, SEEK_END);
         data.resize((size_t)ftell(f));
         fseek(f, 0, SEEK_SET);
-        if (fread(data.data(), 1, data.size(), f) != data.size()) fatal("short read on %s", path.c_str());
+        if (fread(data.data(), 1, data.size(), f) != data.size()) fatal("short read on %s", extracted.c_str());
         fclose(f);
         return data;
     }

@@ -428,7 +428,7 @@ game is in it: `orig/`, `build/`, `toolchain/` and `save/` are ignored by git.
 | `tools/ghidra/` | Headless import (`import.cmd`), function seeding, decompiled-C export |
 | `tools/emu/guest_emu.py` | Runs original functions under Unicorn with main at its real address: the test oracle for the recompiler and the decomp |
 | `tools/make_guest_sysroot.py` | Builds `toolchain/guest-sysroot` from the musl source |
-| `tools/extract_fonts.py` | System shared fonts from the firmware installed for Ryujinx → `orig/fonts/` |
+| `tools/extract_fonts.py` | System shared fonts from the firmware installed for Ryujinx → `orig/fonts/` (optional: without them the game uses Windows' fonts) |
 | `tools/gen_nvn_procs.py` | NVN entry point and device-constant tables for the runtime |
 | `tools/check_overrides.py` | Checks that every host override name matches a real symbol |
 | `tools/vtables_of.py` | Prints a class's vtable slots by name (e.g. `movie::Decoder` in subsdk1) |

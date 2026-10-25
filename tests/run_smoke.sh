@@ -4,7 +4,10 @@
 set -uo pipefail
 cd "$(dirname "$0")/.."
 export PATH="$PWD/toolchain/llvm-mingw/bin:$PATH"
-NINJA=${NINJA:-"C:/Program Files (x86)/Microsoft Visual Studio/18/BuildTools/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe"}
+# CMake and Ninja: $CMAKE and $NINJA, else PATH's, else toolchain/'s (tools/setup_toolchain.sh)
+CMAKE=${CMAKE:-$(command -v cmake || echo "$PWD/toolchain/cmake/bin/cmake.exe")}
+NINJA=${NINJA:-$(cygpath -m "$(command -v ninja || echo "$PWD/toolchain/ninja/ninja.exe")")}
+export CMAKE NINJA
 mkdir -p build/smoke
 fail=0
 run() {  # name, command...
@@ -26,9 +29,9 @@ run "NVN layouts identical on host and guest" bash -c 'python -P tests/smoke/nvn
 
 run "guest headers: musl + libc++ + nnsdk/nnware for AArch64" bash -c '
   rm -rf build/guest_headers &&
-  cmake -S tests/smoke/guest_headers -B build/guest_headers -G Ninja -DCMAKE_MAKE_PROGRAM="'"$NINJA"'" \
+  "$CMAKE" -S tests/smoke/guest_headers -B build/guest_headers -G Ninja -DCMAKE_MAKE_PROGRAM="$NINJA" \
         -DCMAKE_TOOLCHAIN_FILE="$(cygpath -m "$PWD")/cmake/guest-aarch64.cmake" > /dev/null &&
-  cmake --build build/guest_headers > /dev/null'
+  "$CMAKE" --build build/guest_headers > /dev/null'
 
 run "emulator oracle: original FNV-1a function matches reference" bash -c 'python -P tests/smoke/emu_fnv.py | grep -q "^PASS"'
 
