@@ -31,11 +31,11 @@ Works:
 - Saving and continuing
 - Sound, music and movies
 - Keyboard and gamepads, with rumble; F11 for fullscreen
-- **60 FPS** (new since the v0.2.0 download: build from source for now): Tab while
+- **60 FPS** (new in v0.3.0): Tab while
   playing (or `fps=60` in `settings.ini`) runs the game at 60 frames a second instead of
   its own 30. Walking, text, scripts, camera moves, screen fades and battles keep the
   game's own pace; only turning on the spot is still quicker than at 30.
-- **A sharper picture** (also new since v0.2.0): `scale=` in `settings.ini` renders the
+- **A sharper picture** (also new in v0.3.0): `scale=` in `settings.ini` renders the
   game that many times as wide and high. `auto`, the default, picks 2 on a 1440p or 4K
   monitor.
 
@@ -162,8 +162,8 @@ and `toolchain/` are ignored by git.
 - [docs/BINARY_NOTES.md](docs/BINARY_NOTES.md): what's in the binary
 - [docs/MODS.md](docs/MODS.md): mods, files that take the place of the game's
 
-`build-release.bat` builds the player's `LetsGoPikachu.exe` and `build-dev.bat` the development
-`letsgo.exe` (Setup, step 4). Both start with the hacks named in [hacks/README.md](hacks/README.md).
+`build-dev.bat` builds the development `letsgo.exe` (Setup, step 4), with the hacks named in
+[hacks/README.md](hacks/README.md). The players' `LetsGoPikachu.exe` is on the releases page.
 
 ### Setup
 
@@ -209,19 +209,15 @@ and `toolchain/` are ignored by git.
    cmd //c "tools\\ghidra\\decompile.cmd orig\\decomp 0x7100004110"
    ```
 
-4. **Build.** There are two executables. Both are built from the same code into
-   `build/pc`:
+4. **Build.** `build-dev.bat` builds `build/pc/letsgo.exe`, the development executable: a
+   console window with the log. It runs the game extracted in `orig/` and has the test and
+   debug options (step 5).
 
-   | Executable | Batch file | What it's for |
-   |---|---|---|
-   | `build/pc/letsgo.exe` | `build-dev.bat` | Development: a console window with the log. It runs the game extracted in `orig/` and has the test and debug options (step 5) |
-   | `build/pc/LetsGoPikachu.exe` | `build-release.bat` | Players: one file with no console window. It runs from the player's NSPs and keys (see Getting started) |
-
-   Double-click a batch file, or run it from a command prompt. Each one:
+   Double-click it, or run it from a command prompt. It:
    - checks that steps 1 and 2 are done;
    - runs the recompiler the first time;
    - configures `build/pc` the first time;
-   - builds only its own executable.
+   - builds `letsgo.exe`.
 
    `--recomp` runs the recompiler again; do that after `recomp/` changes. The
    first build compiles about 95,000 recompiled functions and takes a while.
@@ -371,8 +367,10 @@ must record the same results (`t.check(value)`) and make the same SDK calls. In 
 **Hooks and hacks.** A replacement can call the original it replaces through `ORIG_<address>`,
 so code can be added to a function without decompiling it ([decomp/README.md](decomp/README.md),
 Hooks). A hack in `hacks/<name>/` has its own code, tests and files for the game; `-DLETSGO_HACKS=<name>`
-builds its code into the executables ([hacks/README.md](hacks/README.md)). build-dev.bat and
-build-release.bat build `new-script-command`, `wild-battles`, `quick-boot` and `smooth-moves` in.
+builds its code into the executables ([hacks/README.md](hacks/README.md)). build-dev.bat builds
+`new-script-command`, `quick-boot` and `smooth-moves` in. `wild-battles` is left for you to add
+(`cmake "-DLETSGO_HACKS=new-script-command;quick-boot;smooth-moves;wild-battles" build/pc`), and
+its `make_romfs.py` puts the Poké Balls in the battle bag.
 
 **Reading the original.** `python -P tools/disasm.py <address>` prints a function with the
 names of what it calls and the strings it uses; `python -P tools/refs.py <address>` lists
@@ -436,7 +434,7 @@ game is in it: `orig/`, `build/`, `toolchain/` and `save/` are ignored by git.
 
 | Path | Contents |
 |---|---|
-| `build-dev.bat`, `build-release.bat` | Build `letsgo.exe` (development) or `LetsGoPikachu.exe` (release) into `build/pc`, through `tools/build_exe.cmd` (step 4) |
+| `build-dev.bat` | Builds `letsgo.exe` (development) into `build/pc`, through `tools/build_exe.cmd` (step 4) |
 | `CMakeLists.txt`, `cmake/host-x86_64.cmake` | The `letsgo` and `LetsGoPikachu` executables: runtime, recompiled code and the decomp module |
 | `cmake/guest-aarch64.cmake` | CMake toolchain for ARM64 guest (decomp) code |
 | `tests/` | `run_smoke.sh` and the smoke tests it runs |

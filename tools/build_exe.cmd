@@ -1,5 +1,5 @@
 @echo off
-rem Build one of the two executables into build\pc (build-dev.bat and build-release.bat call this):
+rem Build one of the two executables into build\pc (build-dev.bat calls this):
 rem   tools\build_exe.cmd letsgo          (development: build\pc\letsgo.exe)
 rem   tools\build_exe.cmd LetsGoPikachu   (release: build\pc\LetsGoPikachu.exe)
 rem Add --recomp to run the recompiler again (after recomp\ changes). It also runs when build\gen

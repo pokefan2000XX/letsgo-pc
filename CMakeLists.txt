@@ -27,8 +27,8 @@ find_program(PYTHON_EXE NAMES python python3 REQUIRED)
 file(GLOB_RECURSE DECOMP_INPUTS CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/decomp/src/*" "${CMAKE_SOURCE_DIR}/decomp/include/*")
 # A hack's code (hacks/<name>/code) is built into the same module, for the hacks named here
 # (-DLETSGO_HACKS=name;other). Its files for the game go in a mods/ folder (runtime/src/mods.cpp).
-# A new build directory (build-dev.bat, build-release.bat) starts with these.
-set(LETSGO_HACKS "new-script-command;wild-battles;quick-boot;smooth-moves" CACHE STRING
+# A new build directory (build-dev.bat) starts with these.
+set(LETSGO_HACKS "new-script-command;quick-boot;smooth-moves" CACHE STRING
     "hacks whose code is built into the decomp module (hacks/<name>/code)")
 set(DECOMP_HACK_ARGS)
 foreach(hack ${LETSGO_HACKS})

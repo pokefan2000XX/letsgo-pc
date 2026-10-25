@@ -10,7 +10,8 @@ A hack is a folder here with any of:
 
 **Code.** `cmake -DLETSGO_HACKS=name[;other] build/pc` builds those hacks' `code/` into both
 executables, next to the decompiled code (`-DLETSGO_HACKS=` builds them out again). A new build
-directory starts with `new-script-command;wild-battles;quick-boot;smooth-moves` (CMakeLists.txt). A function in
+directory starts with `new-script-command;quick-boot;smooth-moves` (CMakeLists.txt); the others, `wild-battles`
+among them, are added by name. A function in
 `code/` that's named for an original (`FUN_<address>`, or a name in `decomp/symbols.txt`)
 replaces it, as decompiled code does; it can still call the original through
 `ORIG_<address>`, so code can be added to a function without decompiling it
