@@ -20,7 +20,7 @@ in it: the game builds and runs from your own dump.
 
 ## Status
 
-Work In Progress (recomp roughly 80% complete; 741 of the game's 59,324 functions
+Work In Progress (recomp is complete; decomp has 741 of the game's 59,324 functions
 decompiled so far, see [Decompiled so far](#decompiled-so-far))
 
 Works:
